@@ -7,13 +7,15 @@
 
 ### Preliminary Notes
 
-1.  Angular 2 (*Ng2*) is a JavaScript framework that allows us to easily create single-page applications. This outline assumes the readeer already is familiar with the concept of singl-page applications, but, in brief, it is an approach to web design where routing and rerendering of pages is handled by the web client, rather than in the back end. This eliminates the need for http requests to the back end, which greatly enhances performance. Of course, http requests are made, but only when necessary to obtain new data, and they are handled asynchronously.
+1.  Angular 4 (*Ng4*) is a JavaScript framework that allows us to easily create single-page applications. This outline assumes the reader already is familiar with the concept of single-page applications, but, in brief, it is an approach to web design where routing and rerendering of pages is handled by the web client, rather than in the back end. This eliminates the need for http requests to the back end, which greatly enhances performance. Of course, http requests are made, but only when necessary to obtain new data, and they are handled asynchronously.
 
-2.	Angular 2 no longer has a default two-way data binding, allowing it to be faster and more scalable. It is considerably different than Angular and reflects many elements present in ReactJS.
+2. Angular 2 got rid of default two-way data binding, allowing it to be faster and more scalable. It is considerably different than Angular and reflects many elements present in ReactJS.
 
-3.  Setup of an Angular 2 project can be a major task, given the need to configure TypeScript and Webpack. We will assume setup has been taken care of throughout this outline, until [Section X](#webpack), where we discuss setup.
+3. Angular 2 was a significant break from Angular 1. In contrast, Angular 4 is merely an enhancement of Angular 2 and considered just a non-breaking version upgrade of Angular 2. Either may be referred to now simply as *Angular*.
 
-4.  Angular 2 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
+4.  Setup of an Angular 2 project can be a major task, given the need to configure TypeScript and Webpack. We will assume setup has been taken care of throughout this outline, until [Section X](#webpack), where we discuss setup.
+
+5. Angular 2 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
 
 ### Basic Structure of the Application
 
