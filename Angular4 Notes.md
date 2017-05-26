@@ -19,12 +19,10 @@
 
 ### Basic Structure of the Application
 
-1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of ==src==. This folder will typically contain two folders, with names such as ==app== and ==assets==.  The *app* folder will contain the application, whereas the *assets* folder will typically contain fonts, css styling, and images.
+1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application, whereas the *assets* folder will typically contain fonts, css styling, and images.
 
-2.  In addition to the directories described above, the *src* directory will contain the ==index.html== file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (see below), so that the entire file might look something like:
-
+2.  In addition to the directories described above, the *src* directory will contain the **index.html** file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (see below), so that the entire file might look something like:
     ```html
-    
     <!doctype html>
     <html>
         <head>
@@ -40,13 +38,13 @@
     </html>
     ```
     
-3.  In addition to the *index.html* file, there will also be a typescript file with a name such as ==main.ts== or ==bootstrap.ts==. This file imports the AppModule and runs a setup method on the *platformBrowserDynamic()* method to get everything going, and the instruction to look for this file first will be contained in the configuration file for webpack. The ==app.module.ts== file creates our application module. A few of the most important things it does are:
+3.  In addition to the *index.html* file, there will also be a typescript file with a name such as **main.ts** or **bootstrap.ts**. This file imports the AppModule and runs a setup method on the *platformBrowserDynamic()* method to get everything going, and the instruction to look for this file first will be contained in the configuration file for webpack. The **app.module.ts** file creates our application module. A few of the most important things it does are:
   
-    a.  import various modules from Angular2 or from other dependencies,
+    a.  imports various modules from Angular2 or from other dependencies,
 
-    b.  declare components, directives, and pipes in a ==declarations== array,
+    b.  declares components, directives, and pipes in a **declarations** array,
     
-    c.  declare the fundamental component in the ==bootstrap== object.
+    c.  declares the fundamental component in the **bootstrap** object.
     
     A very simple *app.module.ts* file might look like:
     
@@ -74,7 +72,7 @@
 
     export class AppModule { }
     ```
-    d.  As we will learn in the next section, the bootstrap component *AppComponent* will have a ==selector== of *app-root*, which is how we refer to the component when it is placed into the *index.html* file.
+    d.  As we will learn in the next section, the bootstrap component *AppComponent* will have a **selector** of *app-root*, which is how we refer to the component when it is placed into the *index.html* file.
     
 ## II. Angular2 Components
 
@@ -1939,38 +1937,38 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 <span id='webpack'></span>
 ## X. Webpack Setup
 
-### A. Using the Angular2 CLI
+### A. Using the Angular4 CLI
 
 #### Initial Setup
 
-1.  Make certain that NodeJS is installed on your machine. NodeJS itself is not so important, but installation will come with the ==node package manager (npm)==, which will be used for installing dependencies.
+1. Make certain that NodeJS is installed on your machine. NodeJS itself is not so important, but installation will come with the node package manager (npm), which will be used for installing dependencies.
 
-2.	Ng2 has a cli interface to easily create and manage a new angular project using Webpack. So, the first step is to load it globally using npm:
+2. Angular has a cli interface to easily create and manage a new angular project using Webpack. So, the first step is to load it globally using npm:
     ```
-	sudo npm install -g angular-cli
-	```	
-3.	Then, to start a new project, go to where you want the directory to set up, and type:
+    sudo npm install -g @angular/cli
+    ```	
+3. Then, to start a new project, go to where you want the directory to set up, and type:
     ``` 
-	ng new [ProjectName]
-	```	
-4.	Once it is set up, the project can be started by either of the following from the command line:
+    ng new [ProjectName]
+    ```	
+4. Once it is set up, the project can be started by either of the following from the command line:
     ```
-	ng serve
+    ng serve
     ```
-	This starts a compilation server, and we can access the app at ==localhost:4200==
+    This starts a compilation server, and we can access the app at localhost:4200
 	
     **Note:** From the command line, we can also start up our app with the command:
     ```
     npm start
     ```
-    
-    This, of course, simply refers to the *package.json* file, which runs the *ng serve* commands.
+    This, of course, simply refers to the *package.json* file, which runs the *ng serve* command.
     
  #### Additional Features
  
  1. To create a new component, we can simply enter the at the command line:
-    ```
-    ng generate component [componentName]  //or ng g c [componentName]
+    ```javascript
+    ng generate component [componentName]
+    //or ng g c [componentName]
     ```
     This will generate the directory *ComponentName* in the directory in which the command was run, and in it will be the following files:
     
@@ -1982,9 +1980,9 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     
     d.  **componentName.component.ts**: Note that this file will contain the *OnInit* lifecycle hook.
     
-    In addition, it will modify the app.module folder to contain the created component.
+    In addition, it will modify the *app.module* folder to contain the created component.
 
-2.  Somr options in using the component creation command are:
+2.  Some options in using the component creation command are:
 
     a.  ==--flat== keeps angular from creating a new level of folder,
     
