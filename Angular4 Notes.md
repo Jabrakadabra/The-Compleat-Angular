@@ -80,11 +80,12 @@
 
 ### A. Components Generally
 
-1.	A **component** is a type of directive, along with attribute directives and structural directives. They are the **key feature** of Angular, as all of the app is built out of components.
+1. A **component** is a special type of directive (along with attribute directives and structural directives). A component is a directive thqt is associated with a view. They are the **key feature** of Angular, as all of the app is built out of components.
+
 
 #### Creating a Component
 
-1.	The following is a basic Ng4 component:
+1. The following is a basic Ng4 component:
     ```javascript
 	import { Component } from '@anglar/core';
 		
@@ -102,19 +103,22 @@
     
     b. In the above component, **selector** is what will go into the tag in the HTML to indicate where the component (*i.e.*, a directive) is to be inserted, **template** is the html string that is placed there, and **styleUrls** (or **styles**) allows us to incorporate css into our particular component. Note that the template could contain interpolated values string by using ES6 template literal syntax.
 	
-2. The *selector* can be a \<tag>, or it can be an *id* or *class*.  In such case, our code might look like:
+2. The *selector* can be a \<tag>, or it can be an *attribute* or *class*.  In such case, our code might look like:
     ```javascript
     import { Component } from '@anglar/core';
 		
     @Component({
-        selector: '#app-root',  //or, for a class: '.app-root',
+        selector: 'app-root',
+        //or, for a class: '.app-root',
+        //or, for an attribute: '[app-root]'
         template: `Goodbye, Cruel World!`,
     })
     ```
+    **Note**: the selector cannot be an element id.
 
-3.  Each component must have one, and only one, template. The template can be an HTML string, or can be a template contained in an HTML file, in which case the key name will be **templateUrl**.
+3.  Each component **must have one, and only one, template**. The template can be an HTML string, or can be a template contained in an HTML file, in which case the key name will be **templateUrl**.
 
-4.	Another key in the @Component is **styles**, which contains strings of styles, or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array of strings, or Urls. This is a prominent feature of Ng4: **view encapsulation**, which allows us to target styling to specific views.  It does this by application of a **Shadow DOM**, running a separate DOM for each component behind the scenes.  However, this is not supported by all browsers, so Ng4 emulates this by adding its own attributes to each HTML tag, as so:
+4. Another key in the @Component decorator object is **styles**, which has a value of an array of style strings (or template literals if we want multi-ine), or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array, of strings or Urls. This is a prominent feature of Ng4: **view encapsulation**, which allows us to target styling to specific views. It does this by application of a **Shadow DOM**, running a separate DOM for each component behind the scenes. However, this is not supported by all browsers, so Ng4 emulates this by adding its own attributes to each HTML tag, as so:
     ```html
     <div>
         <component _nghost-pax-1>
@@ -124,7 +128,7 @@
     ```
 5.  Looking at our initial example of the component, note that we are exporting a class, *AppComponent*. In each case where we insert our component, we are creating **a new instance** of this class. We can have properties and methods in our class; of course, behind the screen it is all converted to JavaScript prototypes.
 
-#### Nesting Components
+### B. Nesting Components
 
 1. If we wish to place a component into another component, we can easily do so, as follows:
 
@@ -149,7 +153,6 @@
     </child-element>
     ```
     The normal behaviour is for Ng4 to strip out the content between the child-element tags.  This can be overridden by using the **\<ng-content>** directive, which instructs Ng4 to render the contained matter. So, if our child component is really just a container for other HTML, we can insert the contents. Note that the content is stripped out of its component, so that component's styling will no longer apply.
-#### iii. Starting our Application
 
 ### B. Passing Data Among Components
 
@@ -158,10 +161,82 @@
 #### ii. Passing Data to Ancestors or Other Components
 
 ### C. Databinding
+#### Introduction
+1. Databinding is a key element of both Angular Classic and Ng4, which allows **communication** between the template being viewed and the component's logic. Altough the terminology surrounding it is sometimes opaque, the concept is very simple. For example, imagine a page with a button and text input. We want the user to enter the name of a city, then have our application get from a weather service the temperature in the city, which will display on the screen.
 
-#### i. General Notes
+    a. First, we will need a way to communicate the name of the city, as well as the button-click to the component, so it can fire off the AJAX request to get the weather. This will be done by *event-binding*.
+    
+    b. Then, when the data has been returned and is available, we want the number to appear on the page. We would want to use *string inteerpolation* to communicate this info to the DOM. We can also use *property binding* to communicate out to the DOM.
+    
+    c. Finally, we may sometimes wish to have two-way communication between the DOM and the component instance. This is accomplished with *two-way data binding.* This was the big thing in Angular Classic, but really is overkill most of the time, and has been abandoned as the default data-binding in Ng4.
 
-#### ii. String Interpolation
+2. There are several different methods of databinding, which are discussed below:
+
+    a. **string interpolation**, by using the double braces (*{{ data }}*),
+
+    b. **Property Binding**, applies when data is flowing into an element (*i.e.*, an HTML element, a directive, or a custom component). We can bind to DOM properties (*e.g.*, [src]), or properties of directives (*e.g.*, [ngClass]), or component properties (somewhat redundant, since components are directives). For example:
+    ```html
+    <button [disabled]="boolean expression"></button>
+    ```
+    c. **Event binding**, applies when we are getting something from the element, generally an event, to which we assign a handler. For example:
+    ```html
+    <button (click)="expression handling the event"></button>
+    ```
+	
+    d. **Two-way data binding**: This was one of the most important features of Angular Classic. However, Ng4 does not have 2-way data binding by default. The syntax is:
+    ```
+    <input [(ngModel)]="bound model object">
+    ```
+
+    This makes sense, if we think of the brackets as data flowing into the DOM, and parens as data flowing out of the DOM. So, as the user types in the above input field, the value of the *name* variable is getting constantly updated.  And if *name* gets updated anywhere else, the text in the input field gets updated
+
+#### String Interpolation
+
+1. The template can evaluate expressions, using the traditional {{ }} syntax.  In addition, data can be passed into the object in the exported class definition, for example:
+    ```javascript
+    import {Component} from 'angular2/core'
+        @Component({
+            selector: 'my-component',
+            template: `
+                Hello, I'm {{name}}!
+            `
+        })
+
+        export class MyComponent {
+            name = 'Jordan';
+        }
+    ```
+    **Note**: the interpolation ${ } is still available within the template literal; however, it cannot be used for the values passed in by the export object.
+    
+    **Note**: the only requirements regarding the contents of the double braces are:
+    
+    a. it must resolve to a *string* (and it will recast numbers).
+    
+    b. it can only take inline expressions, so no *if* blocks, *etc.*  However, it can take **ternary expressions**, so they are often used.
+	
+2. The scope of the interpolation is **is only the component.**. So, as a simple example, if we wanted to use a Math method in our inteerpolation, we would have to do something along the lines of:
+    ```javascript
+    //in the component
+    export class MyComponent {
+        pow = Math.pow;
+    }
+    ```
+    ```html
+    <!--in the html -->
+    <h2>
+        {{pow(2, 5)}} //shows "32"
+    </h2>
+    ```
+	
+3. **A Side Note**: In an \<input> tag, one can identify an input variable and bind it to the element with a hash-tag(#), like so:
+    ```javascript
+    template: `	
+        <input type="text" #number (keyup) = null>
+    `
+    ```
+	In the above code, the input number gets bound to the variable *#number*. The input requires an event to make anything happen, even a simple refresh. So, we add the event (in this case *keyup* to the input tag. The null value will do nothing, except force a rerendering.
+
+
 
 #### iii. Property Binding
 
@@ -2043,20 +2118,14 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 ---
 
 
-
+## The End
 
 ###Introduction to Application Architecture
 
 1. Angular 2 is a very modular framework.
 
-2.  One important type of module is the **component**. The components are then embedded into the HTML as tags:
 
-		<body>
-			<h1>Headline Text</h1>
-			<angularComponent></angularComponent>
-		</body>
-		
-3.	A component is a special case of a **directive**, in that a component will be associated with a view.  A general directive simply holds instructions for how to transform an element on which it sits.
+	
 
 4.	A **service** might hold some functionality that we might want to access in different places in an application. The functionality can be placed in the service, then injected into components where it is needed.
 
@@ -2245,67 +2314,6 @@ Be sure to include information regarding the relative path issue
 
 ### Databinding
 
-1. Databinding is a key element of Angular Classic and Angular2, which allows communication between the template on view and the component's logic. 
-
-2.	There are several different methods of databinding, which are discussed below:
-
-	a.	**string interpolation** (through {{ }}),
-	
-	b.	**Property Binding**, applies when something is flowing into an element (*i.e.*, an HTML element, a directive, or a custom component). We can bind to DOM properties (*e.g.*, [src]), or properties of directives (*e.g.*, [ngClass]), or component properties (somewhat redundant, since components are directives). For example:
-	
-		<button [disabled]="boolean expression"></button>
-	
-	c.	**Event binding**, applies when we are getting something from the element, generally an event, for which we assign a handler; for example:
-		
-		<button (click)="expression handling the event"></button>
-	
-	
-	d.	**two-way data binding**: This was one of the most important features of Angular Classic. However, Angular2 does not have 2-way data binding by default. The syntax is:
-	
-		<input [(ngModel)]="bound model object">
-		
-		
-This makes sense, if we think of the brackets as data flowing into the DOM, and parens as data flowing out of the DOM. So, as the user types in the above input field, the value of the *name* variable is getting constantly updated.  And if *name* gets updated anywhere else, the text in the input field gets updated
-
-#### Interpolating Into the Template
-
-1.	The template can evaluate expressions, using the traditional {{}} syntax.  In addition, data can be passed into the object in the export, for example:
-
-		import {Component} from 'angular2/core'
-
-		@Component({
-    		selector: 'my-component',
-    		template: `
-       			Hello, I'm {{name}}!
-    		`
-		})
-
-		export class MyComponent {
-    		name = 'Jordan';
-		}
-
-	Note that the ${} is still available within the template literal, but will not find the values passed in by the export object.
-	
-	Note that the {{}} scope is just the component. So, as a simple example, you wanted to have an expression evaluated using a Math method, you would have to do the following:
-	
-		//in the component
-		export class MyComponent {
-			pow = Math.pow;
-		}
-		//in the html
-		<h2>
-			{{pow(2, 5)}} //shows "32"
-		</h2>
-
-	
-2. **A Side Note**: In an \<input> tag, one can identify an input variable and bind it to the element with a hash-tag(#), like so:
-
-		template: `
-			Hello, blah, blah, blah
-			
-			<input type="text" #number (keyup) = null>
-		`
-	In the above code, the input number gets bound to the variable *#number*. The input requires an event to make anything happen, even a simple refresh. So, we add the event (in this case *keyup* to the input tag. The null value will do nothing, except a rerendering.
 
 #### Property Binding:
 
