@@ -1,4 +1,4 @@
-# Angular 2 (With TypeScript)
+# Angular 4 (With TypeScript)
 
 # Table of Contents
 [toc]
@@ -7,21 +7,21 @@
 
 ### Preliminary Notes
 
-1.  Angular 4 (*Ng4*) is a JavaScript framework that allows us to easily create single-page applications. This outline assumes the reader already is familiar with the concept of single-page applications, but, in brief, it is an approach to web design where routing and rerendering of pages is handled by the web client, rather than in the back end. This eliminates the need for http requests to the back end, which greatly enhances performance. Of course, http requests are made, but only when necessary to obtain new data, and they are handled asynchronously.
+1.  Angular 4 (*Ng4*) is a JavaScript framework that allows us to easily create single-page applications. This outline assumes the reader already is familiar with the concept of single-page applications, but, in brief, it is an approach to web design where routing and rendering of pages is handled by the web client, rather than in the back end. This eliminates the need for AJAX requests to the back end, which greatly enhances performance. Of course, AJAX requests are made, but only when necessary to obtain new data, and they are handled asynchronously.
 
-2. Angular 2 got rid of default two-way data binding, allowing it to be faster and more scalable. It is considerably different than Angular and reflects many elements present in ReactJS.
+2. Angular 2 got rid of default two-way data binding, allowing it to be faster and more scalable. It is considerably different than Angular and reflects many elements present in ReactJS. Ng4 has recently come out and, while adding some functionality, is basically a continuation of Angular 2. This outline is based on an original outline made for Angular 2 and is being updated, so references to Angular 2 will be replaced over time with Ng4.
 
 3. Angular 2 was a significant break from Angular 1. In contrast, Angular 4 is merely an enhancement of Angular 2 and considered just a non-breaking version upgrade of Angular 2. Either may be referred to now simply as *Angular*.
 
-4.  Setup of an Angular 2 project can be a major task, given the need to configure TypeScript and Webpack. We will assume setup has been taken care of throughout this outline, until [Section X](#webpack), where we discuss setup.
+4.  Setup of an Ng4 project can be a major task, given the need to configure TypeScript and Webpack. We will assume setup has been taken care of throughout this outline, until [Section X](#webpack), where we discuss setup, as well as use of the Angular CLI.
 
-5. Angular 2 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
+5. Ng4 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
 
 ### Basic Structure of the Application
 
-1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application, whereas the *assets* folder will typically contain fonts, css styling, and images.
+1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application (components, services, pipes, *etc.*, whereas the *assets* folder will typically contain fonts, css styling, and images.
 
-2.  In addition to the directories described above, the *src* directory will contain the **index.html** file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (see below), so that the entire file might look something like:
+2.  In addition to the directories described above, the *src* directory will contain the **index.html** file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (\<app-root> below), so that the entire file might look something like:
     ```html
     <!doctype html>
     <html>
@@ -38,11 +38,13 @@
     </html>
     ```
     
-3.  In addition to the *index.html* file, there will also be a typescript file with a name such as **main.ts** or **bootstrap.ts**. This file imports the AppModule and runs a setup method on the *platformBrowserDynamic()* method to get everything going, and the instruction to look for this file first will be contained in the configuration file for webpack. The **app.module.ts** file creates our application module. A few of the most important things it does are:
+3.  In addition to the *index.html* file, there will also be a typescript file with a name such as **main.ts** or **bootstrap.ts**. This file is what is given to the *webpack.config* (or *angular-cli.json*) file as the starting point. It imports the AppModule and runs a setup method on the *platformBrowserDynamic()* method to get everything going, and the instruction to look for this file first will be contained in the configuration file for webpack. The **app.module.ts** file creates our application module. A few of the most important things it does are:
   
-    a.  imports various modules from Angular2 or from other dependencies,
+    a. imports various modules from Ng4 or other dependencies,
 
-    b.  declares components, directives, and pipes in a **declarations** array,
+    b. declares components, directives, and pipes in a **declarations** array,
+    
+    c. adds modules necessary for the app in the **imports** array. This includes things like *BrowserModule* (required if running in the browser), *FormsModule*
     
     c.  declares the fundamental component in the **bootstrap** object.
     
@@ -74,45 +76,45 @@
     ```
     d.  As we will learn in the next section, the bootstrap component *AppComponent* will have a **selector** of *app-root*, which is how we refer to the component when it is placed into the *index.html* file.
     
-## II. Angular2 Components
+## II. Ng4 Components
 
 ### A. Components Generally
 
-1.	A ==Component== is a type of directive, along with attribute directives and structural directives.
+1.	A **component** is a type of directive, along with attribute directives and structural directives. They are the **key feature** of Angular, as all of the app is built out of components.
 
 #### Creating a Component
 
-1.	The following is a basic Angular2 component:
+1.	The following is a basic Ng4 component:
     ```javascript
 	import { Component } from '@anglar/core';
 		
 	@Component({
         selector: 'app-root',
-        template: `Goodbye, Cruel World!` //alt: templateUrl:'./file.html',
-        styleUrls: ['src/css/component.css'] //alt: styles: []
+        template: `Goodbye, Cruel World!` //or templateUrl: './file.html',
+        styleUrls: ['src/css/component.css'] //or styles: []
 	})
 	
     export class AppComponent {
         name = 'Jordan';
     }
     ```
-    a.  In the above example, the *@Component* is a ==decorator==. Basically, it takes the given object and wraps it with some functionality to create (in this case) a Component. Notice that it must be imported from *@angular/core*.
+    a. In the above example, the *@Component* is a **decorator**. Basically, it takes the given object and wraps it with some functionality to create (in this case) a Component. Notice that it must be imported from *@angular/core*.
     
-    b.  In the above component, ==selector== is what will go into the tag in the HTML to indicate where the component (*i.e.*, a directive) is to be inserted, ==template== is the html string that is placed there, and ==styleUrls== (or styles) allows us to incorporate css into our particular component. Note that the template could contain interpolated values string by using ES6 template literal syntax.
+    b. In the above component, **selector** is what will go into the tag in the HTML to indicate where the component (*i.e.*, a directive) is to be inserted, **template** is the html string that is placed there, and **styleUrls** (or **styles**) allows us to incorporate css into our particular component. Note that the template could contain interpolated values string by using ES6 template literal syntax.
 	
-2.	The *selector* can be a \<tag>, or it can be an *id* or *class*.  In such case, our code might look like:
+2. The *selector* can be a \<tag>, or it can be an *id* or *class*.  In such case, our code might look like:
     ```javascript
     import { Component } from '@anglar/core';
 		
     @Component({
-        selector: '#app-root',  //or, for a class selector: '.app',
+        selector: '#app-root',  //or, for a class: '.app-root',
         template: `Goodbye, Cruel World!`,
     })
     ```
 
-3.  Each component must have one, and only one, template. The template can be an HTML string, or can be a template contained in an HTML file, in which case the key name will be ==templateUrl==.
+3.  Each component must have one, and only one, template. The template can be an HTML string, or can be a template contained in an HTML file, in which case the key name will be **templateUrl**.
 
-4.	Another key in the @Component is **styles**, which contains strings of styles, or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array of strings, or Urls. This is a prominent feature of Angular2: **view encapsulation**, which allows us to target styling to specific views.  It does this by application of a ==Shadow DOM==, running a separate DOM for each component behind the scenes.  However, this is not supported by all browsers, so Angular2 emulates this by adding its own attributes to each HTML tag, as so:
+4.	Another key in the @Component is **styles**, which contains strings of styles, or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array of strings, or Urls. This is a prominent feature of Ng4: **view encapsulation**, which allows us to target styling to specific views.  It does this by application of a **Shadow DOM**, running a separate DOM for each component behind the scenes.  However, this is not supported by all browsers, so Ng4 emulates this by adding its own attributes to each HTML tag, as so:
     ```html
     <div>
         <component _nghost-pax-1>
@@ -120,34 +122,33 @@
         </component>
     </div>
     ```
-5.  Looking at our initial example of the component, note that we are exporting a class, *AppComponent*. In each case where we insert our component, we are creating a new instance of this class. We can have properties and methods in our class; of course, behind the screen it is all converted to JavaScript prototypes.
+5.  Looking at our initial example of the component, note that we are exporting a class, *AppComponent*. In each case where we insert our component, we are creating **a new instance** of this class. We can have properties and methods in our class; of course, behind the screen it is all converted to JavaScript prototypes.
 
-#### ii. Nesting Components
+#### Nesting Components
 
-1.	If we wish to place a component into another component, we can easily do so, as follows:
+1. If we wish to place a component into another component, we can easily do so, as follows:
 
-	i)	write the component to be nested, with an export of the component class.
+    a. write the component to be nested, with an export of the component class.
 	
-	ii)	import the class from the file into the *app.module.ts* file, as follows:
+    b. import the class from the file into the *app.module.ts* file, as follows:
     ```javascript
     import { MyComponent } from './my_component'
     ```
-		
-	iii) include the component as directive in the template of the outer component.
+    c. include the component as a directive in the template of the outer component.
 	
-2.  **NOTE:** In the release candidate version, we would also include in the *@Component* parameter object the key *directives*, which would have a value of an array of all directives (including components) needed in the outer component. This has been replaced, by the requirement that the *app.module.ts* file get a list of all components used in the *declarations* property of the *@NgModule* decorator,
+2. **NOTE:** In the release candidate version, we would also include in the *@Component* object the key *directives*, which would have as its value an array of all directives (including components) needed in the outer component. This has been replaced, by the requirement that the *app.module.ts* file get a list of all components used in the *declarations* property of the *@NgModule* decorator,
 
-3.  Of course, a component can be included multiple times into a parent component. Each time represents a ==separate instance== of the class. For example, if we assigned a variable a random value in our component class, and included the component twice, they could show different values.
+3. Of course, a component can be included multiple times into a parent component. Each time represents a **separate instance** of the class. For example, if we assigned a variable a random value in our component class, and included the component twice, they could show different values.
 
-4.	**ng-content**: Imagine a scenario where we have a parent component, with a child component inserted. Between the tags (for example, \<child-element>\</child-element>) we have some content:
-
-		<child-element>
-			<div>
-				Loading . . .
-			</div>
-		</child-element>
-		
-	The normal behaviour is for Angular2 to strip out the content between the child-element tags.  This can be overridden by using the **\<ng-content>** directive, which instructs Angular2 to render the contained matter. So, if our child component is really just a container for other HTML, we can insert the contents. Note that the content is stripped out of its component, so that component's styling will no longer apply.
+4. **ng-content**: Imagine a scenario where we have a parent component, with a child component inserted. Between the tags (for example, \<child-element>\</child-element>) we have some content:
+    ```javascript
+    <child-element>
+        <div>
+            Loading . . .
+        </div>
+    </child-element>
+    ```
+    The normal behaviour is for Ng4 to strip out the content between the child-element tags.  This can be overridden by using the **\<ng-content>** directive, which instructs Ng4 to render the contained matter. So, if our child component is really just a container for other HTML, we can insert the contents. Note that the content is stripped out of its component, so that component's styling will no longer apply.
 #### iii. Starting our Application
 
 ### B. Passing Data Among Components
@@ -1936,6 +1937,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
   
 <span id='webpack'></span>
 ## X. Webpack Setup
+1. Setup of Ng4 projects can become extremely complex, due to the large number of component imports, the use of Typescript, and the use of Webpack and compilers to be able to safely use ES6 and more modern features. The easiest way, by far, to get started is to use the Ng4 command line interface (CLI) to get projects up and running.
 
 ### A. Using the Angular4 CLI
 
@@ -1989,18 +1991,24 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     b.  ==--inline-styles== (or "-is") to keep from creating css folder,
     
     c.  ==--inline-template== (or "-it") to keep from creating a template folder
-    
+
+3. One important file to work with is the **.angular-cli.json** file, which allows us to set a number of the configurations for webpack, which is hidden behind the scenes (there is no *webpack.config* file). For example, if we wish to add Bootstrap to the project, instead of downloading it into the index.html head section, we can use npm, and then add it to the "styles" property, as:
+    ```json
+    "styels": [
+        "styles.css"
+        "../node_modules/bootstrap/dist/css/bootstrap.min.css",
+    ```
     
 ### B. Customization of Angular2 Setup
 
 <span id='typescript'></span>
 ## XI. Typescript Introduction
 
-1.  TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself.
+1.  TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself. However, TypeScript provides a number of extra features, such as *types*, *classes*, *interfaces*, *etc.*).
 
 2.	The browser cannot run TypeScript, so it must always be transpiled into JavaScript.  Keep in mind that in transpiling, many features may be unenforceable in JavaScript, but will throw an error during the transpilation.  For example, failure to declare a type for a variable will not make the resulting JavaScript go bad, but it will create a compilation error.
 
-3.  The file extension for TypeScript files is ==.ts==.
+3.  The file extension for TypeScript files is **.ts**.
 
 4.	The basic goal of TypeScript is to provide a familiar coding environment for users of object-oriented languages such as C#, by providing features such as strong typing and classes.
 
@@ -2012,7 +2020,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     
     b.  Many ECMA-2015, ECMA-2016, *etc.* features come built into TypeScript, giving us access to them without having to deal with Babel or other transpilers.
     
-    c.  Angular2 was designed with the use of TypeScript in mind, and although everything can be done with JavaScript, it is much easier to find documentation, examples, *etc.*, that employ TypeScript.
+    c.  Ng4 was designed with the use of TypeScript in mind, and although everything *can* be done with JavaScript, it is much easier to find documentation, examples, *etc.*, that employ TypeScript.
 
 7.  There is no need to install TypeScript onto one's machine, as the project setup will take care of that through the npm modules.  However, if one wishes to install TypeScript, enter the following command to install the TypeScript cli:
     ```
@@ -2229,36 +2237,6 @@ Be sure to include information regarding the relative path issue
 ### Angular Components
 
 
-#### Starting the Application
-
-1.  If we take a look at the *index.html* file, we see it is a skeleton html file with a single entry tag in the body. The starting up of the app is done in the background by files generated by webpack.
-
-2.	A file of primary importance is the *bootstrap.ts* file, which runs the *bootstrapModule()* method. If one follows it, the argument "AppModule" comes from *app/index.ts*, which exports from './app.module'.
-
-3.	The following is the *app.module.ts* file included with the cli setup:
-
-		import { BrowserModule } from '@angular/platform-browser';
-		import { NgModule } from '@angular/core';
-		import { FormsModule } from '@angular/forms';
-		import { HttpModule } from '@angular/http';
-
-		import { AppComponent } from './app.component';
-
-		@NgModule({
-  			declarations: [
-    			AppComponent
-  			],
-  			imports: [
-    			BrowserModule,
-    			FormsModule,
-    			HttpModule
-  			],
-  			providers: [],
-  			bootstrap: [AppComponent]
-		})
-		export class AppModule { }
-
-	The above contains the *@NgModule decorator*, which sets up the angular module.  First, it lists all the components in the "declarations" array, then it lists imported modules, which bring added functionality, and *providers*, which are application-wide services, and finaly the components to load initially.
 
 	
 
