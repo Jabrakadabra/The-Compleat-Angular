@@ -236,14 +236,211 @@
     ```
 	In the above code, the input number gets bound to the variable *#number*. The input requires an event to make anything happen, even a simple refresh. So, we add the event (in this case *keyup* to the input tag. The null value will do nothing, except force a rerendering.
 
+#### Property Binding
+
+1. For property binding to DOM properties, we simply use the properties that already are given us by the DOM, enclose them in brackets, and set them equal to some property of the component. For example:
+    ```html
+    <button [disabled]="allowNewServer">Add Server</button>
+    ```
+    If the ""allowNewServer" variable is set in the component to *truthy*, then the button will be disabled; if *falsey*, then it will be enabled.
+    
+    **Note**: The variable could also be referring to a method of the component object, in which case it would need "()" to cause it to execute and return a truthy/falsey value.
+    
+2. Sometimes, we can get the same result with either property binding or string interpolation. For example, if we have a method in our component "generateText()", we could include the text it generates as follows, using string interpolation:
+    ```html
+    <p>{{generateText()}}</p>
+    ```
+    In addition, we could bind the *innerText* property of the \<p>\</p> tag as follows:
+    ```html
+    <p [innerText]="generateText()"></p>
+    ```
+3. **Important Syntax Note**: In the property binding discussion, we assign a value to a property as follows:
+    ```html
+    <button [disabled]="allowNewServer()">
+    ```
+    Note that the quotation marks obviously do not indicate a string; rather, they indicate a statement that must be evaluated. For example, if we had:
+    ```html
+    <p [innerText]="2 + 2"></p>
+    ```
+    this would show the text "4". The quotation marks work just like the double braces (and their scope is the component, not the global scope). In addition, **double braces will not work** in this context; for example, the following would not work:
+    ```html
+    <p [innerText]={{generateText()}}></p>
+    ```
+4. 
+::: danger
+2. For directive and component properties, we can add custom bindings with the *@Input()* decorator, which is placed in front of the name of the property you want to make bindable:
+
+		@Input() propName: string;
+		
+3.	Remember that the following must occur:
+
+	a.	In the component where we are binding, we must import *Input* from *@angular/core*,
+	
+	b.	In the export class section of the component, we must include the @Input statement, as follows:
+	
+			export class PropertyBindingComponent {
+				@Input() result: number = 0;
+			}
+	c.	In the *app.module()* component, we must import the component, and must include it in our declarations.
+
+**Example**
+
+1.	We start with the following:
+	
+		<input type="text" value={{name}} class="{{'red'}}"/> 
+		
+	This is an example of *string interpolation*.  The value attribute belongs to the standard HTML \<input> element tag, and it is assigned a value obtained by evaluating the variable enclosed in {{}}. Compare that to:
+	
+		<input type="text" [value]="name" class="{{'red'}}"/>
+		
+	This is an example of *property binding*. The *[value]* is not the \<input> tag's value, it is an Angular property assigned to all input tags. For this Angular property, there is no use of {{}}, but whatever is in quotations is evaluated.  Thus:
+	
+		<input type='text' [value]="name" />  //value is the value assigned to name
+		
+		<input type='text' [value]="4 + 4" /> //value is 8.
+		
+		<input type='text' [value]="name ? name : 'Bazoom'" />  //value is name, if there is one, or "Bazoom"
+		
+	 
+	
+2.	Similarly, we can bind to a property not of an HTML element, but of an Angular directive.  Compare the following with th previous code samples:
+
+		<input type='text' [value]='name' [ngClass]="'red'"/>
+		
+	This works in a similar manner, except that ngClass is a directive. One can differentiate between a Directive and an Element by the 'ng' prefix.
+
+:::
+
+#### Event Binding
+
+1. Event binding is generally reflected by parentheses, showing that something is flowing out of our element. Typically, the event will call a method of our component class to do something upon the occurence of the event.
+
+    For example, a button may have the following:
+    ```html
+    <button (click)="myClickHandler"></button>
+    ```
+    We simply place the name of the event in parens (the above could have been "mouseover", "dblclick", etc.), followed by an expression to evaluate within quotation marks, as with the property binding.
+
+2. To see the list of events available for an element, we can *console.log* the element, or google "[element name] events".
+
+3. Of course, we will often wish to pass some data into the method we call via a particular event. For example, when the user types in his name and clicks the "Sign in" button, we need to pass that username back to the component so that it can do the authentication.
+
+4. The easiest way to access this data is by passing in as a parameter to the event handler **$event**, a reserved keyword representing the event object. This object will contain a great deal of information, but what we will want, 99% of the time is the **target.value** property.
 
 
-#### iii. Property Binding
+::: danger
+For directive and component properties, we can add custom binding with the *@Output()* decorator, which is placed in front of the name of the property to which we wish to bind:
 
-#### iv. Event Binding
+		@Input() eventName = new EventEmitter();
 
-#### v. Two-Way Data Binding
+2.	The following is an example of an event-binding for a native DOM event (such as a mouse click or mouseover):
 
+	a.	In the component, we write a method to handle the mouse-click, our event.  Notice also the designation of the event in parens, along with the binding to the onClicked() method:
+	
+		import { Component } from '@angular/core';
+
+		@Component({
+			selector: 'fa-event-binding',
+			template: `
+				<button (click)="onClicked()">Click me!</button>
+			`,
+			styles: []
+		})
+		export class EventBindingComponent {
+			onClicked() {
+				alert('It worked!');
+			}
+		}
+
+	b.	In the app.module.ts file, we have to import the EventBindingComponent, and then include it in the declarations for the @ngModule decorator.
+	
+
+3.	**Custom Event Bindings**: We can also set up events that will allow communication between components.  The following is a simple example:
+
+	a.  First, we set up a component, we will call *event.component.ts*, with a buttong that assigns the event "onClicked" to the click on the button.
+	
+		import { Component } from '@angular/core';
+
+		@Component({
+			selector: 'fa-event-binding',
+			template: `
+				<button (click)="onClicked()">Click me!</button>
+			`,
+			styles: []
+		})
+		export class EventBindingComponent {
+			onClicked() {
+				alert("Bazoom!");
+			}
+		}
+		
+	b.	The above is just what we had for the DOM click event.  However, we can create a new **EventEmitter** by importing the EventEmitter property from *@angular/core*, and creating a new emitter, as follows:
+	
+		import { Component, EventEmitter, Output } from '@angular/core';
+
+		@Component({
+			selector: 'fa-event-binding',
+			template: `
+				<button (click)="onClicked()">Click me!</button>
+			`,
+			styles: []
+		})
+		export class EventBindingComponent {
+			@Output() clicked = new EventEmitter<string>();
+
+			onClicked() {
+				this.clicked.emit('It works!');
+			}
+		}
+	
+	The Output property allows the emit() to be heard outside its home component.  So, by clicking on the button, we call the *onClicked()* method, which calls the new *clicked()* method, which emits the string "It works!");
+	
+	c.	In another component, we insert the "clicked" event (our custom event), as follows:
+	
+		<app-event-binding (clicked)="clackered($event)"></app-event-binding>
+		
+	So, when the *clicked* event emits, it will trigger the *clackered* method.  The parameter is the Angular2 designation of the content emitted with the event.
+	
+	**Note:** One can assign a name for use outside the home component for the event, by the following context:
+	
+			@Output('outsideName') insideName = new EventEmitter();
+
+	This will make it so listeners in other components will respond only to the 'outsideName' event.
+
+4.	An alternative to using the @Input and/or @Output decorators is to have an *input* and/or *output* property in the @Component decorator.   
+:::
+
+#### Two-Way Data Binding
+1. **IMPORTANT NOTE**: In order to make use of 2-way data binding, one must import the FormsModule property from the *@angular/forms* module into the appModule, and include it into the *imports* property of the *@NgModule* decorator, as follows:
+
+		import { NgModule } from '@angular/core';
+		import { BrowserModule  } from '@angular/platform-browser';
+		import { FormsModule } from '@angular/forms';
+ 
+		import { AppComponent }   from './app.component';
+ 
+		@NgModule({
+    		declarations: [AppComponent],
+    		imports: [BrowserModule, FormsModule],
+    		bootstrap: [AppComponent]
+		})
+		export class AppModule {}
+
+2. Once that is done, we can combine event-binding and property-binding in the following manner. Examine the example:
+    ```html
+    <input 
+        type="text"
+        class="form-control"
+        [(ngModel)]="serverName"
+    />
+    <p>
+        {{serverName}}
+    </p>
+    ```
+    In the above example, placing the **ngModel** directive within the brackets and parens creates a **two-way binding** of the variable "serverName". So, when the input text is changed, the variable "serverName" is updated immediately and then the updated value is sent out to any place it is referred to, as in the string interpolation in the \<p> tag.
+    
+    **Note**: If, somewhere else, the value of serverName was modified, the value shown in the input box would itself get updated; *i.e.*, the change in the input field flows *from* the input box and *to* the input box.
+    
 ## III. Directives
 
 ### B. Built-In Angular Directives
@@ -2306,161 +2503,8 @@ Be sure to include information regarding the relative path issue
 ### Angular Components
 
 
-
-	
-
-	
-
-
-### Databinding
-
-
-#### Property Binding:
-
-1.	For property binding to DOM properties, we simply use the properties that already are given us by the DOM.
-
-2.	For directive and component properties, we can add custom bindings with the *@Input()* decorator, which is placed in front of the name of the property you want to make bindable:
-
-		@Input() propName: string;
-		
-3.	Remember that the following must occur:
-
-	a.	In the component where we are binding, we must import *Input* from *@angular/core*,
-	
-	b.	In the export class section of the component, we must include the @Input statement, as follows:
-	
-			export class PropertyBindingComponent {
-				@Input() result: number = 0;
-			}
-	c.	In the *app.module()* component, we must import the component, and must include it in our declarations.
-
-**Example**
-
-1.	We start with the following:
-	
-		<input type="text" value={{name}} class="{{'red'}}"/> 
-		
-	This is an example of *string interpolation*.  The value attribute belongs to the standard HTML \<input> element tag, and it is assigned a value obtained by evaluating the variable enclosed in {{}}. Compare that to:
-	
-		<input type="text" [value]="name" class="{{'red'}}"/>
-		
-	This is an example of *property binding*. The *[value]* is not the \<input> tag's value, it is an Angular property assigned to all input tags. For this Angular property, there is no use of {{}}, but whatever is in quotations is evaluated.  Thus:
-	
-		<input type='text' [value]="name" />  //value is the value assigned to name
-		
-		<input type='text' [value]="4 + 4" /> //value is 8.
-		
-		<input type='text' [value]="name ? name : 'Bazoom'" />  //value is name, if there is one, or "Bazoom"
-		
-	 
-	
-2.	Similarly, we can bind to a property not of an HTML element, but of an Angular directive.  Compare the following with th previous code samples:
-
-		<input type='text' [value]='name' [ngClass]="'red'"/>
-		
-	This works in a similar manner, except that ngClass is a directive. One can differentiate between a Directive and an Element by the 'ng' prefix.
-
-
-#### Event Binding
-
-1.	Event binding is generally reflected by parentheses, showing that something is flowing out of our element. Typically, the event will call a method of our class to do something upon the occurence of the event.  For directive and component properties, we can add custom binding with the *@Output()* decorator, which is placed in front of the name of the property to which we wish to bind:
-
-		@Input() eventName = new EventEmitter();
-
-2.	The following is an example of an event-binding for a native DOM event (such as a mouse click or mouseover):
-
-	a.	In the component, we write a method to handle the mouse-click, our event.  Notice also the designation of the event in parens, along with the binding to the onClicked() method:
-	
-		import { Component } from '@angular/core';
-
-		@Component({
-			selector: 'fa-event-binding',
-			template: `
-				<button (click)="onClicked()">Click me!</button>
-			`,
-			styles: []
-		})
-		export class EventBindingComponent {
-			onClicked() {
-				alert('It worked!');
-			}
-		}
-
-	b.	In the app.module.ts file, we have to import the EventBindingComponent, and then include it in the declarations for the @ngModule decorator.
-	
-
-3.	**Custom Event Bindings**: We can also set up events that will allow communication between components.  The following is a simple example:
-
-	a.  First, we set up a component, we will call *event.component.ts*, with a buttong that assigns the event "onClicked" to the click on the button.
-	
-		import { Component } from '@angular/core';
-
-		@Component({
-			selector: 'fa-event-binding',
-			template: `
-				<button (click)="onClicked()">Click me!</button>
-			`,
-			styles: []
-		})
-		export class EventBindingComponent {
-			onClicked() {
-				alert("Bazoom!");
-			}
-		}
-		
-	b.	The above is just what we had for the DOM click event.  However, we can create a new **EventEmitter** by importing the EventEmitter property from *@angular/core*, and creating a new emitter, as follows:
-	
-		import { Component, EventEmitter, Output } from '@angular/core';
-
-		@Component({
-			selector: 'fa-event-binding',
-			template: `
-				<button (click)="onClicked()">Click me!</button>
-			`,
-			styles: []
-		})
-		export class EventBindingComponent {
-			@Output() clicked = new EventEmitter<string>();
-
-			onClicked() {
-				this.clicked.emit('It works!');
-			}
-		}
-	
-	The Output property allows the emit() to be heard outside its home component.  So, by clicking on the button, we call the *onClicked()* method, which calls the new *clicked()* method, which emits the string "It works!");
-	
-	c.	In another component, we insert the "clicked" event (our custom event), as follows:
-	
-		<app-event-binding (clicked)="clackered($event)"></app-event-binding>
-		
-	So, when the *clicked* event emits, it will trigger the *clackered* method.  The parameter is the Angular2 designation of the content emitted with the event.
-	
-	**Note:** One can assign a name for use outside the home component for the event, by the following context:
-	
-			@Output('outsideName') insideName = new EventEmitter();
-
-	This will make it so listeners in other components will respond only to the 'outsideName' event.
-
-4.	An alternative to using the @Input and/or @Output decorators is to have an *input* and/or *output* property in the @Component decorator.   
-
-#### Two-Way Data Binding
-1.	**IMPORTANT NOTE**: In order to make use of 2-way data binding, one must import the FormsModule property from the *@angular/forms* module into the appModule, and include it into the *imports* property of the *@NgModule* decorator, as follows:
-
-		import { NgModule } from '@angular/core';
-		import { BrowserModule  } from '@angular/platform-browser';
-		import { FormsModule } from '@angular/forms';
- 
-		import { AppComponent }   from './app.component';
- 
-		@NgModule({
-    		declarations: [AppComponent],
-    		imports: [BrowserModule, FormsModule],
-    		bootstrap: [AppComponent]
-		})
-		export class AppModule {}
-
-
 ### Lifecycle Hooks
+
 
 1.	Lifecyle events are events that are fired throughout the lifecycle of the component.  They include:
 
