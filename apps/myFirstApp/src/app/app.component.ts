@@ -16,7 +16,7 @@ export class AppComponent {
 
 	name = 'Jordan';
 	serverName = '';
-	serverCreationStatus = 'No server was created.'
+	serverCreationStatus = 'no server'
 
 	onCreateServer() {
 		this.serverCreationStatus = "Server was created."

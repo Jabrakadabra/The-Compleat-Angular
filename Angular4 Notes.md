@@ -442,8 +442,84 @@ For directive and component properties, we can add custom binding with the *@Out
     **Note**: If, somewhere else, the value of serverName was modified, the value shown in the input box would itself get updated; *i.e.*, the change in the input field flows *from* the input box and *to* the input box.
     
 ## III. Directives
+### Introduction
+
+1. Directives are instructions in the HTML code that tell Ng4 how to alter or manipulate the DOM at the point where the directive is encountered. It is imbedded into the HTML document in a tag. **Note that a component is one type of directive, *i.e.*, one with a template attached.**
+
+2. Do not confuse directives with Angular properties. Both can have the [ ] syntax.  For example, [hidden] is an Angular property of the element, not a directive through which the element is addressed.
+
+
+3. **NOTE**: The [ ] syntax is only expressing data-binding, it is **not** indicating a directive!
+
+4. An **attribute directive** is a directive that is placed into an HTML tag as if it were an attribute of the tag.  See the *ngClass* example. Note that the bracket syntax only applies where input is necessary for the directive to work. Many directives just work, without evaluating input, and are notated without brackets:
+    ```html
+    <section ngControl>
+        . . .
+    </section
+    ```
+
+5.  A **structural directive** is one that does not necessarily change the element to which it is attached, but affects the structure of the DOM. It has a syntax of:
+    ```
+    *ng[directive name]
+    ```
+    These include *\*ngFor*, which allows looping to create a list, and *\*ngIf*, which attaches an element to the DOM upon a condition. 
+
+6. We will begin by examining several *built-in* directives that come packaged with Ng4 that are particularly useful. In addition, we will examine in the following section how to create our own directives.
+
 
 ### B. Built-In Angular Directives
+
+1. Ng4 ships with many fewer built-in directives than Angular Classic. This is because the structure of Ng4 made many of these directives unnecessary.
+
+#### *ngIf
+1. This structural directive places a condition on the element.  If the condition evaluates to *truthy*, then the div (and its descendants) will be shown. If the condition evaluates to falsey, then it is not shown. **It is not merely invisible, but is not part of the DOM unless the condition evaluates to *truthy*.** In the following example, the second div will exist in the DOM only when the user types in a number greater than 10:
+    ```html
+    <section class='directive'>
+        <h2>*ngIf</h2>
+        <div>
+            Enter a number higher than 10.
+            <br />
+            <input type="text" #number (keyup)="0" />
+        </div>
+        <div *ngIf="number.value > 10">
+            Number is greater!
+        </div>
+    </section>
+    ```
+2. **Adding an Else Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. Alternatively, we can  s The following is an alternative to that approach:
+
+    a. place the \*ngIf directive on the first component, with a semi-colon at the end of the condition, followed by the keyword **else** and the name of the alternative component.
+    
+    b. create the alternative component using the **\<ng-template>** directive, and assigning a name to the template snippet using the hash mark (**#**). For example:
+    ```html
+    <p *ngIf="shakespeare; else noShakespeare">Now is the winter . ..</p>
+    <ng-template #noShakespeare>
+        <p>A lover of Bach in Nantucket</p>
+    </ng-template>
+    ```
+    Note the placement of the quotation marks around the entire condition and else condition.
+
+
+#### ngStyle
+
+1. The **ngStyle** directive allows changing a discrete number of style properties without applying an entire class. For example:
+    ```html
+    <div [ngStyle]="{'background-color': getColor()}"></div>
+    ```
+    **Note**: the css properties containing hyphens must either become sad-camel-cased, or used within quotations (as in the above). For example, background-color becomes backgroundColor.
+    
+    **Note**: between the outer, double quotes, we are executing Typescript code, so we can run methods from the component instance, such as *getColor( )*.
+    
+    **Note**: the brackets are not part of the directive name, they are only binding the directive to the component.
+
+2. For single style properties, we can use the following syntax:
+    ```html
+    <!-- shortcut syntax for one property -->
+    <div [style.color]="'navy'">Hello!</div>
+    ```
+    Notice that the attribute, 'navy', is in quotes within the outer quotes.
+
+
 
 #### ngClass
 
@@ -457,18 +533,6 @@ For directive and component properties, we can add custom binding with the *@Out
     ```
 Note that directives and properties use brackets [] and affect the tag. Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
 
-#####ngStyle
-
-The ngStyle directive allows changing a discrete number of style properties without applying an entire class. For example:
-
-<div [ngStyle]="{'background-color': 'red', border: 'navy solid 4px'}"></div>
-Note that css properties containing hyphens must either become sad-camel-cased, or used within quotations (as in the above). For example, background-color becomes backgroundColor.
-
-For single style properties, we can use the following syntax:
-
-//shortcut syntax for one property
-<div [style.color]="'navy'">Hello!</div>
-Notice that the attribute, 'navy', is in quotes within the outer quotes.
 
 #####Attribute Binding
 
@@ -2576,29 +2640,6 @@ Be sure to include information regarding the relative path issue
 		
 ## Directives
 
-1.	Angular2 ships with many fewer built-in directives than Angular. This is because the structure of Angular2 makes a large number of directives unnecessary.
- 
-2.	Directives are instructions in the HTML code that instructs Angular2 how to alter or manipulate the DOM at the point where the directive is encountered. It is imbedded into the HTML document in a tag.
-
-3.	Do not confuse directives with Angular properties. Both can have the [] syntax.  For example, [hidden] is an Angular property of the element, not a directive through which the element is addressed.
-
-4.	**NOTE**: The [] syntax is only expressing data-binding, it is **not** indicating a directive!
-
-5.	An **attribute directive** is a directive that is placed into an HTML tag as if it were an attribute of the tag.  See the *ngClass* example. Note that the bracket syntax only applies where input is necessary for the directive to work. Many directives just work, without evaluating input, and are notated without brackets:
-
-		<section ngControl>
-		. . .
-		</section
-
-
-6.	A **structural directive** is one that not necessarily changes the element to which they are attached, but rather the structure of the document. It has a syntax of:
-
-		*ngDirectivename
-		
-	These include the *ngFor*, which allows looping to create a list, and the *ngIf*, and *ngSwitch* which attaches an element to the DOM upon a condition. 
-
-7.	In addition to the Angular built-in directives, we can build our own directives. 
-
 
 
 
@@ -2616,19 +2657,7 @@ Be sure to include information regarding the relative path issue
 
 3.	Note that directives and properties use brackets [] and affect the tag.  Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
 
-#####ngStyle
-1.	The **ngStyle** directive allows changing a discrete number of style properties without applying an entire class. For example:
 
-		<div [ngStyle]="{'background-color': 'red', border: 'navy solid 4px'}"></div>
-
-	Note that css properties containing hyphens must either become sad-camel-cased, or used within quotations (as in the above).  For example, *background-color* becomes *backgroundColor*.
-
-	For single style properties, we can use the following syntax:
-	
-		//shortcut syntax for one property
-		<div [style.color]="'navy'">Hello!</div>
-		
-	Notice that the attribute, 'navy', is in quotes within the outer quotes.
 
 #####Attribute Binding
 1.	The following are examples of binding to various attributes that are present on the HTML element:
@@ -2650,22 +2679,6 @@ Be sure to include information regarding the relative path issue
 
 
 
-
-
-
-1.	**\*ngIf**: This structural directive places a condition on the element.  If the condition evaluates to *true*, then the div (and its descendants) will be shown. If the condition evaluates to false, then it is not shown.  It is not merely invisible, it is not part of the DOM unless the condition evaluates to *true*. An example, which shows the second div only when the user types in a number greater than 10:
-
-		<section class='directive'>
-            <h2>*ngIf</h2>
-            <div>
-                Enter a number higher than 10.
-                <br>
-                <input type="text" #number (keyup)="0">
-            </div>
-            <div *ngIf="number.value > 10">
-                Number is greater!
-            </div>
-        </section>
 
 
 
