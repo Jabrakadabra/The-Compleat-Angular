@@ -14,11 +14,17 @@ export class AppComponent {
 		return false;
 	}
 
-	name = 'Jordan';
+	name = 'Jacy';
 	serverName = '';
 	serverCreationStatus = 'no server'
+	class1 = 'online';
+	class2 = 'redline';
+
+	servers = new Set(['Server1', 'Server2'])
 
 	onCreateServer() {
+		let len = this.servers.size;
+		this.servers.add(`Servers${len + 1}`);
 		this.serverCreationStatus = "Server was created."
 	}
 

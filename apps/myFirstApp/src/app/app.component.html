@@ -13,10 +13,15 @@
 				[(ngModel)]="serverName"
 			/>
 			<button (dblclick)="onCreateServer()" [disabled]="allowNewServer()" class="btn btn-primary">Add Server</button>
+			<ul>
+				<li *ngFor="let item of servers ngForOf as bozo">
+					{{item}} || {{bozo}}
+				</li>
+			</ul>
 			<app-server></app-server>
 			<app-server></app-server>
 
-			<p [ngStyle]="{'background-color': 'green'}">
+			<p [ngClass]="name === 'Jay' ? class1 : class2" [ngStyle]="{'background-color': 'green'}">
 				{{serverCreationStatus}}
 			</p>
 		</div>

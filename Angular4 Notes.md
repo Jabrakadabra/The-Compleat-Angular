@@ -486,7 +486,7 @@ For directive and component properties, we can add custom binding with the *@Out
         </div>
     </section>
     ```
-2. **Adding an Else Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. Alternatively, we can  s The following is an alternative to that approach:
+2. **Adding an *else* Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. Alternatively, we can  s The following is an alternative to that approach:
 
     a. place the \*ngIf directive on the first component, with a semi-colon at the end of the condition, followed by the keyword **else** and the name of the alternative component.
     
@@ -506,11 +506,11 @@ For directive and component properties, we can add custom binding with the *@Out
     ```html
     <div [ngStyle]="{'background-color': getColor()}"></div>
     ```
-    **Note**: the css properties containing hyphens must either become sad-camel-cased, or used within quotations (as in the above). For example, background-color becomes backgroundColor.
+    **Note**: The css properties containing hyphens must either become sad-camel-cased, or used within quotations (as in the above). For example, background-color becomes backgroundColor.
     
-    **Note**: between the outer, double quotes, we are executing Typescript code, so we can run methods from the component instance, such as *getColor( )*.
+    **Note**: Between the outer, double quotes, we are executing Typescript code, so we can run methods from the component instance, such as *getColor( )*.
     
-    **Note**: the brackets are not part of the directive name, they are only binding the directive to the component.
+    **Note**: The brackets are not part of the directive name, they are only binding the directive to the component.
 
 2. For single style properties, we can use the following syntax:
     ```html
@@ -529,9 +529,51 @@ For directive and component properties, we can add custom binding with the *@Out
     ```html
     <div [ngClass]="{border: true, background: true}"></div>
 
-    <div [class.border]="true"></div>
+    <div [class.border]="2 + 2 === 4"></div>
     ```
-Note that directives and properties use brackets [] and affect the tag. Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
+    Note that directives and properties use brackets [ ] and affect the tag. Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
+
+3. In addition, there are other ways of adding classes besides the objece. Examine the following:
+    ```html
+    <div [ngClass]="[classname]"></div>
+    <div [ngClass]="[class1, class2]"></div>
+    <div [ngClass]="[conditional] ? 'class1' : 'class2'"></div>
+    
+    ```
+
+#### *ngFor
+1. This structural directive allows us to output something into our document multiple times, such as a list. The syntax is as follows:
+    ```html
+    <section class='directive'>
+        <h2>*ngFor</h2>
+            <ul>
+                <li *ngFor="let item of list ind as index">
+                <!-- alt: "let item of list; let ind = index-->
+                
+                    {{item}} {{ind}}
+                </li>
+            </ul>
+    </section>
+    ```
+    In the above, "item" is a variable name assigned to the list items (and included in the interpolation), "of" is a keyword designating the looping through the list, and "list" is a variable name of an iterable list of items, such as an array or set. For example, list may be defined in the class definition. "Index" is a value provided by Angular, but must be aliased, as above.
+
+2. In addition to index, the folllowing other properties are available:
+
+
+    a. $implicit: the value of the item (not sure what it is good for),
+    
+    b. ngForOf: the iterable list
+
+    b. first: boolean (true for the first item in the list),
+    
+    c. last: boolean (true for the final item in the list)
+    
+    d. even: boolean (true for the even-numbered items)
+    
+    e. odd: boolean (true for the odd-numbered items)
+    
+3. 
+
 
 
 #####Attribute Binding
@@ -563,15 +605,6 @@ disabled: This property disables the tag (such as input or button) if it evaluat
         Number is greater!
     </div>
 </section>
-*ngFor: This structural directive allows us to output something into our document multiple times, such as a list. The syntax is as follows:
-
-<section class='directive'>
-    <h2>*ngFor</h2>
-        <ul>
-            <li *ngFor="#item of list #ind = index">{{item}} {{ind}}</li>
-        </ul>
-</section>
-In the above, "#item" is a variable name assigned to the list items (and included in the interpolation), "of" is a keyword designating the looping through the list, and "list" is a variable name of an array of items. For example, list may be defined in the class definition. "index" is a variable provided by angular for array index of the item.
 
 ngSwitch: This structural directive allows us to check on the state of a particular variable, and then render accordingly. It functions much like a switch statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
 
@@ -1719,7 +1752,19 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 		}
 
 
-## IX. Unit Testing Angular2 Apps
+## IX. Debugging Angular Apps
+1. Obviously, the first step in debugging an Angular4 application is to open up the dev tools in the browser, particularly the **console**.
+
+2. In addition, when things stop working and the console message is not clear, always remember to take a look at the terminal where the server is running. Often, the message generated by Webpack is very easy to figure out.
+
+3. In development, the JavaScript files support **sourcemaps**, which allows us to map between the TypeScript code we are writing and the JavaScript code being output. To access the TypeScript, go to the **Sources** tab in the dev tools, and look for the **webpack://** entry in the *Sources* box on the left side. Once there, we can use the tools available for debugging.
+
+4. Finally, one tool for understanding the layout of the application is **Augury**, which can be added to Chrome as a browser extension.
+
+
+
+
+## X. Unit Testing Angular4 Apps
 
 ### A. Introduction
 1.  The material in this section is meant to be reviewed in conjuction with a repository located at XXXXXXXX.  This contains a general seed project with the build-out for a functioning front end, including unit testing, and is prepopulated with the components and the accompanying testing that is discussed below.
