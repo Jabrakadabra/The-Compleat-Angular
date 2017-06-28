@@ -154,11 +154,220 @@
     ```
     The normal behaviour is for Ng4 to strip out the content between the child-element tags.  This can be overridden by using the **\<ng-content>** directive, which instructs Ng4 to render the contained matter. So, if our child component is really just a container for other HTML, we can insert the contents. Note that the content is stripped out of its component, so that component's styling will no longer apply.
 
-### B. Passing Data Among Components
+### C. Passing Data Among Components
+1. While it is great to be able to split up our app into reusable components, it will not work if we are not able to get the components to share data. In this section, we look at ways to pass data from a parent to a child (the much easier task), and then to pass data from a child component to an ancestor, or to a sibling component.
 
-#### i. Passing Data to Descendants
+2. Compare these tasks with the concepts of *property binding* and *event binding*. Those served to connect the view with the component class. Here, we are trying to communicate between different components.
 
-#### ii. Passing Data to Ancestors or Other Components
+
+#### Passing Data to a Child Component
+
+1. When one has a child component nested into a parent component, data can be passed from the parent to the child by including the data in the child component tag as a property, with brackets, which binds the property to the expreession assigned to it. For example, in the following, the parent component has a variable that holds an array of element objects:
+    ```html
+    <!--This is the template of the parent-->
+    <div class="container">
+        <app-cockpit></app-cockpit>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+            <!--This is where it starts-->
+                <app-element *ngFor="let serverElement of serverElements"
+                    [element]="serverElement"></app-element>
+            </div>
+        </div>
+    </div>
+    ```
+    The above example is obscured a bit by the listing functionality. Note that for each array item as we iterate, we assign to **element** the item from the serverElements array.
+
+2. Next, we stop by the child component, the one with the selector \<app-element>. This component will have a variable *element*, the one that was bound to *serverElement* throught its tag. However, **in order to make that variable available to be bound, we must subject it to the @Input decorator.**  By default, all properties of a component are accessible only inside the component. In order to do this, we must import the **@Input** decorator from *@angular/core*. Our component may look as follows:
+    ```javascript
+    import { Component, Input } from '@angular/core';
+
+    @Component({
+        selector: 'app-element',
+        templateUrl: './element.component.html',
+        styleUrls: ['./element.component.css']
+    })
+
+    export class ElementComponent implements OnInit {
+        @Input() element: {type: string, name: string, content: string};
+    }
+    ```
+    An alternative to using the @Input decorator is to include the bound variables in an array for the @Component **input** property, as follows:
+    ```javascript
+    import { Component, OnInit, Input } from '@angular/core';
+
+    @Component({
+        selector: 'app-element',
+        templateUrl: './element.component.html',
+        styleUrls: ['./element.component.css'],
+        inputs: ['element']
+    })
+
+    export class ElementComponent implements OnInit {
+        element: {type: string, name: string, content: string};
+    }
+    ```
+3. The next step is to use the *element* property in the html of the component:
+    ```html
+    <div *ngIf="['server', 'blueprint'].includes(element.type)"
+        class="panel panel-default">
+        <div class="panel-heading">{{ element.name }}</div>
+        <div class="panel-body">
+            <p>
+                <strong 
+                    *ngIf="element.type === 'server'" 
+                    style="color: red">{{ element.content }}
+                </strong>
+                <em *ngIf="element.type === 'blueprint'">
+                    {{ element.content }}
+                </em>
+            </p>
+        </div>
+    </div>
+    ```
+ 
+ 4. An **alias** can be used in the child component to bind as one name in the parent, but using another name in the child component.  This takes the form in the *inputs* value as **['insideValue:outsideValue']**. Extending the above example:
+    ```javascript
+    import { Component, OnInit, Input } from '@angular/core';
+
+    @Component({
+        selector: 'app-element',
+        templateUrl: './element.component.html',
+        styleUrls: ['./element.component.css'],
+        inputs: ['element:testName']
+    })
+
+    export class ElementComponent implements OnInit {
+        element: {type: string, name: string, content: string};
+    }
+    ```
+    The variable *testName* would be used in the parent element to assign the parent's values to the variable, but the name *element* would be used in the child component, including its html template.
+    
+5. When using the *@Input* decorator, if we wish to alias the variable, we place the "parent-name" in parens, as a parameter to the decorator, as follows:
+    ```javascript
+    import { Component, OnInit, Input } from '@angular/core';
+
+    @Component({
+        selector: 'app-element',
+        templateUrl: './element.component.html',
+        styleUrls: ['./element.component.css'],
+    })
+
+    export class ElementComponent implements OnInit {
+        @Input ('z') element: {type: string, name: string, content: string}
+    }
+    ```
+
+#### Passing Data to a Parent Component
+
+1. Just as with React, one cannot really pass data along from a child to a parent element.  The problem is that the parent contains the reference to the child in the form of an HTML tag, through which the data can be passed; however, the child has no reference back to the parent.  Thus, **data is not really passed up the DOM in the same way that it is passed down, but is transmitted, using event emitters.**
+
+2. We start with the following situation, which is in the *02SampleApp* in the directory.  In that app, we have a parent level component, which maintains a property that is an array, called *serverElements*. The template of this component contains a child component, known as *cockpit*.  In the child component, we have a form with two input text fields, and an input button. The parent component has methods to add new items to the *serverElements* array, but how do we pass these items up from the child component to the parent component?
+
+3. We will solve the above problem with the following steps:
+
+    a. first, fill in the text fields on the child component, then click the submit button.
+    
+    b. The submit button will have an event listener waiting for the click. Upon detecting the click, a method of the child component will be executed. This method will emit an event containing the form info.
+    
+    c. The instance of the child component that is in the parent template will contain an event listener waiting for our custom event. Upon detecting the event, it will execute a method contained in the parent component, passing in the data as a parameter.
+
+4. Below, we go through the above steps in greater detail, pointing out syntax considerations.
+
+    a. the first step is already familiar from our discussion on event binding. Note that the code below does not use any ngForms functionality:
+    ```html
+    <!--child.component.html-->
+    <div>
+        <label>Field1</label>
+        <input type="text" [(ngModel)]="field1Info">
+        <label>Field2</label>
+        <input type="text" [(ngModel)]="field2Info">
+        <br>
+        <button (click)="onSubmitInfo()">Submit</button>
+    </div>
+    ```
+    b. Next, we go to the child component class definition. From the following code, note the steps we must take:
+
+    i. import the **Output decorator** from @angular/core;
+    
+    ii. import the **EventEmitter** component from @angular/core;
+    
+    ii. apply the **@Output() decorator to each instance of EventEmitter we create.
+    
+    iii. in our executing method, fire the EventEmiiter with the method **emit()**, which takes as a parameter the data to accompany the broadcast.
+    ```javascript
+    //child.component.ts
+    import { Component, EventEmitter, Output } from '@angular/core';
+
+    @Component({
+        selector: 'app-child',
+        templateUrl: './child.component.html',
+        styleUrls: ['./child.component.css']
+    })
+
+    export class ChildComponent {
+
+        @Output() infoSubmitted = new EventEmitter<{
+            firstInfo: string, 
+            secondInfo: string
+        }>();
+
+	field1Info = '';
+	field2Info = '';
+
+	onSubmitInfo() {
+            this.infoSubmitted.emit({
+                newInfo1: this.field1Info,
+                newInfo2: this.field2Info
+            });
+        }
+    }
+    ```
+    Don't get spooked by the  \<  > following the Event Emitter - it is just typing.  Also, **don't forget to include the ( ) necessary to actually create the EventEmitter object.**
+
+    c. In the template of the parent component, we will have one or more instances of our child component, and inside them, we should have as an attribut an event listener.
+    ```html
+    <!--parent.component.html-->
+    <div>
+        <app-child (infoSubmitted)="onNewInfo($event)">
+        </app-child>
+        <hr>
+        <!--the portion below is displaying an array of submitted items-->
+        <div class="row">
+		<div class="col-xs-12">
+			<app-element *ngFor="let serverElement of serverElements"
+			[srvElement]="serverElement"></app-element>
+		</div>
+        </div>
+    </div>
+    ```
+    **Important Syntax**: The parameter of the method called by the event listener must be named **$event**. This is a hard-coded Angular4 thing.
+
+    d. Finally, in our parent component class definition, we can work with the data received. In the following, we add it onto our array of objects.
+    ```javascript
+    // parent.compoennt.ts
+    import { Component } from '@angular/core';
+
+    @Component({
+        selector: 'app-parent',
+        templateUrl: './parent.component.html',
+        styleUrls: ['./parent.component.css']
+    })
+    export class ParentComponent {
+        infoElements = [ ];
+
+        onNewInfo(infoObject: {info1: string, info2: string}) {
+            this.infoElements.push({
+                type: 'info',
+                name: infoObject.info1,
+                content: infoObject.info2
+            });
+        }
+    }
+    ```
+#### Sharing Data Among Non Parent-Child Components
+1. See the section on services for details on creating singleton services through which data can be shared among components.
 
 ### C. Databinding
 #### Introduction
@@ -2942,194 +3151,9 @@ Be sure to include information regarding the relative path issue
 	In the above, first note the *inputs* property of @Directive.  This does not have to be the same as the name for the selector.
 
 
-### Data-Binding
 
-	
-	
-. 
-	
-8.	The following example is from the Angular2 videos, and is an excellent illustration:
-
-		import {Component} from 'angular2/core';
-
-		@Component({
-    		selector: 'my-app',
-    		template: `
-        		<br/><br/>
-        		<input type='text' [value]='name' [ngClass]="{red:
-        		 	true}" (keyup)="addStr(inputEl.value)" #inputEl/>
-
-        		<p>{{values}}</p>
-        		<br/><br/>
-        		<input type="text" [(ngModel)]="name">
-        		<p>Your Name: {{name}}</p>
-    		`,
-		})
-
-		export class AppComponent {
-    		name = 'Max';
-    		values = '';
-
-    		addStr(value: string) {
-        	this.values += value + ' | ';
-    		}
-		}
- 
- 	In this example, both input boxes load with "Max." If one goes to the top input box and changes the entry, nothing happens in the second box because name has not been changed (but the \<p>\</p> underneath acts).  But if one changes what is in the second box, the first box updates because the change in the second box changed the value of "name."
  	
- 	
-#### Passing Data to a Child Component
 
-1.	When one has a child component nested into a parent component, data can be passed from the parent to the child by including the data in the calling child component tag as a property, with brackets.  See the following:
-
-		<section class='parent'>
-            <h2>This is the parent</h2>
-            <h4>Please enter your name</h4>
-            <input type='text' [(ngModel)]='name'/>
-            <section class='child'>
-                <my-prop-binding [myName]="'Jordan'"></my-prop-binding>
-            </section>
-        </section>
-
-2.	The next step is to include the key "inputs" in the child component, with a value of all all the data being placed into the child component.  So, the child component might look like this:
-
-		@Component({
-    		selector: 'my-prop-binding',
-    		template: `
-        		<h2>This is the Child</h2>
-        		<p>Hey, {{myName}}!</p>
-    		`,
-    		inputs: ['myName']
-		})
- 
- 3.	An **alias** can be used in the child component to bind under one name to the outside of the component, but another name inside the component.  This takes the form in the *inputs* value as **['insideValue:outsideValue']. For example, if our outer component is as follows:
- 
- 		template: `
-        	<section class='parent'>
-        	    <h2>This is the parent</h2>
-        	    <h4>Please enter your name</h4>
-        	    <input type='text' [(ngModel)]='name'/>
-        	    <p>{{name}}</p>
-        	    <section class='child'>
-        	        <my-prop-binding [chugga]="name" ></my-prop-binding>
-        	    </section>
-        	</section>
-    	`,
-    	
-   	Our child component could look like:
-   	
-   		import {Component} from 'angular2/core';
-
-		@Component({
-    		selector: 'my-prop-binding',
-    		template: `
-        		<h2>This is the Child</h2>
-        		<p>Hey, {{nomen}}, you are {{age}} years old!</p>
-
-        		<p>Say my name: {{nomen}};
-    		`,
-    		inputs: ['nomen:chugga', 'age:bazoom']
-		})
-
-
-		export class PropertyBindingComponent {
-    		nomen='';
-    		age = 20;
-		}
-
-	In this example, the inputs assigns aliases, so the child component looks to the inputs of "chugga" and "bazoom" passed in when the component was placed into the parent component, but deals with them in the child component under the names "nomen" and "age".
-
-4.	An alternate syntax is to add the "Input" decorator in the exported component.  Of course, this requires import from the angular2/core, so it would look as follows:
-
-		import {Component} from 'angular2/core';
-		import {Input} from 'angular2/core';
-
-		@Component({
-    		selector: 'my-prop-binding',
-    		template: `
-        		<h2>This is the Child</h2>
-        		<p>Hey, {{nomen}}, you are {{age}} years old!</p>
-
-        		<p>Say my name: {{nomen}};
-    		`,
-    		// inputs: ['nomen:chugga', 'age:bazoom'] No longer necessary
-		})
-
-
-		export class PropertyBindingComponent {
-    		@Input('chugga') nomen='';
-    		@Input('bazoom') age = 20;
-		}
-
-
-#### Passing Data to a Parent Component
-
-1.	Just as with React, one cannot really pass data along from a child to a parent element.  The problem is that the parent contains the reference to the child in the form of an HTML tag, through which the data can passed; however, the child has no reference back to the parent.  Thus, data is not really passed up the DOM in the same way that it is passed down, but is transmitted, using event emitters.
-
-2.	The following will discuss an example where the child component has an input field, and the parent component has a \<p>\</p> that will output the information typed into the input field in the child. So, we might start out in the parent as follows:
-    ```javascript
-    template:
-        <section class="parent">
-            <p>My Text Is: {{Text}}</p>
-				
-		
-		export class AppComponent {
-			name = '';
-			text = '';
-		}
-    ```
-	So, whatever is in the *text* variable is going to be interpolated into the paragraph.
-	
-3.	In the child component, we will need to import **EventEmitter** from the **angular2/core**.  Then we will need to add a new instance of the event emitter in our exported class, as follows:
-    ```javascript
-	export class ChildComponent {
-        textChanged = new EventEmitter<string>();
-    } 
-    ```
-	The *\<string>* portion is a type declaration.  Event emitters can pass any type.
-
-4.	In addition, we will give our input field an event and assign an event handler method to it, which we will define in the exported class.  So, in the template, we will see:
-
-		<input type='text' (keyup)="onTextChanged($event.target.value)">  //or
-		
-		<input type='text' (keyup)="onTextChanged(text.value)" #text>
-
-	Note the keyword **$event** which is the Angular for the event.  So, we can either pass in the value of the target of the event, as in the first example, or name the input with the **#text** and then refer to its value.
-	
-	Also, in order to expose the event emitter to the parent component, we need to designate it in output as follows:
-	
-		@Component({
-			. . .
-			template: `
-			
-			`,
-			outputs: ['textChanged']
-		
-		})
-		
-	The outputs key takes an array of all the properties we are exposing as outputs to the parent component.
-	
-5.	Back in the parent component, we place the event into the child component tag, as follows:
-
-		<child-component (textChanged) = "text=$event"></child-component>
-		
-	Note that in the parent, the *$event* refers to what was passed as a value. If one referred to "text =$event.target.value", there would be an error.  So, the parent is listening for something named *textChanged* to happen, then assigns a value to the variable text, which is in the class.
-	
-6.  **Event Emitters**:  The following is the basic syntax loop for event emitting.  It should coincide with the above notes, but is here in order to have it set out in one place.
-
-	a.	In the emitting component, a new EventEmitter is assigned to a variable.  Also, don't forget that we must import the EventEmitter from angular2/core.  For this example, let's name it "stinker."
-	
-	b.	In the component, there will be a method (event handler) that calls upon the event emitter.  So, there will be a reference to "this.stinker" and, as an event emitter, it will have a property "emit," which takes a single parameter, the thing to emit.  So, if it is emitting the value "smell", we would have the following in the exported class object:
-
-			onEvent(smell: string) {
-				this.stinker.emit(smell)
-			}
-
-	c.	Of course, our event emitter must be registered in the outputs key of the component object, as follows:
-	
-			outputs: ['hobbiesChanged']	
-			
-	d.	In the parent file, which is catching the event, note that the angular **$event** refers only to the value that is caught. So, in the child, the *$event* is a big object, with "target", etc., but if the emitter only emits out the event.target.value, then the *$event* on the receiving side will only be that value.
 	
 ### Services
 
