@@ -17,8 +17,17 @@
 
 5. Ng4 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
 
+### One Interesting Thing
+1. The **safe-navigation operator** (sometimes referred to as the "Elvis" operator) prevents an error from being thrown if a we try to obtain a property of a null/undefined object. It takes the form of a question mark immediately after the object name. For example:
+    ```html
+    <!-- if client is not defined when evaluated, big error -->
+    <h1>His name is {{client.name}}.</h1>
+    
+    <!-- if client is not defined when evaluated, no error -->
+    <!-- simply leaves a blank space -->
+    <h1>His name is {{client?.name}}.</h1>
+    ```
 ### Basic Structure of the Application
-
 1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application (components, services, pipes, *etc.*, whereas the *assets* folder will typically contain fonts, css styling, and images.
 
 2.  In addition to the directories described above, the *src* directory will contain the **index.html** file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (\<app-root> below), so that the entire file might look something like:
@@ -118,15 +127,108 @@
 
 3.  Each component **must have one, and only one, template**. The template can be an HTML string, or can be a template contained in an HTML file, in which case the key name will be **templateUrl**.
 
-4. Another key in the @Component decorator object is **styles**, which has a value of an array of style strings (or template literals if we want multi-ine), or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array, of strings or Urls. This is a prominent feature of Ng4: **view encapsulation**, which allows us to target styling to specific views. It does this by application of a **Shadow DOM**, running a separate DOM for each component behind the scenes. However, this is not supported by all browsers, so Ng4 emulates this by adding its own attributes to each HTML tag, as so:
+4. Another key in the @Component decorator object is **styles**, which has a value of an array of style strings (or template literals if we want multi-ine), or **styleUrls**, which contains an array of paths to style pages. In either case, the value is an array, of strings or Urls. This is a prominent feature of Ng4: **view encapsulation**, which allows us to target styling to specific views. It does this by application of a **Shadow DOM**, running a separate DOM for each component behind the scenes. However, this is not supported by all browsers, so Ng4 emulates this by adding its own attribute to each element of the component template, as so:
     ```html
-    <div>
+    <div _nghost-pax-1>
         <component _nghost-pax-1>
             <h1 _ngcontent-pax-1>Hello!</h1>
         </component>
     </div>
     ```
+    **Note**: In the *@Component* decorator, we can control the level of encapsulation of CSS styles. The **encapsulation** propeerty can take three values, as follows (requires import of *ViewEncapsulation* from *@angular/core*:
+    
+    a. **ViewEncapsulation.None**: No encapsulation, and CSS styles in this component will be applied globally,
+    
+    b. **ViewEncapsulation.Native**: Only use the ShadowDOM, without the custom attributes - will only work on conforming browsers;
+    
+    c. **ViewEncapsulation.Emulated**: This is the default. Full encapsulation via the ShadowDOM and custom attributes.
+    
+**Highly recommend keeping the default encapsulation and andding global styles through a styles.css file**.
+    
 5.  Looking at our initial example of the component, note that we are exporting a class, *AppComponent*. In each case where we insert our component, we are creating **a new instance** of this class. We can have properties and methods in our class; of course, behind the screen it is all converted to JavaScript prototypes.
+
+#### Local References on Component Elements
+1. A **local reference** can be placed on any html element in a component template, with the following syntax:
+    ```html
+    <input type="text" #inputField \>
+    ```
+    where "inputField" is the name we assign (no quotes);
+    
+    Note that this is a reference to the **element**, not to the value in the element, but to the entire element with all its properties.
+    
+2. The reference can be used anywhere in our template, **but only in the template**, not in the component class Typescript code.
+
+3. The element can have all sorts of attributes that we can access from the element as properties of the element object.  Of course, a very important one in the context of an input element is its *value*.
+
+4. So, instead of using 2-way data binding to get data back to a variable in the component class, we can, upon our click, pass in the input element as the parameter of an event handler, and then pull off the value in the component Typescrpt. Or, we could pass in the value, as follows:
+    ```html
+    <button
+        class="btn btn-primary"
+        (click)="onInput((inputField.value)"
+    >
+        Add Name
+    </button>
+    ```
+
+#### Accessing the Template Element Directly with @ViewChild
+1. In the above scenario, we are simpler than 2-way binding, but are still having to use event emitters to pass the input field into the component class. We can make this unnecessary by using the **@ViewChild** decorator.
+
+2. To access any element in the template directly from our TypeScript code, do the following:
+
+    a. add a reference to the element, as discussed in the previous section.
+    
+    b. in the *.component.ts* file, create a variable, which will take a type of **ElementRef**.
+    
+    c. import in *ViewChild* and *ElementRef* from *@angular/core*.
+    
+    d. place the *@ViewChild* decorator on the variable created in step b, and pass into the decorator the reference name of the element. 
+
+3. Through the variable, we now have access to the template element.  Of course, the variable is the *ElementRef* reference. To get direct access, we can get the **nativeElement** property of the reference. From that, we can get the value.
+
+4. Before is some sample code. Note that one input field will be using an event emitter to pass the reference, the second input field will not use an event emitter, but will be accessed throught the *@ViewChild* decorator.
+    ```html
+    <div>
+    <!--component.html-->
+        <p>Add new Servers!</p>
+            <label>Server Name</label>
+            <input type="text" #serverNameInput>
+
+            <label>Server Content</label>
+            <input type="text" #SCInput>
+            <br>
+            <button (click)="onAddServer(serverNameInput)">
+                Add Server
+            </button>
+    </div>
+    ```
+    ```javascript
+    // component.ts
+    import { Component, EventEmitter,
+        Output, ViewChild, ElementRef } from '@angular/core';
+
+    @Component({
+        selector: 'app-cockpit',
+        templateUrl: './cockpit.component.html',
+        styleUrls: ['./cockpit.component.css']
+    })
+    
+    export class CockpitComponent implements OnInit {
+        @Output('sC') serverCreated = new EventEmitter<{
+            serverName: string, 
+            serverContent: string
+        }>();
+
+        @ViewChild('SCInput') SCInput: ElementRef;
+
+        onAddServer(nameInput: HTMLInputElement) {
+            this.serverCreated.emit({
+                serverName: nameInput.value,
+                serverContent: this.SCInput.nativeElement.value
+            });
+        }
+    }
+    ```
+
 
 ### B. Nesting Components
 
@@ -380,7 +482,9 @@
     <app-child (cjb)="someParentMethod($event)"></app-child>
     ```
 #### Sharing Data Among Non Parent-Child Components
-1. See the section on services for details on creating singleton services through which data can be shared among components.
+1. It is possible to share data between sibling components, but it has to be done indirectly, by sending data up to a common ancestor, and then back down to the sibling.
+
+2. The above approach can get very unwieldy, so it is often advisable to share data through **services**. See the section on services for details on creating singleton services through which data can be shared among components.
 
 ### C. Databinding
 #### Introduction
@@ -662,7 +766,69 @@ For directive and component properties, we can add custom binding with the *@Out
     In the above example, placing the **ngModel** directive within the brackets and parens creates a **two-way binding** of the variable "serverName". So, when the input text is changed, the variable "serverName" is updated immediately and then the updated value is sent out to any place it is referred to, as in the string interpolation in the \<p> tag.
     
     **Note**: If, somewhere else, the value of serverName was modified, the value shown in the input box would itself get updated; *i.e.*, the change in the input field flows *from* the input box and *to* the input box.
+
+### Lifecycle Hooks
+
+1. Ng4 supports several **lifecycle hooks**. These are points at which we can set code to run; for example, upon the creation of a component, or upon any changes to the component. Maybe we would like, every time a certain page is rendered, to call to a weather API and get current waeather data to display on the page.
+
+2. In order to use a lifecycle hook, we must import it from *@angular/core*, then we have to add it into our component via the keyword *implements*, as follows:
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+
+    @Component({
+        selector: 'app-element',
+        templateUrl: './element.component.html',
+        styleUrls: ['./element.component.css'],
+    })
+
+    export class ElementComponent implements OnInit {
     
+        ngOnInit() {
+            . . . do stuff here
+        }
+    }
+    ```
+    Note the use of **OnInit** in the import and implement, but of **ngOnInit** as a class method.
+
+2. Lifecyle events are events that are fired throughout the lifecycle of the component. They include:
+
+#### ngOnInit
+
+1. **ngOnInit** is called on component initialization, before rendering, but **after** the first ngOnChanges call. It is only called once (upon initialization), whereas *ngOnChanges* is called on every change.
+
+2. Because it occurs after the first *ngOnChanges*, and after the constructor, so it will have all properties set up and ready before it starts to act.
+
+#### ngOnChanges
+
+1. **ngOnChanges** is called immediately upon the creation of a new component, and is called whenever an input bound values change (*i.e.*, properties with the @Input decorator).
+
+2. This is the only lifecycle hook that gets an argument, which is "changes: SimpleChanges". This is an object with *currentValue* and *previousValue* properties, as well as a boolean "firstChange". 
+	
+#### ngDoCheck
+	
+**ngDoCheck** is called during every Angular2 change dectection cycle, whether or not there has been a change. It can be used to check on things that Ng4's checking might not pick up.
+
+#### ngAfterContentInit
+
+**ngAfterContentInit** is called after content is inserted via the \<ng-content> directive.
+
+#### ngAfterContentChecked
+
+**ngAfterContentChecked** is called after every check of inserted content
+
+#### ngAfterViewInit
+
+**ngAfterViewInit** is called after component's view(s) are initialized (and child views)
+	
+#### ngAfterViewChecked
+
+**ngAfterViewChecked** is called after every check of a component's view(s) (and child views)
+	
+#### ngOnDestroy
+
+**ngOnDestroy**	is called just before the component is destroyed. This is a very important hook, allowing us to do clean-up work.
+
+
 ## III. Directives
 ### Introduction
 
@@ -782,21 +948,29 @@ For directive and component properties, we can add custom binding with the *@Out
 2. In addition to index, the folllowing other properties are available:
 
 
-    a. $implicit: the value of the item (not sure what it is good for),
+    a. **$implicit**: the value of the item (not sure what it is good for),
     
-    b. ngForOf: the iterable list
+    b. **ngForOf**: the iterable list
 
-    b. first: boolean (true for the first item in the list),
+    c. **first**: boolean (true for the first item in the list),
     
-    c. last: boolean (true for the final item in the list)
+    d. **last**: boolean (true for the final item in the list)
     
-    d. even: boolean (true for the even-numbered items)
+    e. **even**: boolean (true for the even-numbered items)
     
-    e. odd: boolean (true for the odd-numbered items)
+    f. **odd**: boolean (true for the odd-numbered items)
     
-3. 
 
+#### \<ng-content>
+1. This is a plain directive, without a template, although it looks like a component.
 
+2. This directive acts as a placemark where content should be inserted into the compent DOM.
+
+3. Any html that is placed between the tags of our component will be inserted where the \<ng-component> tag sits.
+
+4. Note that other directives can be passed into this directive; for example, we can use *\*ngIf* to show something conditionally.
+
+5. **Note**: The content is different from the view, so, for example, we have different lifecycle hooks for AfterViewInit, AfterContentInit, *etc*. Just like we have a *@ViewChild* decorator to have direct access to a child element in a template, we also have a **@ContentChild** decorator to give a component direct access to the content within an \<ng-content> tag. The type will also be *ElementRef* and we can access the *nativeElement* from it.
 
 #####Attribute Binding
 
@@ -814,19 +988,8 @@ If trueFalse is true in the above example, "Hello" will show above "Jordan". How
 disabled: This property disables the tag (such as input or button) if it evaluates to true.
 
 <input type='text' [value]='name' [disabled]="1===1"/>
-*ngIf: This structural directive places a condition on the element. If the condition evaluates to true, then the div (and its descendants) will be shown. If the condition evaluates to false, then it is not shown. It is not merely invisible, it is not part of the DOM unless the condition evaluates to true. An example, which shows the second div only when the user types in a number greater than 10:
 
-<section class='directive'>
-    <h2>*ngIf</h2>
-    <div>
-        Enter a number higher than 10.
-        <br>
-        <input type="text" #number (keyup)="0">
-    </div>
-    <div *ngIf="number.value > 10">
-        Number is greater!
-    </div>
-</section>
+
 
 ngSwitch: This structural directive allows us to check on the state of a particular variable, and then render accordingly. It functions much like a switch statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
 
@@ -853,7 +1016,7 @@ ngSwitch: This structural directive allows us to check on the state of a particu
 In the above snippet, note that [ngSwitch] designates the variable to be tested. Then we have a number of possible templates to be inserted, each with the [ngSwitchWhen] directive stating a condition (note the use of single equal signs), and ngSwitchDefault which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
 ## IV. Services
 
-## V. Routing
+## IV. Routing
 ### A. Setting Up Routes
 
 1.	One thing to keep clear about is that the routes we are dealing with in this section are internal to Angular2. As we know, we are dealing with a **single-page-application (SPA)** style of design, so that, to the browser, we are not really moving around at all, we are simply inserting pieces in and out of a single page. So, for example, if there is an angular route "/userInfo" that will display a list of information about the user, and one types into the browser "http://localhost:8000/userInfo", there will be a 404 error, because the browser is looking not within the page, but on a larger scale.
@@ -1373,7 +1536,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     d.  **Import to app.modules File**: Be sure to import the guard into the *app.module.ts* file, and to add the guard into the array of providers.
 
 
-## VI. Forms
+## V. Forms
 
 1. In our previous work on directives, we built a form by putting down a couple of labels and input components, with everything done by hand as far as validation and handling input.  This could be much improved, first by using a form element, and allowing Angular to handle the entire form object.
 
@@ -1641,6 +1804,100 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
             	'confirm': ['', Validators.required]
         	});
     	}
+
+
+
+
+## VI. Services
+
+### Services
+
+1.	**Services** are classes containing logic that we can then inject and use throughout the application.  Typically, a service will have methods that we can use in a component into which the service has been injected. It allows us to centralize logic, rather than having to duplicate it throughout the application. This makes it easy for us to change logic in one location if necessary, rather than having to hunt it down in many different places.
+
+2.	A concept closely related to services is that of **dependency injection**.
+
+3.	*Services* can be uses as a means of communicating between components, since multiple components can have access to the values contained in a single service.
+
+4.	A service can be (or not be) a **singleton**.  A singleton is a service for which there is a single instance, so if a change is made in the service in one component, such change will affect the service wherever it may be.  Or a service may be a (factory?), meaning multiple instances are created, so use of the service in one component is unrelated to the service in another component.
+
+3.	When creating a service, follow these steps:
+
+	a.	create a file to hold the service, for example, *logging.service.ts*.
+	
+	b.	write the service code, for example:
+
+			import {Injectable} from 'angular2/core';
+
+				@Injectable()
+
+				export class LoggingService {
+    				writeToLog(logmessage: string) {
+        			console.log(logmessage);
+    			}
+			}
+	
+		The above example is very simple - it merely logs a given string to the console.  Note that we import the Injectable module from angular2/core, and that we export a class with one or more methods (such as the log method in the above).
+
+	c.	In the component where the service is being used, we need to **inject** our service into the component, through the constructor method of the class, where we can bind it to a private property.  See the following example.
+	
+	d.	Don't forget to import the service class at the top of the component.
+	
+	e.	We then have to add our service in the array of **providers**, which is a new key in the @Component decorator object.  See the following example:
+	
+			import {Component} from 'angular2/core';
+			import {LoggingService} from './services/logging.service'
+
+			@Component({
+    			selector: 'component-1',
+			    template: `
+        			<input type="text" #message>
+			        <button (click)="onLog(message.value)">Send</button>
+
+			    `,
+    			providers: [LoggingService]
+			})
+
+			export class Component1Component {
+    			constructor(private _loggingService: LoggingService) {}
+    		
+    			onLog(message: string) {
+        			this._loggingService.log(message);
+    			}
+			}
+
+5.	Note, if a component has access to a service, all descendant components will have access to **that instance** of the service.  So, for example, we can go to the *bootstrap* component and, as the second argument to the bootstrap method, include an array of services to inject. Of course, we would have to import the service file.
+
+6.	Services can be injected into components, of course, but can also be injected into other services.  However, services (and other things) can only be injected in Angular2 to classes that have metadata attached to them, in other words, a decorator.  So, in *the service that is receiving the other service by injection*, we need to add the **@Injectable** decorator.
+
+7.	An important use case is to use services as a way of passing data directly among components. To do so, we can take the following steps:
+
+	a.	In the broadcasting component, we can assign to a *public* variable of our class a new EventEmitter() (remember to import it from @angular/core), for example:
+	
+		import { Injectable, EventEmitter } from '@angular/core';
+		import { LogService } from './log.service';
+
+		@Injectable()
+		export class DataService {
+			constructor(private logService: LogService) {}
+			pushData = new EventEmitter<string>();
+			private data: string[] = [];
+	
+			addData(input: string) {
+				this.logService.writeToLog(input);
+				this.data.push(input);
+			}
+
+			getData() {
+				return this.data;
+			}
+
+			pushIt(value: string) {
+				this.pushData.emit(value);
+			}
+		}  
+
+	b.	In the receiving component, we will listen for the event emitting by using the *subscribe()* method of the event emitter. 
+
 
 
 
@@ -2831,79 +3088,10 @@ Be sure to include information regarding the relative path issue
 
 	a.	
 
-### Angular Components
 
 
-### Lifecycle Hooks
 
-
-1.	Lifecyle events are events that are fired throughout the lifecycle of the component.  They include:
-
-**ngOnChanges**	called whenever an input or output binding value changes
-	
-**ngOnInit** called on component initialization, but **after** the first ngOnChanges call. It is only called once (upon initialization), where *ngOnChanges* is called on every change. Because it occurs after the first *ngOnChanges*, it will have all properties set up and ready before it starts to act.
-	
-**ngDoCheck** called during every Angular2 change dectection cycle, whether or not there has been a change.  developer's custom change detection
-	
-**ngAfterContentInit**	called after content is inserted via the \<ng-content> directive.
-
-**ngAfterContentChecked**	after every check of inserted content
-	
-**ngAfterViewInit**	after component's view(s) are initialized (and child views)
-	
-**ngAfterViewChecked**	after every check of a component's view(s) (and child views)
-	
-**ngOnDestroy**	called just before the directive is destroyed.
-
-2.	In a component, one can create a reference (a local variable inside the template) for an element within the template by using "#refName" syntax. For example:
-
-		<p #boundParagraph>{{myVar}}</p>
-		<p>{{boundParagraph.textContent}}</p>
 		
-	In order to access this in the export class section of the component definition, use the *@ViewChild* decorator, which must also be imported from *@angular/core*.
-	
-		export class LifecycleComponent implements  . . . {
-			@ViewChild('boundParagraph')
-			boundParagraph: HTMLElement;
-		}
-
-	A similar thing can be done with content (as opposed to view), using *@ContentChild* in place of *@ViewChild*.
-	
-1.	Currently, I do not fully understand what the point is of these Lifecycle Hooks, but here is an example:
-
-		import . . .
-		import {OnInit} from "angular2/core";
-		
-		@Component({
-			selector: 'my-component',
-			template: `
-				This is the template for {{name}}.
-			`,
-			styleUrls: ['src/css/mycomponent.css],
-			directives: [subComponent]
-		})
-		export class MyComponent implements OnInit {
-			name: string:
-			
-			ngOnInit(): any {
-				this.name = "Jordan";
-			}
-	
-	We are setting the name value to be a string in the MyComponent class using the Typescript typed variables.
-			
-	
-	The *this.name* had to be assigned a value to be available in the template.  
-
-### Miscellaneous
-1.	The **safe-navigation operator** (sometimes referred to as the "Elvis" operator) prevents an error from being thrown if a we try to obtain a property of a null/undefined object. It takes the form of a question mark immediately after the object name. For example:
-
-		<h1>His name is {{client.name}}.</h1>  //if client is not defined when evaluated, big error
-		
-		<h1>His name is {{client?.name}}.</h1. //if client is undefined, leaves a blank space.
-
-## Debugging an Angular2 App
-
-1.			
 		
 ## Directives
 
@@ -3168,97 +3356,6 @@ Be sure to include information regarding the relative path issue
  	
 
 	
-### Services
-
-1.	**Services** are classes containing logic that we can then inject and use throughout the application.  Typically, a service will have methods that we can use in a component into which the service has been injected. It allows us to centralize logic, rather than having to duplicate it throughout the application. This makes it easy for us to change logic in one location if necessary, rather than having to hunt it down in many different places.
-
-2.	A concept closely related to services is that of **dependency injection**.
-
-3.	*Services* can be uses as a means of communicating between components, since multiple components can have access to the values contained in a single service.
-
-4.	A service can be (or not be) a **singleton**.  A singleton is a service for which there is a single instance, so if a change is made in the service in one component, such change will affect the service wherever it may be.  Or a service may be a (factory?), meaning multiple instances are created, so use of the service in one component is unrelated to the service in another component.
-
-3.	When creating a service, follow these steps:
-
-	a.	create a file to hold the service, for example, *logging.service.ts*.
-	
-	b.	write the service code, for example:
-
-			import {Injectable} from 'angular2/core';
-
-				@Injectable()
-
-				export class LoggingService {
-    				writeToLog(logmessage: string) {
-        			console.log(logmessage);
-    			}
-			}
-	
-		The above example is very simple - it merely logs a given string to the console.  Note that we import the Injectable module from angular2/core, and that we export a class with one or more methods (such as the log method in the above).
-
-	c.	In the component where the service is being used, we need to **inject** our service into the component, through the constructor method of the class, where we can bind it to a private property.  See the following example.
-	
-	d.	Don't forget to import the service class at the top of the component.
-	
-	e.	We then have to add our service in the array of **providers**, which is a new key in the @Component decorator object.  See the following example:
-	
-			import {Component} from 'angular2/core';
-			import {LoggingService} from './services/logging.service'
-
-			@Component({
-    			selector: 'component-1',
-			    template: `
-        			<input type="text" #message>
-			        <button (click)="onLog(message.value)">Send</button>
-
-			    `,
-    			providers: [LoggingService]
-			})
-
-			export class Component1Component {
-    			constructor(private _loggingService: LoggingService) {}
-    		
-    			onLog(message: string) {
-        			this._loggingService.log(message);
-    			}
-			}
-
-5.	Note, if a component has access to a service, all descendant components will have access to **that instance** of the service.  So, for example, we can go to the *bootstrap* component and, as the second argument to the bootstrap method, include an array of services to inject. Of course, we would have to import the service file.
-
-6.	Services can be injected into components, of course, but can also be injected into other services.  However, services (and other things) can only be injected in Angular2 to classes that have metadata attached to them, in other words, a decorator.  So, in *the service that is receiving the other service by injection*, we need to add the **@Injectable** decorator.
-
-7.	An important use case is to use services as a way of passing data directly among components. To do so, we can take the following steps:
-
-	a.	In the broadcasting component, we can assign to a *public* variable of our class a new EventEmitter() (remember to import it from @angular/core), for example:
-	
-		import { Injectable, EventEmitter } from '@angular/core';
-		import { LogService } from './log.service';
-
-		@Injectable()
-		export class DataService {
-			constructor(private logService: LogService) {}
-			pushData = new EventEmitter<string>();
-			private data: string[] = [];
-	
-			addData(input: string) {
-				this.logService.writeToLog(input);
-				this.data.push(input);
-			}
-
-			getData() {
-				return this.data;
-			}
-
-			pushIt(value: string) {
-				this.pushData.emit(value);
-			}
-		}  
-
-	b.	In the receiving component, we will listen for the event emitting by using the *subscribe()* method of the event emitter. 
-
-
-
-
 
 	 
 
