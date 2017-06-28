@@ -366,6 +366,19 @@
         }
     }
     ```
+5. Just like with the *@Input( )* decorator, we can insert a parameter into the *@Output( )* decorator which will provide an alias name by which the event will be broadcast. So, if our child component creates a new EventEmitter that we assign to the variable "jordanEventEmitter", we can pass it the string "cjb" to emit, and this is what we will need to tell the listeners to listen for:
+    ```javascript
+    // child.coponent.ts
+    @Output('cjb') jordansEventEmitter = new EventEmitter<string>();
+    
+    onSomeEvent() {
+        this.jordansEventEmitter.emit('okay');
+    }
+    ```
+    ```html
+    <!-- parent.html -->
+    <app-child (cjb)="someParentMethod($event)"></app-child>
+    ```
 #### Sharing Data Among Non Parent-Child Components
 1. See the section on services for details on creating singleton services through which data can be shared among components.
 
