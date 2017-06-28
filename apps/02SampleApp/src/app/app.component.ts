@@ -20,7 +20,7 @@ export class AppComponent {
 		});
 	}
 
-	onBlueprintAdded(blueprintData: {blueprintName: string, blueprintContent: string}) {
+	onBluePrintAdded(blueprintData: {blueprintName: string, blueprintContent: string}) {
 		console.log('shazoom');
 		this.serverElements.push({
 			type: 'blueprint',
