@@ -5,7 +5,7 @@
 
 ## I. Introduction
 
-### Preliminary Notes
+### A. Preliminary Notes
 
 1.  Angular 4 (*Ng4*) is a JavaScript framework that allows us to easily create single-page applications. This outline assumes the reader already is familiar with the concept of single-page applications, but, in brief, it is an approach to web design where routing and rendering of pages is handled by the web client, rather than in the back end. This eliminates the need for AJAX requests to the back end, which greatly enhances performance. Of course, AJAX requests are made, but only when necessary to obtain new data, and they are handled asynchronously.
 
@@ -17,7 +17,7 @@
 
 5. Ng4 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
 
-### One Interesting Thing
+### B. One Interesting Thing
 1. The **safe-navigation operator** (sometimes referred to as the "Elvis" operator) prevents an error from being thrown if a we try to obtain a property of a null/undefined object. It takes the form of a question mark immediately after the object name. For example:
     ```html
     <!-- if client is not defined when evaluated, big error -->
@@ -27,7 +27,7 @@
     <!-- simply leaves a blank space -->
     <h1>His name is {{client?.name}}.</h1>
     ```
-### Basic Structure of the Application
+### C. Basic Structure of the Application
 1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application (components, services, pipes, *etc.*, whereas the *assets* folder will typically contain fonts, css styling, and images.
 
 2.  In addition to the directories described above, the *src* directory will contain the **index.html** file, which will be the single page of our single-page application. It is a very basic HTML setup file, and should contain in the body a single **component directive** (\<app-root> below), so that the entire file might look something like:
@@ -767,7 +767,7 @@ For directive and component properties, we can add custom binding with the *@Out
     
     **Note**: If, somewhere else, the value of serverName was modified, the value shown in the input box would itself get updated; *i.e.*, the change in the input field flows *from* the input box and *to* the input box.
 
-### Lifecycle Hooks
+### D. Lifecycle Hooks
 
 1. Ng4 supports several **lifecycle hooks**. These are points at which we can set code to run; for example, upon the creation of a component, or upon any changes to the component. Maybe we would like, every time a certain page is rendered, to call to a weather API and get current waeather data to display on the page.
 
@@ -1809,100 +1809,145 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 
 ## VI. Services
+### A. Introduction
+1. **Services** are classes containing logic that we can inject into our components and thereby use throughout our Ng4 application.  Typically, a service will have methods that we can use in a component into which the service has been injected. It allows us to centralize logic, rather than having to duplicate it throughout the application. This makes it easy for us to change logic in one location if necessary, rather than having to hunt it down in many different places.
 
-### Services
+2. In addition, we can store **application state data** in one or more services, so that it is available throughout our application. This is because most services are **singletons**, meaning they are objects that are accessed by reference, so that they can be accessed and modified in one place and those changes will be available anywhere the object is called.
 
-1.	**Services** are classes containing logic that we can then inject and use throughout the application.  Typically, a service will have methods that we can use in a component into which the service has been injected. It allows us to centralize logic, rather than having to duplicate it throughout the application. This makes it easy for us to change logic in one location if necessary, rather than having to hunt it down in many different places.
+3. A service can sometimes be a (factory?), meaning multiple instances are created, so use of the service in one component is unrelated to the service in another component.
 
-2.	A concept closely related to services is that of **dependency injection**.
+4. A concept closely related to services is that of **dependency injection**. Ng4 provides a means of making the service upon which a component class is dependent available to the service by "injecting" it into the component through the constructor. To inform Ng4 that we require an instance of the service, we use the class constructor, as set forth below.
 
-3.	*Services* can be uses as a means of communicating between components, since multiple components can have access to the values contained in a single service.
+### B. Creating a Service
 
-4.	A service can be (or not be) a **singleton**.  A singleton is a service for which there is a single instance, so if a change is made in the service in one component, such change will affect the service wherever it may be.  Or a service may be a (factory?), meaning multiple instances are created, so use of the service in one component is unrelated to the service in another component.
+1. When creating a service, follow these steps:
 
-3.	When creating a service, follow these steps:
+    a. create a file to hold the service, for example, *logging.service.ts*.
+    
+    b. write the service code. A service is just a plain class, so there is no need for a decorator such as *@Component*.  For example, for a service that contains a single method:
+    ```javascript
+    export class LoggingService {
+        logStatusChange(status: string) {
+            console.log(
+                'A server status changed, new status: ' + status
+            );
+        }
+    }
+    ```
+    The above example is very simple - it merely logs a given string to the console.
 
-	a.	create a file to hold the service, for example, *logging.service.ts*.
-	
-	b.	write the service code, for example:
+2. To use the service in a component, in the class definition, we should bind the service to a variable through the constructor function, as follows:
+    ```javascript
+    import { Component } from '@angular/core';
+    import { LoggingService } from './services/logging.service'
 
-			import {Injectable} from 'angular2/core';
+    @Component({
+        selector: 'component-1',
+        templateUrl: './new-account.component.html',
+        styleUrls: ['./new-account.component.css'],
+        providers: [LoggingService]
+    })
+  
+    export class Component1Component {
+        constructor(private loggingService: LoggingService) {}
 
-				@Injectable()
+        onLog(message: string) {
+            this._loggingService.logStatusChange(message);
+        }
+    }
+    ```
+    **Note**: Don't forget to import the service.
+    
+    **Note**: Once imported, we are able to make the service available by adding as a parameter in the constructor method a name to bind to the service, with a type that is the service imported. So, in the above, *loggingService* will have a type of LoggingService, and upon instantiation of the class instance, will get placed on the *this* object via the constructor.
+    
+    **Note**: It is also necessary to add a new property to the *@Component* decorator, **providers**, which will take as its value an array of all services that we wish to inject.	
 
-				export class LoggingService {
-    				writeToLog(logmessage: string) {
-        			console.log(logmessage);
-    			}
-			}
-	
-		The above example is very simple - it merely logs a given string to the console.  Note that we import the Injectable module from angular2/core, and that we export a class with one or more methods (such as the log method in the above).
+### C. Hierarchical Injector
 
-	c.	In the component where the service is being used, we need to **inject** our service into the component, through the constructor method of the class, where we can bind it to a private property.  See the following example.
-	
-	d.	Don't forget to import the service class at the top of the component.
-	
-	e.	We then have to add our service in the array of **providers**, which is a new key in the @Component decorator object.  See the following example:
-	
-			import {Component} from 'angular2/core';
-			import {LoggingService} from './services/logging.service'
+1. It is extremely important to understand the heirarchical nature of services in Ng4 if we want to use them successfully. Underneath it all, keep in mind whether we want to be using **the same instance** of a service, or not.
 
-			@Component({
-    			selector: 'component-1',
-			    template: `
-        			<input type="text" #message>
-			        <button (click)="onLog(message.value)">Send</button>
+2. **Hierarchical** in this case means that if we provide a service, Ng4 will create the instance of the service, and make that instance available to that component **and all descendants thereof.**
 
-			    `,
-    			providers: [LoggingService]
-			})
+3. So, for example, we can go to the *AppModdule* component and provide for the Service there, in the *providers* property array. This will make a single instance of the service available throughout the entire application, although it will still need to be imported into each file we want to have access, and bound in the constructor.
 
-			export class Component1Component {
-    			constructor(private _loggingService: LoggingService) {}
-    		
-    			onLog(message: string) {
-        			this._loggingService.log(message);
-    			}
-			}
+4. We do not have to go all the way up to the root AppModule. We can go to the highest level component where we need the service, and add it to the *providers* property of that component's @Component decorator in order to have it available where we need it.
 
-5.	Note, if a component has access to a service, all descendant components will have access to **that instance** of the service.  So, for example, we can go to the *bootstrap* component and, as the second argument to the bootstrap method, include an array of services to inject. Of course, we would have to import the service file.
+#### D. Injecting Services into Services
 
-6.	Services can be injected into components, of course, but can also be injected into other services.  However, services (and other things) can only be injected in Angular2 to classes that have metadata attached to them, in other words, a decorator.  So, in *the service that is receiving the other service by injection*, we need to add the **@Injectable** decorator.
+1. Services can be injected into components, of course, but can also be injected into other services.
 
-7.	An important use case is to use services as a way of passing data directly among components. To do so, we can take the following steps:
+2. This can help DRY up our code, if everything being done by one service can be done as part of another service. In addition, it is the obvious thing to do in some cases, where the particular service provides a set of functionality needed by other services, such as the *http service**.
 
-	a.	In the broadcasting component, we can assign to a *public* variable of our class a new EventEmitter() (remember to import it from @angular/core), for example:
-	
-		import { Injectable, EventEmitter } from '@angular/core';
-		import { LogService } from './log.service';
+3. However, services (and other things) can only be injected in Ng4 into classes that have metadata attached to them - in other words, a decorator.  So, **in the service that is receiving the other service by injection**, we need to add the **@Injectable** decorator. To do so, copy the following code (which injects the *LoggingService* into the *AccountsService*:
+    ```javascript
+    import { Injectable } from '@angular/core';
+    import { LoggingService } from './logging.service';
 
-		@Injectable()
-		export class DataService {
-			constructor(private logService: LogService) {}
-			pushData = new EventEmitter<string>();
-			private data: string[] = [];
-	
-			addData(input: string) {
-				this.logService.writeToLog(input);
-				this.data.push(input);
-			}
+    @Injectable()
 
-			getData() {
-				return this.data;
-			}
+    export class AccountsService {
+        constructor(
+            private loggingService: LoggingService
+        ){}
+        
+        . . .
+    }
+    ```
+4. An important use case is to use services as a way of passing data directly among components. To do so, we can take the following steps:
 
-			pushIt(value: string) {
-				this.pushData.emit(value);
-			}
-		}  
-
-	b.	In the receiving component, we will listen for the event emitting by using the *subscribe()* method of the event emitter. 
-
-
-
-
-
-
+    a. In a service, we can create a new *EventEmitter*, as follows:
+    ```javascript
+    // accounts.service.ts
+    import { EventEmitter, Injectable } from '@angular/core';
+    import { LoggingService } from './logging.service';
+    
+    @Injectable()
+    export class AccountsService {
+        constructor(
+            private loggingService: LoggingService
+        ){}
+        
+        . . .
+        
+        statusUpdated = new EventEmitter<string>();
+    ```
+    b. In a component that is injecting the AccountsService, we can use the EventEmitter:
+    ```javascript
+    // acccount.component.ts
+    import { AccountsService }} from '../accounts.service';
+        . . .
+        
+        export class AccountComponent {
+            constructor(
+                private accountsService: AccountsService
+            ){}
+            
+            . . .
+            
+            onMethod(status: string) {
+            this.accountsService.statusUpdated.emit(status);
+    
+    
+    ```
+    c.	In the receiving component, we will listen for the event using the **subscribe()* method of the event emitter.
+    ```javascript
+    // new-account.component.ts
+    import { Component } from '@angular/core';
+    import { AccountsService } from '../accounts.service';
+    
+        . . .
+    
+    export class NewAccountComponent {
+        constructor(
+            private accountsService: AccountsService
+        ){
+            this.accountsService.statusUpdated.subscribe(
+                (status: string => alert('New Status' + status)
+                
+                . . .
+        }
+    }       
+    ```
 
 ## VII. Pipes
 
@@ -2904,17 +2949,6 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 
 ## The End
-
-###Introduction to Application Architecture
-
-1. Angular 2 is a very modular framework.
-
-
-	
-
-4.	A **service** might hold some functionality that we might want to access in different places in an application. The functionality can be placed in the service, then injected into components where it is needed.
-
-5.  Note that interpolated text can be placed into the template using the ES6 template literal syntax.
 
 ###Starting Up
 		
