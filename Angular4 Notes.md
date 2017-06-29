@@ -1017,33 +1017,38 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 ## IV. Services
 
 ## IV. Routing
-### A. Setting Up Routes
+### A. Introduction
+1. One thing to keep clear is that the routes we are dealing with in this section are internal to Ng4. As we know, we are dealing with a **single-page-application (SPA)** style of design, so that, to the browser, we are not really moving around at all, we are simply inserting a group of components in and out of a single page. So, for example, if there is an Ng4 route "userInfo" that will display a list of information about the user, and we type into the browser "http://localhost:8000/userInfo", there might be a 404 error, because the browser is looking not within the page, but on a larger scale (actually, this gets handled by webpack, as discussed below).
 
-1.	One thing to keep clear about is that the routes we are dealing with in this section are internal to Angular2. As we know, we are dealing with a **single-page-application (SPA)** style of design, so that, to the browser, we are not really moving around at all, we are simply inserting pieces in and out of a single page. So, for example, if there is an angular route "/userInfo" that will display a list of information about the user, and one types into the browser "http://localhost:8000/userInfo", there will be a 404 error, because the browser is looking not within the page, but on a larger scale.
 
-2.	The first thing to do is include the following as the first line in the \<head> section of our *index.html* file:
+### B. Setting Up Routes
+
+
+
+1. The first thing to do is include something along the lines of the following as the first line in the \<head> section of our *index.html* file:
     ```javascript
-		<base href='/'>
-    ```		
-3.	Angular2 has a built-in router, in its own module. It must be imported, as follows:
+    <base href='/'>
+    // an alternative (note that is it NOT '/Ng4/'
+    <base href='/Ng4'>
+                
+    ```
+    This sets the root of our routing. So, if we chose the latter entry above, and typed in "localhost:4200" into the browser bar, we would go to the home page, and the browser bar would display: "localhost:4200/Ng4/". In fact, the browser will prepend the "Ng4" into any route we enter that is missing it.
+
+2. Ng4 has a built-in router, which comes in its own module. It must be imported, as follows:
     ```javascript
-		import { RouterModule [,others] } from '@angular/router'
-	```
+    import { RouterModule [,other stuff] } from '@angular/router'
+    ```
 
-4.	We can add the routes to the *app.module* folder, so they are available throughout the application; however, the examples below add routes to a separate *app.routing.ts* file and then imports the routes object into the *app.module* file.  This makes it easier to keep things separated.
+3. We can add the routes to the *app.module* folder, so they will be available throughout the application; however, the examples below add routes to a separate *app.routing.ts* file and then import the routes object into the *app.module* file.  This makes it easier to keep things organized.
 
-5.	The first thing to do in our *app.routing.ts* file is import two objects from *@angular/router*, as follows:
+4. The first thing to do in our *app.routing.ts* file is import two objects from *@angular/router*, as follows:
     ```javascript
     import { RouterModule, Routes } from '@angular/router'
     ```
-		 
-	This latter will be the type for an array of routes used in our project:
-	
-		const APP_ROUTES: Routes = []
-
-	We then place into the array our routes, as follows:
-	```javascript
-	const APP_ROUTES: Routes = [
+    The latter will be the type for an array of routes used in our project. We then place into the array our routes, as follows:
+    ```javascript
+    // app.routing.js
+    const APP_ROUTES: Routes = [
         {
             path: '',
             component: HomeComponent
@@ -1054,23 +1059,24 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
         }
     ]
     ```
-	First, note that the initial '/' is **not** part of the route.
-	Note that each of the referenced components  in the route objects must be imported into the file.
-
-6.	Then, we must export this array out so it will be available to the *app.module.ts* file. To do this, we actually export an object created by the **forRoot** method of the **RouterModule** object imported from *@angular/router*, as follows:
+    **Note**: The initial '/' is **not** part of the defined route. Similarly, the path that will show up in the browser bar as localhost:4200/Ng4/user is *user*, not */user* or *user/* or */user/*.
+    
+    **Note**: Each of the components referenced in the array must be imported into the file.
+    
+5. Then, we must export this array so it will be available to the *app.module.ts* file. Actually, we export an object created by the **forRoot** method of the **RouterModule** object, as follows:
     ```javascript
     export const routing = RouterModule.forRoot(APP_ROUTES);
     ```
 
-7.	One pain is that the components must be present both in the *app.routing.ts* file and the *app.module.ts* file. One way to make it cleaner is as follows:
+6. One pain is that the components must be present both in the *app.routing.ts* file and the *app.module.ts* file. One way to make it cleaner is as follows:
 
-	a.	import the components into the *app.routing.ts* file,
+    a. import the components into the *app.routing.ts* file,
 	
-	b.	export the routing object with two properties: a *routes* object as above, and an array of all the components,
+    b. export a *routing* object with two properties: a *routes* object as above, and an array of all the components,
 	
-	c.	import only the *routing* object from the './app.routing.ts' page, and have the following:
-	```javascript
-	import { NgModule } from '@angular/core';
+    c. import only the *routing* object from the './app.routing.ts' page, and have the following:
+    ```javascript
+    import { NgModule } from '@angular/core';
     import { BrowserModule } from '@angular/platform-browser';
     import { AppComponent } from './app.component';
     import { routing } from './app.routing';
@@ -1089,74 +1095,113 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     export class AppModule {};
     ```
 	
-8.	One final thing for basic routing: we must designate the place where our selected templates are to be inserted.  This is done with the **\<router-outlet>\</router-outlet>** tag in our main component.
+7. One final thing for basic routing: we must designate the place where our selected templates are to be inserted.  This is done with the **\<router-outlet>\</router-outlet>** directive tag in our main component.
 
-9.	One post-script for basic routing. Without the following, we are not able to type in the URL into the browser, or refresh the browser from anywhere but the '/' root, without getting a 404 error:
+8. One post-script for basic routing. Without the following, we will not be able to type the URL into the browser, or refresh the browser from anywhere but the '/' root, without getting a 404 error:
 
-	a.	We can implement the "#" strategy, using *HashLocationStrategy*
+    a.	We can implement the "#" strategy, using *HashLocationStrategy*
 		
-	b.	We can use the default *PathLocationStrategy*.
-	
-        i.	make sure the <base href='/'> is in the first line of the head of index.html
-		
-        ii. in webpack, have the following in devServer:
-	```javascript
+    b.	We can use the default *PathLocationStrategy* which will require:
+    
+      i. make sure we have inserted the <base href='/'> as the first line of the head of the *index.html* page,
+      
+      ii. in Webpack, make the following setting:
+    ```json
     historyApiFallback: {
-        index: path.resolve(rootDir, '/')
+    index: path.resolve(rootDir, '/')
     },
     ```
-### B. Adding Links
+### C. Adding Links
+1. Because we have set it up, we can access our routes by typing them directly into the browser. The next step is to be able to select a route by clicking on it, as discussed below:
 
-1.	**Something that works, but don't do it:** It is possible to use traditional \<a href=""> links; however, this causes a full page refresh and defeats the main point of using Angular2.
-    ```html
-    <a href="/">Home</a>
-    <a href="/crisis-center">Crisis</a>
-    <a href="/heroes">Heroes</a>
-    ```
+2. **Something that works, but don't do it:** It is possible to use the traditional \<a href=""> links; however, this will cause a full page refresh and defeat the purpose of using Ng4.
 
-2.	To have Angular2 handle the routing, use the following *routerLink* directive syntax:
+3. To have Ng4 handle the routing, use the following *routerLink* directive syntax:
     ```html
     <a [routerLink]="['']">Home</a>
-    <a [routerLink]="['crisis-center']">Crisis</a>
-    <a [routerLink]="['heroes']">Heroes</a>
+    <a [routerLink]="['users']">Users</a>
+    <a [routerLink]="['servers']">Servers</a>
     ```
-			
-3.	The above examples, by not having "/" in the beginning, are using *relative paths*. This can cause a problem with nested paths, as it simply adds the given path to what is already in the url. To make it an absolute path, include the preceding "/". Then the path will be attached directly after the domain.
 
-4.	Note that the [routerLink] is assigned an array, the elements of which are the segments of the url path.
+4. The above examples, by not having "/" in the beginning, are using *relative paths*. This can cause a problem with nested paths, as it simply adds the given path to what is already in the url. To make it an absolute path, include the preceding "/". Then the path will be attached directly after the domain.
 
-4.	Keep in mind that navigation can be just like in a terminal folder structure. A link can be "../", for example.
+5. Note that the [routerLink] is assigned an array, the elements of which are the segments of the url path. Thus, we could have an absolute path as follows:
+    ```html
+    <a [routerLink]="['/', 'servers', 'new']">
+    
+    <!-- also, we can assign a string to be evaluated in the quotes -->
+    
+    <a [routerLink]="'/servers/new'">
+    ```
 
-### C. Imperative Routing
+6. The creataion of the route from the array is pretty much the same as Node's *path.join()* method. A link can contain a "..", for example.
 
-1.	To navigate from within our code (as opposed to clicking on a link, for example), we can use the **navigate** property of the Router object. For example, if we add a button into our component, then navigate away to a specific route when we click on the button, we can do the following:
+7. As an alternative, we can use the *routerLink* directive without property binding, in which case the assigned path must be a string, not an array of strings.
 
-	a.	add a (click) listener to the button, and assign to it a method.
-	
-	b.	in our exported class, use the constructor to add our router, then add our method, which will use the *navigate()* method of the router to change our view component, by including our go-to route as the argument, in an array. For example:
-	```javascript
+### D. Styling Links
+
+1. One can add a class to a link based on whether the path is currently being matched, by using the *routerLinkActive* attribute directive on the link, as follows:
+    ```html
+    <a [routerLink]="['']" 
+        routerLinkActive="className">Click</a>
+    ```
+    In the above, the class in quotes is added whenever the path in the url **contains** the path of the link.
+    
+2. This brings up a problem; for example, the root path will always show as active, since it is contained in any path. However, it can be configured in its behaviour. In the case above, one can do the following:
+    ```html
+    <a [routerLink]="['']" routerLinkActive="active" 
+    [routerLinkActiveOptions]="{exact: true}">Click</a>
+    ```
+    this will require a full, exact match of the path before the active class is applied.
+
+3. The *routerLinkActive* directive can be placed not only on a link, but on other HTML tags, and the given class will be added to that element if it contains any active links within it. For example:
+    ```html
+    <div routerLinkActive="active">
+        <a [routerLink]="['']">Home</a>
+    </div>
+    ```
+    This will cause the \<div> to show the effects of the class when the routerLink matches the url.
+
+### E. Imperative Routing
+
+1. To navigate from within our code (as opposed to clicking on a link, for example), we can use the **navigate** property of the Router object. For example, if we add a button into our component, then navigate away to a specific route when we click on the button, that will often require just a link. However, sometimes we may want to obtain some data, or do some calculations, *etc,*, in addition to navigating to the new route. We can do the following:
+
+    a. add a (click) listener to the button, and assign to it a method.
+
+    b. in our component class definition, import the **Router** from *@angular/router*.
+    
+    c. inject the Routeer into our class through the constructor method.
+    
+    d. in our called method, use the **navigate( )** method of the router to change our view component,by including our go-to route as the argument, in an array. For example:
+    ```javascript
     import { Component } from '@angular/core';
     import { Router } from '@angular/router';
 
     @Component({
-        selector: 'crisis-list',
-        template: `
-            <h3>Crisis List</h3>
-            <button (click)="onNavigate()">Go Home</button>
-        `
+        
+        . . .
     })
 
-    export class CrisisListComponent {
+    export HomeComponent {
         constructor(private router: Router) {}
+
         onNavigate() {
-            this.router.navigate(['/heroes']);
+            . . .
+            this.router.navigate(['/users']);
         }
     }
     ```
+2. Compare the behaviour of *router.navigate* with that of *routerLink*. Navigate does **not** know the current route on which it is being called, so if we pass it a relative path (*i.e.*, without a leading "/"), it will **not** add it onto the current path, as is the case with links.
 
-### D. Route Parameters
+3. If we wish to use relative paths, we can override this behavior by passing a second parameter to the *navigate()* method, an options object that contains the property **relativeTo**.  We can pass this a path to serve as the relative root; by default, this is "/", which explains why it acts as it does.
+    ```javascript
+    this.router.navigate(['new'], {relativeTo: this.route}
+    ```
+    In the above, *route* is the injected **Activated Route**, which is the current route on which the application sits. To have access to it, we must import it from *@angular/router*, and then inject it through the constructor.
 
-1.	First, in our identification of the route path, we add at the end of the path our parameters, prececded by colons:
+### F. Route Parameters
+
+1. First, in our identification of the route path, we add at the end of the path our parameters, preceded by colons:
     ```javascript
     {
         path: 'user/:idNumber',
@@ -1171,21 +1216,22 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
         component: UserDetailCoponent
     }
     ```
-3.  If some parameters are opttional, we can handle this by having multiple routes listed, some with the parameters and some without.
+3. If some parameters are optional, we can handle this by having multiple routes listed, some with the parameters and some without.
 
-4.	As an example, we might get our parameter by clicking on a particular item.  Or, we might have the user input the identifying parameter:
+4. As an example, we might get our parameter by clicking on a particular item.  Or, we might have the user input the identifying parameter:
     ```html
-    Our User Number: <input type="text" #id (input)=null/>  //pretend input is 5
+    <!-- input from user -->
+    User Number: <input type="text" #id (input)=null/>
     <br>
-    <a [routerLink]="['user', id.value]">Our User</a>       //takes us to the route /user/5
+    <!-- take us to route user/[number] -->
+    <a [routerLink]="['user', id.value]">Our User</a>
     ```
-5.  At this point, we have set up a route that contains one or more parameters, and we have rigged up some manner of passing input data into the route as the parameters. This could be the end of the story; however, we will probably want to access the information contained in the parameter(s). To do this, one should:
+5. At this point, we have set up a route that contains one or more parameters, and we have rigged up some manner of passing data into the route as the parameters. This could be the end of the story; however, we will probably need to access the information contained in the parameter(s). To do this, we should:
 
-	a.  import *ActivatedRoute* from "@angular/router",
-	
-	b.	in the class definitation of the component, include the ActivatedRoute object in the constructor,
-	
-	c.  grab the parameter from the activatedRoute object, *snapshot* property, *params* property, as follows:
+    a. import *ActivatedRoute* from "@angular/router",
+
+    b. in the class definition of the component, include the *ActivatedRoute* object in the constructor,
+    c. grab the parameter from the **params** property of the **snapshot** property, of the *ActivatedRoute*, as follows:
     ```javascript
     export class UserComponent {
         constructor (
@@ -1193,89 +1239,124 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
             private myRoute: ActivatedRoute
         ) {}
         
-        this.id = myRoute.snapshot.params['id'];
+       id = this.myRoute.snapshot.params['id'];
     }
     ```
-	The ActivatedRoute object has a number of properties/methods. As discussed below, we could go straight for the *ActivatedRoute.params* property; however, this is an **Observable**, and not merely an array or object of parameters. To see the parameters as they exist right now, we use the *snapshot* property and then use the *params* property of that.
+6. The ActivatedRoute object has a number of properties/methods. As discussed below, we could go straight for the *ActivatedRoute.params* property; however, this is an **observable** (more on that later), and not an array or object of parameters. To see the parameters as they exist right now, we use the *snapshot* property to get the Route as it exists at the moment, and then use the *params* property of that.
 
-6.  This is okay, but it assigns the value to *this.id* at once (*i.e.*, the *snapshot*). Unless there is a need to create a new component, there is not another snapshot, so the values can become out of date.
-	
-7.	To keep our parameter field updated, even if the constructor is not called again, do the following:
+7. The above approach is okay, but it assigns the value to *this.id* at once (*i.e.*, the *snapshot*). Unless there is a need to create a new component, there is not another snapshot, so the values can become out of date (for example, somebody inputs new data).
+
+8. To keep our parameter field updated, even if the constructor is not called again, me must do the following:
 
 	a.	access the *params* object of the ActivatedRoute. This is what is known as an **observable**.  An observable is a wrapper around an object that allows one to register to listen for change events.
 	
 	b.	on the params object, use the **subscribe** method to listen for changes. This method takes three parameters, each a callback function.  The first is a callback for changed data, the second is if we have an error, and the third is when all is complete (the last two are used for *http* requests). So, run the first callback to update the value, when there is a change, as follows:
-	
-8.	**Using the *subscribe* method can cause memory leaks!** This occurs because when the component gets destroyed, the subscription would continue to live on, even though it has no purpose.  So, we must do the following, to kill the subscription when the component is destroyed (which we access through the *OnDestroy* lifecycle hook).
-
-	a.	import the Subscription object type from "rxjs/RX", which is a package Angular2 uses,
-	
-	b.	add a property to our class of type Subscription,
-	
-	c.	import the *OnDestroy* object from '@angular/core',
-	
-	d.	assign the *myRoute.params.subscribe . . .* method to "this.subscription",
-	
-	e.	don't forget to *implements* the *OnDestroy* lifecycle hook,
-	
-	e.	when OnDestroy is called on the component, *unsubscribe()* from the subscription.  So, we end up with the following:
     ```javascript
-    export class HeroDetailComponent implements OnDestroy {
+    import { Component, OnInit } from '@angular/core';
+    import { ActivatedRoute } from '@angular/router';
+
+    @Component({
+        . . .
+    })
+
+    export class UserComponent implements OnInit {
+        constructor(
+            private route: ActivatedRoute
+        ) { }
+        
+        user: {id: number, name: string} = {
+            id: null,
+            name: null
+        };
+	
+        ngOnInit() {
+            this.route.params.subscribe((val: any) => {
+                this.user.id = val.id;
+                this.user.name = val.name;
+            });
+        }
+    };
+    ```
+    **Note**: We run the *subscribe()* method on *ngOnInit()*, but we do not run the callback on initialization, but only set it up waiting for a change in the *params* values.
+    
+9. Keep in mind that the *snapshot* method is less resource intensive, and is perfectly fine as long as there is no way to update the params from within the page.
+
+10. In Ng4, subscriptions are route destroyed when the page is destroyed. There is no longer a need to unsubscribe using the *OnDestroy* lifecycle hook. However, the following is a to-do list for destroying a subscription, which is still necessary if the subscription if for observables not created by Ng4.
+
+    To shut down a subscription, we must do the following, to kill the subscription when the component is destroyed (which we access through the *OnDestroy* lifecycle hook).
+
+    a. import the Subscription object type from "rxjs/RX", which is a package Angular2 uses,
+	
+    b. add a property to our class of type Subscription,
+	
+    c. import the *OnDestroy* object from '@angular/core',
+	
+    d. assign the *route.params.subscribe . . .* method to "this.subscription",
+
+    e. don't forget to *implements* the *OnDestroy* lifecycle hook,
+	
+    f.	when OnDestroy is called on the component, *unsubscribe()* from the subscription. So, we end up with the following:
+    ```javascript
+    . . .
+    export class SomeComponent implements OnDestroy {
         constructor (
             private router: Router,
             private myRoute: ActivatedRoute
         ) {}
 			
-        subscription: Subscription = myRoute.params.subscribe (
+        mySubscription: Subscription = myRoute.params.subscribe (
             (val: any) => this.id = val.id
         );
         id: string;
 
         ngOnDestroy() {
-            this.subscription.unsubscribe();
+            this.mySubscription.unsubscribe();
         }
     }
     ```
-### E. Query Parameters
+### G. Query Parameters
 
-1.  **Query Parameters** are the parameters at the end of a URL, separated from the path by a question mark. For example:
+1. **Query Parameters** are the parameters at the end of a URL, separated from the path by a **question mark**. For example:
     ```
     localhost:4200/user/15?color=blue
     ```
     
-1.	**Passing Query Parameters**: They cannot go into the array (for example, when using the *router.navigate()* method), because the array only holds segments of the path. Instead, the *navigate()* method has a second argument, which is an object that has a property *queryParams*, the value of which is an object of query key/value pairs, as follows:
+2. **Passing Query Parameters**: They cannot go into the array (for example, when using the *router.navigate( )* method), because the array only holds segments of the path. Instead, the *navigate( )* method has a second argument, which is an object that has a property *queryParams*, the value of which is an object of query key/value pairs, as follows:
     ```javascript
     onNavigate() {
-        this.routing.navigate(['/'], {queryParams: {name: "Jordan", age: 50}});
+    this.routing.navigate(['/'], 
+        {queryParams: {name: "Jordan", age: 50}});
     }
     ```
 	Note that the object keys can be strings (if we want two words, hyphens, etc), and the values can be strings; if they are not, they will be converted anyway.
 	
-3.	**Using Links with Query Parameters**: In order to pass in query parameters with a link, we use the *[queryParams]* property of the *routerLink* directive, as follows:
+3. **Using Links with Query Parameters**: In order to pass in query parameters with a link, we use the *[queryParams]* property of the *routerLink* directive, as follows:
     ```html
-    <a [routerLink]='[""]' [queryParams]='{name: "Jordan", age: 55}'>Home</a>
+    <a [routerLink]='[""]' 
+        [queryParams]='{name: "Jordan", age: 55}'>Home</a>
+        [fragment] = 
     ```
 
-4.	To access query parameters, use the *ActivatedRoute* object in the same manner as with route parameters, using the **queryParams* property, as follows:
+4. To access query parameters, use the *ActivatedRoute* object in the same manner as with route parameters (either using *snapshot* or subscribing to an observable), using the **queryParams** property, as follows:
     ```javascript
     export class HomeComponent implements OnDestroy {
-        private subscription: Subscription;
+        private sub: Subscription;
         param: string
 			
         constructor (
             private route: ActivatedRoute
         ) {
-            this.subscription = route.queryParams.subscribe (
+            this.sub = route.queryParams.subscribe (
                 val: any => this.param = val['name']
             );
         }
-
+        // note that unsubscribe will be handled by Ng4 nowq
         ngOnDestroy() {
             this.subscription.unsubscribe();
         }
     }
     ```
-5.  Remember, query parameters do not belong to any particular route. The default action in Angular2 is to wipe out the query parameters on a change of route; however, this default action can be overridden, as discussed below.
+5. Remember, query parameters do not belong to any particular route. The default action in Ng4 is to wipe out the query parameters on a change of route; however, this default action can be overridden, as discussed below.
 
 ### F. Fragments
 
@@ -1284,7 +1365,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     localhost:3000/?name=Jordan#part1
     ```
 		
-	and in the html we could have a div that has the following id:
+	and in the html we could have a \<div> that has the following id:
 	```html
 	<div id='part1'>
 	```
@@ -1304,7 +1385,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 3.	In a link, we can pass in a fragment as follows:
     ```html
     <a [routerLink]="['']" queryParams="{name: Jordan}"
-        [fragment]="section5">
+        [fragment]="'section5'">
     ```
 4.	If we wish to keep query parameters or fragments in our url when we click on a new route, we can place the following into the link:
     ```javascript
@@ -1313,7 +1394,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     ```
     these can also be placed into the imperative routing as well.
 	
-5.	Extracting fragments works just the same as with query parameters or Params.  Use ActivatedRoute, subscribe, and unsubscribe.
+5.	Extracting fragments works just the same as with query parameters or Params.  Use ActivatedRoute, with *snapshot* or *subscribe*.
 
 ### G. Nested (Child) Routes
 
@@ -1378,28 +1459,6 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 4.  Finally, the *redirectTo* property can be used to set up a default route, by setting a final path of '**', wich sets up a wildcard path, which we can redirect to an error page.
 
-### I. Links		
-
-1.	One can add a class to a link based on whether the path is currently being matched, by using the *routerLinkActive* attribute directive on the link, as follows:
-    ```html
-    <a [routerLink]="['']" routerLinkActive="active">Click</a>
-    ```
-		
-	In the above, the class in quotes is added whenever the path in the url contains the path of the link. So, for example, the root path would always show as active, since it is contained in any path. However, it can be configured in its behaviour.  For example, in the case above, the default configuration will always match the root path. To correct this, one can do the following:
-    ```html
-	<a [routerLink]="['']" routerLinkActive="active" 
-	[routerLinkActiveOptions]="{exact: true}">Click</a>
-	```
-	
-	this will require a full, exact match of the path before the active class is applied.
-	
-2.	The *routerLinkActive* directive can be placed not only on a link, but on other HTML tags, and the given class will be added to that element if it contains any active links within it. For example:
-    ```html
-    <div routerLinkActive="active">
-        <a [routerLink]="['']">Home</a>
-    </div>
-    ```
-    This will cause the \<div> to show the effects of the class when the routerLink matches the url.
 
 ### J. Activating/Deactivating Routes
 
@@ -1872,7 +1931,7 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 4. We do not have to go all the way up to the root AppModule. We can go to the highest level component where we need the service, and add it to the *providers* property of that component's @Component decorator in order to have it available where we need it.
 
-#### D. Injecting Services into Services
+### D. Injecting Services into Services
 
 1. Services can be injected into components, of course, but can also be injected into other services.
 
@@ -2113,17 +2172,17 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 ## VIII. Http Requests
 
-1.	One late change in Angular2 is the use of a module for HTTP services. In the *app.module* file, import the HttpModule from *@angular/http* and include it in the *imports* section of the *@NgModule* decorator.
+1. In Ng4 there is a module for HTTP services. In the *app.module* file, import the HttpModule from *@angular/http* and include it in the *imports* section of the *@NgModule* decorator.
 
-2.	Of course, the HTTP module is about interacting with the internet to get information from a server.  In a nutshell, we do so as follows in the appropriate class:
+2. Of course, the HTTP module is about interacting with a back-end server to get information. In a nutshell, we do so as follows in the appropriate class:
     ```javascript
     constructor (
         private http: Http
     ) {}
     this.http.get[post/put, etc.]('example.com/endpoint');
     ```
-		
-3.	Angular2 uses a concept known as **observables**.  An *observable* is an object created upon the http request to which we can listen through a *subscribe()* method. The observable sends the request, gets a response, and emits an event that we listen for when it has gotten the response. The subscribe method will normally have a callback method to execute upon the event.
+
+3. Ng4 uses a concept known as **observables**.  An *observable* is an object created upon the http request to which we can listen through a *subscribe()* method. The observable sends the request, gets a response, and emits an event that we listen for when it has gotten the response. The subscribe method will normally have a callback method to execute upon the event.
 
 4.	As a best practice, we do not reach out to the internet in the component itself, but make a call upon a service, which we need to build, as follows:
 
