@@ -2165,13 +2165,13 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 ### F. Async Pipe
 
-1.	This is a built-in, impure pipe. It has a very useful feature, in that it allows data to be placed into the template after rendering. It allows us to get a promise as a value to interpolate into our component, but not have it show up as *[object Object]*, but wait until the value arrives.
+1. This is a built-in, impure pipe. It has a very useful feature, in that it allows data to be placed into the template after rendering. It allows us to get a promise as a value to interpolate into our component, but not have it show up as *[object Object]*, but wait until the value arrives.
 
-2.	This works not only for promises, but also for **observables**. 
+2. This works not only for promises, but also for **observables**. 
 
 
 ## VIII. Http Requests
-
+### Introduction
 1. In Ng4 there is a module for HTTP services. In the *app.module* file, import the HttpModule from *@angular/http* and include it in the *imports* section of the *@NgModule* decorator.
 
 2. Of course, the HTTP module is about interacting with a back-end server to get information. In a nutshell, we do so as follows in the appropriate class:
@@ -2184,10 +2184,11 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 
 3. Ng4 uses a concept known as **observables**.  An *observable* is an object created upon the http request to which we can listen through a *subscribe()* method. The observable sends the request, gets a response, and emits an event that we listen for when it has gotten the response. The subscribe method will normally have a callback method to execute upon the event.
 
-4.	As a best practice, we do not reach out to the internet in the component itself, but make a call upon a service, which we need to build, as follows:
+### Setting Up
+1. As a best practice, we do not reach out to the internet in the component itself, but make a call upon a service, which we need to build, as follows:
 
-	a.	Create a file *http.service.ts*:
-	```javascript
+    a. Create a file *http.service.ts*:
+    ```javascript
     import { Injectable } from '@angular/core';
     import { Http } from '@angular/http';
     
@@ -2199,92 +2200,135 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     }
     ```
 		
-	b.	Don't forget to make sure the module is imported into the *app.module.ts* file.
+    b. Don't forget to make sure the module is imported into the *app.module.ts* file.
 	
-	c.	create a method in the HttpService class, for example:
+    c. create a method in the HttpService class, for example:
     ```javascript
     getData() {
-        return this.http.get('https://angular2course-44e01.firebaseio.com/title.json') 
+        return this.http.get(
+            'https://angular2course-44e01.firebaseio.com/title.json'
+        ) 
+    }
+    
+    // or a post request, passing in a body
+    saveUserNames(users: any[]) {
+        return this.http.post(
+            this.targetUrl,
+            users,
+            { headers }
+        );
     }
     ```
-	In the above step, we are **not** making the database query, we are only setting it up.  We still need to call it, to get our observable.
+    **The above methods, when called, return an observable.** 
 
-	d.	go to the file where we need to use the service, and import the service from the file in which it resides, then inject it through the class constructor.  Also, it is recommended to run it on initialization, to we have to import OnInit, implement OnInit in our class, and run our methon in the *ngOnInit()* hook:
-	
-		import { Component, OnInit } from '@angular/core';
-		import { HttpService } from './http.service';
+    d. go to the file where we need to use the service, and import the service from the file in which it resides, then inject it through the class constructor.
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { HttpService } from './http.service';
 
-		@Component({
-			selector: 'http-app',
-			templateUrl: 'http.component.html'
-			providers: [HttpService]
-		})
-		export class HttpAppComponent implements OnInit {
-			constructor(private httpService: HttpService ){}
+    @Component({
+	. . .
+        
+    })
 
-			ngOnInit() {
-				this.httpService.getData()
-			}
-		}
-		
-	e.  We still haven't sealed the deal. At this point, we have only returned an observable, to which we now must **subscribe* to:
-	
-		ngOnInit() {
-			this.httpService.getData()
-				.subscribe(
-					callback1,
-					callback2,
-					callback3
-				);
-		}
-		
-	The *subscribe()* method takes 3 callbacks: i) triggered when data is returned, ii) triggered when an error is returned, and iii) triggered when everything is complete.  The first callback is the important one.
-	
-	f.	A successful query will return a *Response* object, which has one method, *json()*. To get at the data, we will call this *json() method, which returns just the data, and not any of the other properties that comes with the *Response* object.
-	
-6.	There are a number of operations we can perform on the observable, for example, there is a *map()* operation, as follows:
+    export class AppComponent implements OnInit {
+        constructor(private httpService: HttpService ){}
 
-	a.	first, the operation has to be imported into our service, from the *rxjs/Rx* module:
-	
-		import 'rxjs/Rx';  //this brings in all the observable operators
-		
-	b.	next, use the *map()* method to take the original observable, and transform it into **a new observable**.
-	
-		getData() {
-			return this.http.get('https://angular2course-44e01.firebaseio.com/family.json')
-				.map((val: Response) => val.json());
-		}
-		
-	This new observable can be listened to (because it is an observable), and its type will not be a Response, but the object (use "any");
-	
-#### Post Requests
-1.	Sending a *post* request is similar in many respects. We can start by making a simple form to input some data.  Upon entering the data (*i.e.*, clicking "Submit"), we call a method in our *HttpComponent*.  This might be as follows, calling a method in our *httpService* object:
+        ngOnInit() {
+            this.httpService.getData()
+        }
+    }
+    ```
+    Note the use of the *OnInit* method in the above example. This is a common situation, wheere we need to get some information for the components we are loading.
 
-		export class HttpComponent {
-			constructor(private httpService: HttpService ){}
+    e.  We still haven't sealed the deal. At this point, we have only returned an observable, to which we now must **subscribe*:
+    ```javascript
+    ngOnInit() {
+        this.httpService.getData()
+        .subscribe(
+            callback1 (handle response),
+            callback2 (handle error),
+            callback3 (handle completion)
+        );
+    }
+    ```
+    The *subscribe( )* method takes three callbacks: i) triggered when data is returned, ii) triggered when an error is returned, and iii) triggered when everything is complete.
 
-			onSubmit(username: string, email: string) {
-				this.httpService.sendData({username, email})
-					.subscribe (
-						data => console.log(data)
-					)
-			}
-		}
+    f. A successful query will return a *Response* object, which has a number of properties, including **ok(boolean)**, **status(number)**, and **\_body(string)**, and a method, **json()**. To get at the data, we will call this *json()* method, which returns just the data, and not any of the other properties that come with the *Response* object.
 
-2.	The *sendData* method referred to, might be as follows:
+2. **Headers**: In our *httpService*, we can create headers to add to our requests as follows:
 
-		sendData(user: any) {
-			const body = JSON.stringify(user);
-			const heads = new Headers();
-			heads.append('Content-Type', 'application/json');
-			return this.http.post('https://angular2course-44e01.firebaseio.com/data.json', body, {headers: heads})
-				.map((data: Response) => data.json());
-		}
-		
-	In the above methd, we must import *Headers* through the *@angular/http* module. *Headers* has an *append()* method for adding headers.  Do not try to use *Object.assign()* to do this, it doesn't work. However, as an alternative to using the *append()* method, an object of headers can be passed in as a parameter to Headers();
+    a. import the *Headers* constructor method from the *@angular/http* module.
+    
+    b. create a new headers object using the *Headers* constructor and passing in an object of key/value pairs for the headers.
+    
+    c. add an *options object* as a parameter of our http method, with one property being *headers*. See the following example:
+    ```javascript
+    import { Injectable } from '@angular/core';
+    import { Http, Headers } from '@angular/http';
 
-	Obviously, when using the *post* method, we have an url, as well as a body (don't forget to run JSON.stringify() if necessary) and we can add the headers object.
-	
+    @Injectable()
+
+    export class HttpService {
+        constructor (
+            private http: Http
+        ){}
+
+        storeServers(servers: any[]) {
+            const headers = new Headers({'Content-Type': 'application/json'})
+            return this.http.post(
+                'https://nghttp-fb992.firebaseio.com/data.json',
+                servers,
+                {
+                    headers
+                }
+            );
+        }
+    }
+    ```
+ 3. *Headers* has an *append( )* method for adding headers to the ones we already have. ***Object.assign( )* will not work, so use append( )**, if you do not want to pass in an entire, new Headers object.
+ 
+### Handling Data
+1. Of course, we hope to get back *Response* object with a status of 200 and a *\_body* that contains a JSON string of our data. However, we will probably want to do something with our returned data to make it useful.
+
+2. The first thing we will want to do is convert the string to a JavaScript object. We can do this using the *Response* object's **json( )** property. We should import the *Response* type from *@angular/http*.
+    ```javascript
+    import { Response } from '@angular/http';
+    . . .
+    
+    export class AppComponent {
+    . . .
+        onGet() {
+            this.http.getServers()
+            .subscribe(
+                (res: Response) => {
+                    const data = res.json()
+                },
+                (err) => {
+                    console.log(err);
+                }
+            )
+        }
+    }
+    ```
+
+3. There are a number of operations we can perform on the observable; for example, there is a *map( )* operation, which does what we would expect. However, these operations transform our objservable **into a new observable**, not  a data object, for example. This will allow us to handle our data manipulation in the service, rather than in each component that employs our service method. 
+
+    a. first, the operation has to be imported into our service, from the *rxjs/Rx* module:
+    ```javascript
+    import 'rxjs/Rx';  //this brings in all the observable operators
+    ```
+    b.	next, use the *map( )* method to take the original observable, and transform it into **a new observable**.
+    ```javascript
+    getData() {
+        return this.http
+        .get(targetUrl)
+	.map((val: Response) => val.json());
+    }
+    ```
+    This new observable can be listened to (because it is an observable), and its type will not be a Response, but the object (use "any");
+
+:::danger
 #### Async Pipe
 1.	This is a neat feature built in to Angular2. Suppose we want to get back a simple string when the page loads, and we have a method (let's call "getString") in the HttpService object to deliver the observable for that string. We can set up in our class definition:
 
