@@ -27,6 +27,9 @@ export class HttpService {
 		.get(this.targetUrl)
 		.map((res: Response) => {
 			const data = res.json();
+			data.forEach(val => {
+				val.name = `FETCHED: ${val.name}`;
+			});
 			return data;
 		});
 	}
