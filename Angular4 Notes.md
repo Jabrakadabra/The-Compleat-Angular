@@ -2328,40 +2328,50 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
     ```
     This new observable can be listened to (because it is an observable), and its type will not be a Response, but the object (use "any");
 
-:::danger
+
 #### Async Pipe
-1.	This is a neat feature built in to Angular2. Suppose we want to get back a simple string when the page loads, and we have a method (let's call "getString") in the HttpService object to deliver the observable for that string. We can set up in our class definition:
+1. This is a neat feature built in to Ng4. Suppose we want to get back a simple string when the page loads, and we have a method (let's call "getString") in the HttpService object to deliver the observable for that string. We can set up in our class definition:
+    ```javascript
+    title = this.httpService.getString();
+    ```
 
-		title = this.httpService.getString();
-		
-2.	If we simply interpolate the above (*i.e.*, {{title}}), it will be an object, an observable, and will print to the screen as "[object Object]".  We can modify this with the **async** pipe, which will output just the string:
+2. If we simply interpolate the above (*i.e.*, {{ title }}), it will be an object, an observable, and will print to the screen as "[object Object]".  We can modify this with the **async** pipe, which will output just the string:
+    ```html
+    {{title | async}} 
+    ```
 
-		{{title | async}} 
-	
 #### Error Handling for an Observable
-1.	To our *observable*, we can attach the *catch()* method, and include as a parameter a callback function to handle the error. In the callback, it can take the error and work with it as an observable.  For example:
+1. To our *observable*, we can attach the *catch()* method, and include as a parameter a callback function to handle the error. In the callback, it can take the error and work with it as an observable.  For example:
+    ```javascript
+    sendData(user: any) {
+        const body = JSON.stringify(user);
+        let heads = {};
+        const headers = new Headers(heads);
+        headers.append('Content-Type', 'application/json');
+        return this.http.post(
+            'https://angular2course-44e01.firebaseio.com/data.json', 
+            body, 
+            {
+                headers: headers
+            })
+        .map((data: Response) => data.json())
+        // use the method this.handleError to do whatever with
+        // the error observable
+	.catch(this.handleError);
+    }
 
-		sendData(user: any) {
-			const body = JSON.stringify(user);
-			let heads = {};
-			const headers = new Headers(heads);
-			headers.append('Content-Type', 'application/json');
-			return this.http.post('https://angular2course-44e01.firebaseio.com/data.json', body, {
-				headers: headers
-			})
-				.map((data: Response) => data.json())
-				//use the method this.handleError to do whatever with the error observable
-				.catch(this.handleError);
-		}
-		
-		//our error-handling method
-		private handleError (error: any) {
-			//use json() method to get the data object, then display the error property
-			alert(error.json().error)
-			//the following will require import of the Observable object from rxjs/RX.
-			//it sends the error observable on its way.
-			return Observable.throw(error);
-		}
+    //our error-handling method
+    private handleError (error: any) {
+        // use json() method to get the data object, 
+        // then display the error property
+        alert(error.json().error)
+        // the following will require import of the Observable 
+        // object from rxjs/RX.
+        // it wraps the error as an observable and
+        // sends the error observable on its way.
+        return Observable.throw(error);
+    }
+    ```
 		
 
 2.	All of the above was taking place in the *httpService*. Once the error observable is returned to the component, it can be manipulated with the second parameter of the observable.  For example:
