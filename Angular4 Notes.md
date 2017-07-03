@@ -229,6 +229,44 @@
     }
     ```
 
+### B. Creating a Model Type
+1. TypeScript allows us to apply strict typing to our JavaScript. While that does, of course, apply to numbers, strings, and other "built-in" types, we can also define our own types.
+
+2. As an example, we will have a component responsible for creating a list of recipes. We want each recipe to follow a set pattern, with a name, a description, and a photo of the dish (actually, the path to the photo). So, we can create a **model**, or class of our recipe, as follows:
+    ```javascript
+    // recipe.model.ts
+    export class Recipe {
+        public name: string;
+        public description: string;
+        public imagePath: string;
+
+        constructor(
+            name: string,
+            desc: string,
+            imagePath: string
+        ) {
+            this.name = name;
+            this.description = desc;
+            this.imagePath = imagePath;
+        }
+    }
+    ```
+    Of course, this is all just a constructor function, and we could call this with the *new* keyword.
+    
+3. In our *recipeList.ts* file, we will import the Recipe class, and then use it to define our array, so that TypeScript will throw an error if we try to add any nonconforming items to our list of recipes:
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { Recipe } from '../recipe.model';
+
+    . . . 
+
+    export class RecipeListComponent {
+        constructor() {}
+
+	recipes: Recipe[] = [];
+
+    }
+    ```
 
 ### B. Nesting Components
 
