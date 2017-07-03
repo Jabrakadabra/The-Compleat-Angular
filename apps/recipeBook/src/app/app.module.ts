@@ -2,10 +2,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './components/app.component';
-import { HeaderComponent } from './components/headerComponent';
+import { HeaderComponent } from './components/header';
 import { RecipeSectionComponent } from './components/recipeSection';
-import { RecipeListComponent } from './components/recipeSection/recipeList';
-import { RecipeItemComponent } from './components/recipeSection/recipeItem';
+import { RecipeListComponent, RecipeItemComponent } from './components/recipeSection/recipeList';
 import { RecipeDetailComponent } from './components/recipeSection/recipeDetail';
 import { ShoppingSectionComponent } from './components/shoppingSection';
 import { ShoppingListComponent } from './components/shoppingSection/shoppingListComponent';
