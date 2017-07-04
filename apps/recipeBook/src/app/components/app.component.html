@@ -1,12 +1,17 @@
 <div class="container">
 	<div class="row">
 		<div class="col-md-12">
-			<app-header></app-header>
-			<app-recipe-section></app-recipe-section>
+			<app-header (hotComp)="onPageChoice($event)"></app-header>
 		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<app-recipe-section *ngIf="choice === 'recipe'"></app-recipe-section>
+		</div>
+	</div>
 	<div class="row">
 		<div class="col-md-7">
-			<app-shopping-list></app-shopping-list>
+			<app-shopping-list *ngIf="choice !== 'recipe'"></app-shopping-list>
 		</div>
 		<div class="col-md-5">
 		</div>
