@@ -10,20 +10,20 @@ import { ShoppingListComponent } from './components/shopping-list';
 import { ShoppingListEditComponent } from './components/shopping-list/shoppingListEditComponent';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-	HeaderComponent,
-	RecipeSectionComponent,
-	RecipeListComponent,
-	RecipeItemComponent,
-	RecipeDetailComponent,
-	ShoppingListComponent,
-	ShoppingListEditComponent
-  ],
-  imports: [
-    BrowserModule
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
+	declarations: [
+		AppComponent,
+		HeaderComponent,
+		RecipeSectionComponent,
+		RecipeListComponent,
+		RecipeItemComponent,
+		RecipeDetailComponent,
+		ShoppingListComponent,
+		ShoppingListEditComponent
+	],
+	imports: [
+		BrowserModule
+	],
+	providers: [],
+	bootstrap: [AppComponent]
 })
 export class AppModule { }

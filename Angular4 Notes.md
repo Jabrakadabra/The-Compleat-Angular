@@ -3553,6 +3553,31 @@ Be sure to include information regarding the relative path issue
 
 #### Basic Types in Typescript
 
+1. **A Simple Shortcut**: When creating a model (basically, a class that consists only of a constructor), we can perform a shortcut instead of declaring all our variables and assigning them to *this*, as follows:
+    ```javascript
+    export class Ingredient {
+        constructor(
+            public name: string,
+            public amount: number,
+        )
+    }
+    ```
+    This is the equivalent of:
+    ```javascript
+    export class Ingredient {
+        public name: string;
+        public amount: number;
+
+        constructor(
+            name: string,
+            amount: number,
+        ) {
+            this.name = name;
+            this.amount = amount;
+        }
+    }
+    ```
+
 1.	The defining feature of Typescript is the ability to use typed variables.  This is accomplished with the following syntax:
 
 		var isGood: boolean = true;
