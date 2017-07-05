@@ -630,50 +630,46 @@
     ```html
     <p [innerText]={{generateText()}}></p>
     ```
-4. 
-::: danger
-2. For directive and component properties, we can add custom bindings with the *@Input()* decorator, which is placed in front of the name of the property you want to make bindable:
+4. For directive and component properties, we can add custom bindings with the *@Input()* decorator, which is placed in front of the name of the property you want to make bindable:
+    ```javascript
+    @Input() propName: string;
+    ```
+5. Remember that the following must occur:
 
-		@Input() propName: string;
-		
-3.	Remember that the following must occur:
+    a. In the component where we are binding, we must import *Input* from *@angular/core*,
+	
+    b. In the export class section of the component, we must include the @Input statement, as follows:
+    ```javascript
+    export class PropertyBindingComponent {
+        @Input() result: number = 0;
+    }
+    ```
+    c. In the *app.module()* component, we must import the component, and must include it in our declarations.
 
-	a.	In the component where we are binding, we must import *Input* from *@angular/core*,
-	
-	b.	In the export class section of the component, we must include the @Input statement, as follows:
-	
-			export class PropertyBindingComponent {
-				@Input() result: number = 0;
-			}
-	c.	In the *app.module()* component, we must import the component, and must include it in our declarations.
+    **Example**: We start with the following:
+    ```html
+    <input type="text" value={{name}} class="{{'red'}}"/> 
+    ```
+    This is an example of *string interpolation*.  The value attribute belongs to the standard HTML \<input> element tag, and it is assigned a value obtained by evaluating the variable enclosed in {{ }}. Compare that to:
+    ```html
+    <input type="text" [value]="name" class="{{'red'}}"/>
+    ```
+    This is an example of *property binding*. The *[value]* is not the \<input> tag's value, it is an Angular property assigned to all input tags. For this Angular property, there is no use of {{}}, but whatever is in quotations is evaluated.  Thus:
+    ```html
+    <!-- value is the value assigned to name -->
+    <input type='text' [value]="name" />
 
-**Example**
+    <!-- //value is 8 -->
+    <input type='text' [value]="4 + 4" /> 
 
-1.	We start with the following:
-	
-		<input type="text" value={{name}} class="{{'red'}}"/> 
-		
-	This is an example of *string interpolation*.  The value attribute belongs to the standard HTML \<input> element tag, and it is assigned a value obtained by evaluating the variable enclosed in {{}}. Compare that to:
-	
-		<input type="text" [value]="name" class="{{'red'}}"/>
-		
-	This is an example of *property binding*. The *[value]* is not the \<input> tag's value, it is an Angular property assigned to all input tags. For this Angular property, there is no use of {{}}, but whatever is in quotations is evaluated.  Thus:
-	
-		<input type='text' [value]="name" />  //value is the value assigned to name
-		
-		<input type='text' [value]="4 + 4" /> //value is 8.
-		
-		<input type='text' [value]="name ? name : 'Bazoom'" />  //value is name, if there is one, or "Bazoom"
-		
-	 
-	
-2.	Similarly, we can bind to a property not of an HTML element, but of an Angular directive.  Compare the following with th previous code samples:
-
-		<input type='text' [value]='name' [ngClass]="'red'"/>
-		
-	This works in a similar manner, except that ngClass is a directive. One can differentiate between a Directive and an Element by the 'ng' prefix.
-
-:::
+    <!-- value is name, if there is one, or "Bazoom" -->
+    <input type='text' [value]="name ? name : 'Bazoom'" />
+    ``` 
+    Similarly, we can bind to a property not of an HTML element, but of an Angular directive.  Compare the following with th previous code samples:
+    ```html
+    <input type='text' [value]='name' [ngClass]="'red'"/>
+    ```	
+    This works in a similar manner, except that ngClass is a directive. One can differentiate between a Directive and an Element by the 'ng' prefix.
 
 #### Event Binding
 
@@ -695,7 +691,7 @@
 ::: danger
 For directive and component properties, we can add custom binding with the *@Output()* decorator, which is placed in front of the name of the property to which we wish to bind:
 
-		@Input() eventName = new EventEmitter();
+		@Output() eventName = new EventEmitter();
 
 2.	The following is an example of an event-binding for a native DOM event (such as a mouse click or mouseover):
 
@@ -912,6 +908,9 @@ For directive and component properties, we can add custom binding with the *@Out
         </div>
     </section>
     ```
+::: danger
+The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng4
+:::
 2. **Adding an *else* Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. Alternatively, we can  s The following is an alternative to that approach:
 
     a. place the \*ngIf directive on the first component, with a semi-colon at the end of the condition, followed by the keyword **else** and the name of the alternative component.
@@ -924,6 +923,35 @@ For directive and component properties, we can add custom binding with the *@Out
     </ng-template>
     ```
     Note the placement of the quotation marks around the entire condition and else condition.
+
+#### ngSwitch
+
+1. This structural directive allows us to check on the state of a particular variable, and then render accordingly.  It functions much like a *switch* statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
+
+		
+		<div>
+            Enter red, blue, or green
+            <br/>
+            <input type="text" #color (keyup)="0"/>
+        </div>
+		
+		<div [ngSwitch]="color.value">
+            <template [ngSwitchWhen]="'red'">
+                <span style="color: red">Color is Red</span>
+            </template>
+            <template [ngSwitchWhen]="'blue'">
+                <span style="color: blue">Color is Blue</span>
+            </template>
+            <template [ngSwitchWhen]="'green'">
+                <span style="color: green">Color is Green</span>
+            </template>
+            <template ngSwitchDefault>
+                <span>Color is Undetermined</span>
+            </template>
+        </div>
+
+	In the above snippet, note that **[ngSwitch]** designates the variable to be tested.  Then we have a number of possible templates to be inserted, each with the **[ngSwitchWhen]** directive stating a condition (note the use of single equal signs), and **ngSwitchDefault** which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
+
 
 
 #### ngStyle
@@ -1010,6 +1038,294 @@ For directive and component properties, we can add custom binding with the *@Out
 
 5. **Note**: The content is different from the view, so, for example, we have different lifecycle hooks for AfterViewInit, AfterContentInit, *etc*. Just like we have a *@ViewChild* decorator to have direct access to a child element in a template, we also have a **@ContentChild** decorator to give a component direct access to the content within an \<ng-content> tag. The type will also be *ElementRef* and we can access the *nativeElement* from it.
 
+### C. Building a Custom Attribute Directive
+
+#### Initial Attemp - Not the Ideal Approach
+
+1. The following example shows how to create an attribute directive that affects how a DOM element is presented, in this case, it changes the background color. **However, this is not the "correct" solution, as it involves direct manipulatation of the DOM, rather than going through Ng4.** It is presented for discussion purposes only.
+
+1. To start, we will create a separate folder for our directives, and in that folder we will create a file for our new directive. At the top of the file, we must import the Directive object from '@angular/core', which will allow us to attach a directive Decorator to our class. In addition, we must export an object out, so we will always have the following:
+    ```javascript
+    import { Directive } from 'angular2/core';
+		
+    @Directive({
+        selector: '[directiveName]'
+		
+    export class OurDirective {
+		
+    }
+    ```
+    **Note**: The value for selector is in the proper syntax. The brackets do not indicate any databinding, they are simply syntax. The "[ ]" indicate an attribute, but it could be "." to get a class or "#" to get an identified component.  In the component, the directive name, without quotes or brackets, is inserted into the html tag as an attribute.
+
+2. In the directive class, we need to create a constructor, which is called to create a new instance of the directive whenever it is called in the component. In the constructor, we can inject the **ElementRef** object, **which gives us the html element on which the directive is sitting**.  In order to use this, we must import it from '@angular/core, as follows:
+    ```javascript
+    import { Directive, ElementRef } from '@angular/core';
+
+    @Directive({
+        selector: '[myDirectiveName]'
+    })
+    
+    export class DirectiveName() {
+        constructor(private _elref: ElementRef)
+    }
+    ```
+    **Note**: The designation as *private* or *public* makes the variable available anywhere in the class, on the *this* object.
+    
+    **\_elref** will be assigned the element on which the directive is placed, so we can modify it. So, for example, in a directive changing the background-color of an element, we could have:
+    ```javascript
+    constructor(public elRef: ElementRef) {}
+    
+    ngOnInit() {
+        this.elRef.nativeElement.style}
+        .backgroundColor = this._defaultColor;
+    }
+    ```
+    the actual html element is accessed through the *.nativeElement* property of the ElementRef.
+
+4. Directives have some, but not all, of the lifecycle hooks discussed previously. In particular, they do have *OnInit* and *OnDestroy*.
+
+5. To use our new directive, we must first to to *app.module* and import our directive, and add it to the "declarations" array in the *@NgModule* decorator:
+    ```javascript
+    import { BasicHighlightDirective } from 
+        './directives/basic-highlight.directive';
+
+    @NgModule({
+        declarations: [
+            AppComponent,
+            BasicHighlightDirective
+        ],
+        imports: [
+            BrowserModule,
+            FormsModule,
+            HttpModule
+	],
+	providers: [],
+	bootstrap: [AppComponent]
+    })
+
+    export class AppModule { }
+    ```
+    and in our component html, we must place the attribute directive on an element, as follows:
+    ```html
+    <p appBasicHighlight>
+        Styled with the directive
+    </p>
+    ```
+#### Using the "renderer" Object   
+1. As noted in the above example, we should not directly manipulate the DOM, so the assignment of the background-color property in the diretcitve was not the optimal way to do things (although it would work in most cases).
+
+2. The reason the above approach might not work is that there are use cases where Ng4 may not be running in the DOM, so trying to access the DOM would cause it to break.
+
+3. A better approach is to use Ng4's **Renderer2** helper object. First, we must import it from *@angular/core*. Among many other methods, the *Renderer2* object has a **setStyle** method, which takes three or more parameters:
+
+    a. the element (obtained through *ElementRef*, as above),
+    
+    b. the style ('background-color'),
+    
+    c. the value to assign to the style,
+    
+    d. flags to add for options (for example, to include *!important*);
+
+4. As an example of a directive that will create a yellow background and set the width of an element:
+    ```javascript
+    import { 
+        Directive, Renderer2, 
+        ElementRef, OnInit} from '@angular/core';
+
+    @Directive({
+        selector: '[appBetterHighlight]'
+    })
+
+    export class BetterHighlightDirective implements OnInit {
+        constructor(
+            private elRef: ElementRef,
+            private renderer: Renderer2
+        ) {}
+
+        ngOnInit() {
+            this.renderer.setStyle(
+                this.elRef.nativeElement, 
+                'background-color', 
+                'yellow');
+            this.renderer.setStyle(
+                this.elRef.nativeElement, 
+                'width', 
+                '300px');
+        }
+    }
+    ```
+
+### Enabling the Directive to Listen for Events
+
+1. In order to allow a directive to interact with the user in the DOM, we can use another decorator, **@HostListener**. In the following example, we import HostListener, then apply it to two functions, passing in the event that will trigger the function.
+    ```javascript
+    import { Directive, Renderer2, 
+    ElementRef, OnInit, HostListener } from '@angular/core';
+
+    @Directive({
+        selector: '[appBetterHighlight]'
+    })
+
+    export class BetterHighlightDirective implements OnInit {
+        constructor(
+            private elRef: ElementRef,
+            private renderer: Renderer2) {}
+
+    ngOnInit() {}
+
+    @HostListener('mouseenter') getOn(eventData: Event) {
+        this.renderer.setStyle(
+            this.elRef.nativeElement, 
+            'background-color', 
+            'yellow');
+	}
+
+    @HostListener('mouseleave') getOff(eventData: Event) {
+        this.renderer.setStyle(
+            this.elRef.nativeElement, 
+            'background-color', 
+            'transparent');
+        }
+    }
+    ```
+### Binding to Host Properties with @HostBinding
+1. As a simpler alternative to using the *Renderer2* object, we can use the decorator **@HostBinding**. This decorator takes as a parameter an attribute of the host element of the directive and binds it to a variable (which should have an initial value set. We can then change the value of the variable and see it reflected in the attribute (for example, through and event from *@HostListener*.
+
+2. See the following example:
+    ```javascript
+    import { Directive, HostListener, 
+        HostBinding } from '@angular/core';
+        
+    @Directive({
+        selector: '[appBetterHighlight]'
+    })
+    
+    export class BetterHighlightDirective {
+        @HostBinding('style.backgroundColor') bc = 'transparent';
+        
+        @HostListener('mouseenter') hover(eventData: Event) {
+            this.bc = 'pink';
+        }
+        
+        @HostListener('mouseleave') leave(eventData: Event) {
+            this.bc = 'transparent';
+        }
+    }
+    ```
+3. One further thing we can do is make the directive more dynamic using custom property binding to allow us to get values from outside the directive. The following is an example:
+
+    a. first, we are going to have a component template, *app.component.html*, that will have a \<p> element on which we are going to place our directive. The pertinent part of that element is as follows:
+    ```html
+    <!-- app.component.html -->
+    <p appHighlight 
+    [defaultColor]="coldColor" 
+    [highlightColor]="hotColor">
+        This is some text.
+    </p>
+    ```
+    We want the template to load with the \<p> to have a grey background color that turns pink when the mouse goes over the element and back to grey when the mouse leaves.  In the component class file, we will assign values to *coldColor* and *hotColor*. 
+    ```javascript
+    import { Component, Input } from '@angular/core';
+
+    @Component({
+        . . .
+    })
+    export class AppComponent {
+        hotColor = 'pink';
+        coldColor = 'grey';
+    ```
+    Then, in our directive, we use the @Input decorator to bind to the defaultColor and the highlightColor properties. Then we can do pretty much what we were up to before, but with the input colors. Note the use of the default set-up for *defaultColor*. We could also have used the *OnInit* method to set the default:
+    ```javascript
+    import { Directive, HostListener, 
+        HostBinding, Input } from '@angular/core';
+
+    @Directive({
+        selector: '[appBetterHighlight]'
+    })
+
+    export class BetterHighlightDirective {
+        @Input() defaultColor;
+        @Input() highlightColor;
+        @HostBinding('style.backgroundColor') 
+            bc = this.defaultColor || 'grey';
+
+        @HostListener('mouseenter') hover(eventData: Event) {
+            this.bc = this.highlightColor;
+        }
+
+        @HostListener('mouseleave') leave(eventData: Event) {
+            this.bc = this.defaultColor;
+        }
+    }
+    ```
+
+:::danger
+
+
+:::
+
+
+#####Taking Input from the Directive
+
+1.  We can set up the directive so that it can take user input.  For example, in a directive that highlights text, we can set it up to take input as to what color the highlight should be.  To do so, we should begin by setting up an input in the directive:
+
+		@Directive( {
+			selector: '[myHighlight]',
+			inputs: ['highlightColor']
+		})
+		
+	we can then use this variable *highlightColor* in our directive class.
+	
+2.	In the component where the directive is used, we can add *highlightColor* as a property next to the directive, as so:
+
+		<div myHighlight [highlightColor]="'red'">
+		
+			. . .
+			
+		</div>
+		
+	as a matter of syntax, we can make it more direct by assigning an alias to *myHighlight* in the directive, as so:
+	
+		@Directive({
+			selector: '[myHighlight]',
+			inputs: ['highlightColor: myHighlight']
+		)
+
+	this assigns *myHighlight* as an alias to *highlightColor*, thereby allowing us in the component to simply refer to myHighlight, as follows:
+	
+		<div [myHighlight]="'red'">
+		
+			. . .
+			
+		</div>
+ 
+ 	note the brackets that are now around [myHighlight], which were not there when it was simply a directive.  The brackets indicate it can take input.
+ 	
+ 	
+#### Adding Events/Handlers to the Directive
+
+1.	As an example, let's say we want the background color of text to highlight when we mouse over it, and return to normal when we leave it. We can do this in CSS, of course, but we can also add events to our directive, as well as the methods to handle these events.
+
+2.	First, we should add into our directive Decorator the following property: **host**, then add our event/handler key pairs as follows:
+
+		@Directive({
+    		selector: '[myHighlight]',
+    		inputs: ['highlightColor: myHighlight'],
+    		host: {
+        		'(mouseenter)': 'onMouseEnter()',
+        		'(mouseleave)': 'onMouseLeave()'
+    		}
+		})
+		
+	As shown above, *host* takes a JavaScript object into which we can pass events (pay close attention to the '()' syntax and associated handler methods).
+		
+4.	Then, we define the *onMouseEnter()* and *onMouseLeave()* events in the directive's class.
+
+5.	For now, this is our use of the *host* property in the @Directive decorator. 
+	
+
+
+
 #####Attribute Binding
 
 The following are examples of binding to various attributes that are present on the HTML element:
@@ -1052,7 +1368,101 @@ ngSwitch: This structural directive allows us to check on the state of a particu
     </template>
 </div>
 In the above snippet, note that [ngSwitch] designates the variable to be tested. Then we have a number of possible templates to be inserted, each with the [ngSwitchWhen] directive stating a condition (note the use of single equal signs), and ngSwitchDefault which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
-## IV. Services
+
+
+		
+		
+## Directives
+
+
+
+
+
+
+#####Attribute Binding
+1.	The following are examples of binding to various attributes that are present on the HTML element:
+
+2.	**attribute**: This is used to add an attribute to an HTML tag if an expression evaluates to true.  For example:
+
+		<button [disabled]="inputElement.value !== 'yes'">It's Yes!</button>
+
+3.	**hidden**: This directive hides the element from the DOM, as if it did not exist, if the condition proves true.  This means it does not hold a place in the rendered DOM.  For example:
+
+		<h2 [hidden]="trueFalse">Hello</h2>
+		<h2>Jordan</h2>
+	
+	If trueFalse is true in the above example, "Hello" will show above "Jordan".  However, if it is false, then "Jordan" will go up to its position.
+	
+4.	**disabled**: This property disables the tag (such as input or button) if it evaluates to true.
+
+		<input type='text' [value]='name' [disabled]="1===1"/>
+
+
+
+
+
+		
+	 
+
+
+
+
+### Creating a Custom Structural Directive
+
+1.	First, we will take care of the basics.
+
+	a.	In the component, make certain there is a *directives* property in the Decorator object and that the directives array contains the name of the exported class.
+	
+	b.	At the top of our component file, import our directive (identified by class name) from the correct path/file.
+	
+	c.	In the directive file, have the @Directive decorator assign valuse to the *selector* and *inputs* properties. Remember that the selector for a custom directive will be in the form of '[dirName]'.  Also, we can have the *inputs* property as an array of inputs, including the name of the directive as ['dirName'].
+	
+	d.	Insert the directive, which will have a name in the form of "*dirName", into the html tag, and we can have a testing condition on the directive, as follows:
+	
+			<div>
+                Enter true or false
+                <br/>
+                <input type="text" #condition (keyup)="null">
+            </div>
+            <div *myUnless="condition.value.length % 2 === 1">
+                Only shown if "hotDog" was not entered!
+            </div>
+            
+	In the above snippet, we evaluate if the length of the input string is 6. Upon a change, we run the directive. The directive does not run if there is not a change in the value of the statement.
+	
+	
+2.	Similar to the ElementRef is the **TemplateRef** and the **ViewContainerRef**.  The former will refer to everything (text and descendant nodes) contained within the element onto which the directive is placed.  The latter refers to the entire element and contents to which the directive is attached, and will be where a view can be inserted.
+
+
+		import {Directive} from 'angular2/core';
+		import {TemplateRef} from 'angular2/core';
+		import {ViewContainerRef} from 'angular2/core';
+
+		@Directive({
+    		selector: '[myUnless]',
+    		inputs: ['myUnless']
+		})
+
+		export class UnlessDirective {
+    		constructor(private _templateRef: TemplateRef, private _viewContainerRef: ViewContainerRef) {s
+
+    		}
+
+    		set myUnless(txt: string) {
+        		if (!(txt.length > 5)) {
+            		console.log('if')
+            		this._viewContainerRef.createEmbeddedView(this._templateRef);
+        		} else {
+            		this._viewContainerRef.clear();
+        		}
+    		}
+		}
+	
+	In the above, first note the *inputs* property of @Directive.  This does not have to be the same as the name for the selector.
+
+
+
+
 
 ## IV. Routing
 ### A. Introduction
@@ -3274,267 +3684,6 @@ Be sure to include information regarding the relative path issue
 	a.	
 
 
-
-
-		
-		
-## Directives
-
-
-
-
-### Angular Built-In Directives and Properties
-
-##### ngClass
-1.	This is used to present one or more classes that will be added if their associated expression evaluates to true. It takes an object, the keys of which are the class names, and the values are conditions that evaluate to truthy or falsey, (and added to the tag if truthy).
-
-2.	The *ngClass* directive is shown in the following example, as well as a shortcut syntax for adding a single class:
-
-		<div [ngClass]="{border: true, background: true}"></div>
-
-		<div [class.border]="true"></div>
-
-
-3.	Note that directives and properties use brackets [] and affect the tag.  Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
-
-
-
-#####Attribute Binding
-1.	The following are examples of binding to various attributes that are present on the HTML element:
-
-2.	**attribute**: This is used to add an attribute to an HTML tag if an expression evaluates to true.  For example:
-
-		<button [disabled]="inputElement.value !== 'yes'">It's Yes!</button>
-
-3.	**hidden**: This directive hides the element from the DOM, as if it did not exist, if the condition proves true.  This means it does not hold a place in the rendered DOM.  For example:
-
-		<h2 [hidden]="trueFalse">Hello</h2>
-		<h2>Jordan</h2>
-	
-	If trueFalse is true in the above example, "Hello" will show above "Jordan".  However, if it is false, then "Jordan" will go up to its position.
-	
-4.	**disabled**: This property disables the tag (such as input or button) if it evaluates to true.
-
-		<input type='text' [value]='name' [disabled]="1===1"/>
-
-
-
-
-
-
-
-2.	**\*ngFor**: This structural directive allows us to output something into our document multiple times, such as a list.  The syntax is as follows:
-
-		 <section class='directive'>
-            <h2>*ngFor</h2>
-                <ul>
-                    <li *ngFor="#item of list #ind = index">{{item}} {{ind}}</li>
-                </ul>
-        </section>
-        
-	In the above, "#item" is a variable name assigned to the list items (and included in the interpolation), "of" is a keyword designating the looping through the list, and "list" is a variable name of an array of items. For example, list may be defined in the class definition.  "index" is a variable provided by angular for array index of the item.
-
-
-3.	**ngSwitch**: This structural directive allows us to check on the state of a particular variable, and then render accordingly.  It functions much like a *switch* statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
-
-		
-		<div>
-            Enter red, blue, or green
-            <br/>
-            <input type="text" #color (keyup)="0"/>
-        </div>
-		
-		<div [ngSwitch]="color.value">
-            <template [ngSwitchWhen]="'red'">
-                <span style="color: red">Color is Red</span>
-            </template>
-            <template [ngSwitchWhen]="'blue'">
-                <span style="color: blue">Color is Blue</span>
-            </template>
-            <template [ngSwitchWhen]="'green'">
-                <span style="color: green">Color is Green</span>
-            </template>
-            <template ngSwitchDefault>
-                <span>Color is Undetermined</span>
-            </template>
-        </div>
-
-	In the above snippet, note that **[ngSwitch]** designates the variable to be tested.  Then we have a number of possible templates to be inserted, each with the **[ngSwitchWhen]** directive stating a condition (note the use of single equal signs), and **ngSwitchDefault** which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
-
-
-		
-	 
-
-
-
-	
-###Creating a Custom Attribute Directive
-
-1.	The directive will be created in its own file. At the top of the file, we must import the Directive object from 'angular2/core', which will allow us to attach a directive Decorator to our class. In addition, we must export an object out, so we will always have the following:
-
-		import { Directive } from 'angular2/core';
-		
-		@Directive({
-			selector: '[the selector]'
-		)
-		
-		export class DirectiveName() {
-		
-		}
-		
-	**Note**: The value for selector is the proper syntax. The brackets do not indicate any databinding, it is simply syntax. The "[]" indicate an attribute, but it could be "." to get a class or "#" to get an identified component.  In the component, the directive name, without quotes or brackets, is inserted into the html tag.
-	
-2.	On the component side, we must add the *directives* property to the decorator, and include it in app.modules.  Also, we will need to import the exported class out of the directive page and into the component page, as follows:
-
-		import {Component} from 'angular2/core';
-		
-		@Component({
-			selector: . . .,
-			template: `
-				<div myDirectiveName>
-					Text . . .
-				</div>
-			`
-
-3.	On the directive class, we need to create a constructor, which is called to create a new instance of the directive whenever it is called in the component. In the constructor, we can inject the **ElementRef** object, which gives us the html element on which the directive is sitting.  In order to use this, we must import it from 'angular2/core, as follows:
-
-		import {Directive} from 'angular2/core';
-		import {ElementRef} from 'angular2/core';
-		
-		@Directive({
-			selector: '[myDirectiveName]'
-		)
-		
-		export class DirectiveName() {
-			
-			constructor(private _elref: ElementRef)
-		
-		}
-	_elref will be assigned the element that the directive is on, so we can modify it.  So, for example, in a directive changing the background-color of an element, we could have:
-	
-		constructor(public elRef: ElementRef) {
-        	this.elRef.nativeElement.style.backgroundColor = this._defaultColor;
-    	}
-    	
-    the actual html element is accessed through the *.nativeElement* property of the ElementRef.
-
-4.	We can also use the Angular2 **renderer** helper object.  First, we must import it from the angular2/core. It allows a more convenient way to change the style of HTML elements.  The Renderer has a **setElementStyle** method, that takes three parameters:
-
-	a.	the element,
-	b.	the style ('background-color'),
-	c.	the value to assign to the style.
-	
-#####Taking Input from the Directive
-
-1.  We can set up the directive so that it can take user input.  For example, in a directive that highlights text, we can set it up to take input as to what color the highlight should be.  To do so, we should begin by setting up an input in the directive:
-
-		@Directive( {
-			selector: '[myHighlight]',
-			inputs: ['highlightColor']
-		})
-		
-	we can then use this variable *highlightColor* in our directive class.
-	
-2.	In the component where the directive is used, we can add *highlightColor* as a property next to the directive, as so:
-
-		<div myHighlight [highlightColor]="'red'">
-		
-			. . .
-			
-		</div>
-		
-	as a matter of syntax, we can make it more direct by assigning an alias to *myHighlight* in the directive, as so:
-	
-		@Directive({
-			selector: '[myHighlight]',
-			inputs: ['highlightColor: myHighlight']
-		)
-
-	this assigns *myHighlight* as an alias to *highlightColor*, thereby allowing us in the component to simply refer to myHighlight, as follows:
-	
-		<div [myHighlight]="'red'">
-		
-			. . .
-			
-		</div>
- 
- 	note the brackets that are now around [myHighlight], which were not there when it was simply a directive.  The brackets indicate it can take input.
- 	
- 	
-#### Adding Events/Handlers to the Directive
-
-1.	As an example, let's say we want the background color of text to highlight when we mouse over it, and return to normal when we leave it. We can do this in CSS, of course, but we can also add events to our directive, as well as the methods to handle these events.
-
-2.	First, we should add into our directive Decorator the following property: **host**, then add our event/handler key pairs as follows:
-
-		@Directive({
-    		selector: '[myHighlight]',
-    		inputs: ['highlightColor: myHighlight'],
-    		host: {
-        		'(mouseenter)': 'onMouseEnter()',
-        		'(mouseleave)': 'onMouseLeave()'
-    		}
-		})
-		
-	As shown above, *host* takes a JavaScript object into which we can pass events (pay close attention to the '()' syntax and associated handler methods).
-		
-4.	Then, we define the *onMouseEnter()* and *onMouseLeave()* events in the directive's class.
-
-5.	For now, this is our use of the *host* property in the @Directive decorator. 
-	
-
-### Creating a Custom Structural Directive
-
-1.	First, we will take care of the basics.
-
-	a.	In the component, make certain there is a *directives* property in the Decorator object and that the directives array contains the name of the exported class.
-	
-	b.	At the top of our component file, import our directive (identified by class name) from the correct path/file.
-	
-	c.	In the directive file, have the @Directive decorator assign valuse to the *selector* and *inputs* properties. Remember that the selector for a custom directive will be in the form of '[dirName]'.  Also, we can have the *inputs* property as an array of inputs, including the name of the directive as ['dirName'].
-	
-	d.	Insert the directive, which will have a name in the form of "*dirName", into the html tag, and we can have a testing condition on the directive, as follows:
-	
-			<div>
-                Enter true or false
-                <br/>
-                <input type="text" #condition (keyup)="null">
-            </div>
-            <div *myUnless="condition.value.length % 2 === 1">
-                Only shown if "hotDog" was not entered!
-            </div>
-            
-	In the above snippet, we evaluate if the length of the input string is 6. Upon a change, we run the directive. The directive does not run if there is not a change in the value of the statement.
-	
-	
-2.	Similar to the ElementRef is the **TemplateRef** and the **ViewContainerRef**.  The former will refer to everything (text and descendant nodes) contained within the element onto which the directive is placed.  The latter refers to the entire element and contents to which the directive is attached, and will be where a view can be inserted.
-
-
-		import {Directive} from 'angular2/core';
-		import {TemplateRef} from 'angular2/core';
-		import {ViewContainerRef} from 'angular2/core';
-
-		@Directive({
-    		selector: '[myUnless]',
-    		inputs: ['myUnless']
-		})
-
-		export class UnlessDirective {
-    		constructor(private _templateRef: TemplateRef, private _viewContainerRef: ViewContainerRef) {s
-
-    		}
-
-    		set myUnless(txt: string) {
-        		if (!(txt.length > 5)) {
-            		console.log('if')
-            		this._viewContainerRef.createEmbeddedView(this._templateRef);
-        		} else {
-            		this._viewContainerRef.clear();
-        		}
-    		}
-		}
-	
-	In the above, first note the *inputs* property of @Directive.  This does not have to be the same as the name for the selector.
 
 
 

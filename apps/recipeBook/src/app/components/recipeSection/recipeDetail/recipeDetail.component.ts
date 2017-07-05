@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
 	selector: 'app-recipe-detail',
@@ -7,5 +7,6 @@ import { Component } from '@angular/core';
 })
 
 export class RecipeDetailComponent {
+	@Input() recipe: {name: string, description: string, imagePath: string};
 
 }
