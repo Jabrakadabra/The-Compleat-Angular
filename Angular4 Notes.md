@@ -926,33 +926,16 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 #### ngSwitch
 
-1. This structural directive allows us to check on the state of a particular variable, and then render accordingly.  It functions much like a *switch* statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
-
-		
-		<div>
-            Enter red, blue, or green
-            <br/>
-            <input type="text" #color (keyup)="0"/>
-        </div>
-		
-		<div [ngSwitch]="color.value">
-            <template [ngSwitchWhen]="'red'">
-                <span style="color: red">Color is Red</span>
-            </template>
-            <template [ngSwitchWhen]="'blue'">
-                <span style="color: blue">Color is Blue</span>
-            </template>
-            <template [ngSwitchWhen]="'green'">
-                <span style="color: green">Color is Green</span>
-            </template>
-            <template ngSwitchDefault>
-                <span>Color is Undetermined</span>
-            </template>
-        </div>
-
-	In the above snippet, note that **[ngSwitch]** designates the variable to be tested.  Then we have a number of possible templates to be inserted, each with the **[ngSwitchWhen]** directive stating a condition (note the use of single equal signs), and **ngSwitchDefault** which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
-
-
+1. This structural directive allows us to check on the state of a particular variable, and then render accordingly. It functions much like a *switch* statement in plain JavaScript. Its syntax is very straightfoward, but does have multiple parts.
+    ```html
+    <div [ngSwitch]="value">			
+        <p *ngSwitchCase="5">Value is 5</p>
+        <p *ngSwitchCase="10">Value is 10</p>
+        <p *ngSwitchCase="100">Value is 100</p>
+        <p *ngSwitchDefault>Value is Default</p>
+    </div>
+    ```
+    In the above snippet, note that **[ngSwitch]** designates the variable to be tested.  Then we have a number of possible templates to be inserted, each with the **\*ngSwitchCase** directive stating a condition (note the use of single equal signs), and **\*ngSwitchDefault** which gets chosen if no other template does. Note that the directive is wrapped in brackets, because it takes input, but the others are not, because they are not taking any input.
 
 #### ngStyle
 
@@ -1040,7 +1023,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ### C. Building a Custom Attribute Directive
 
-#### Initial Attemp - Not the Ideal Approach
+#### Initial Attempt - Not the Ideal Approach
 
 1. The following example shows how to create an attribute directive that affects how a DOM element is presented, in this case, it changes the background color. **However, this is not the "correct" solution, as it involves direct manipulatation of the DOM, rather than going through Ng4.** It is presented for discussion purposes only.
 
@@ -1258,156 +1241,140 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
+4. As a matter of syntax, we can make it more direct by assigning an alias to the *highlightColor* property, as follows:
+    ```javascript
+    import { Directive, HostListener, 
+        HostBinding, Input } from '@angular/core';
 
-:::danger
+    @Directive({
+        selector: '[appBetterHighlight]'
+    })
 
-
-:::
-
-
-#####Taking Input from the Directive
-
-1.  We can set up the directive so that it can take user input.  For example, in a directive that highlights text, we can set it up to take input as to what color the highlight should be.  To do so, we should begin by setting up an input in the directive:
-
-		@Directive( {
-			selector: '[myHighlight]',
-			inputs: ['highlightColor']
-		})
+    export class BetterHighlightDirective {
+        @Input() defaultColor;
+        @Input('appBetterHighlight') highlightColor;
+    ```
+    this assigns *appBetterHighlight* (the selector of the directive) as an alias to *highlightColor*, thereby allowing us in the component to simply refer to assign the value to the selector, as follows:
+    ```html
+    <div [appBetterHighlight="'pink'">
 		
-	we can then use this variable *highlightColor* in our directive class.
-	
-2.	In the component where the directive is used, we can add *highlightColor* as a property next to the directive, as so:
+        . . .
 
-		<div myHighlight [highlightColor]="'red'">
-		
-			. . .
-			
-		</div>
-		
-	as a matter of syntax, we can make it more direct by assigning an alias to *myHighlight* in the directive, as so:
-	
-		@Directive({
-			selector: '[myHighlight]',
-			inputs: ['highlightColor: myHighlight']
-		)
+    </div>
+    ```
+    Note the brackets that are now around [appBetterHighlight], which were not there when it was simply a directive.  The brackets indicate it can take input.
 
-	this assigns *myHighlight* as an alias to *highlightColor*, thereby allowing us in the component to simply refer to myHighlight, as follows:
-	
-		<div [myHighlight]="'red'">
-		
-			. . .
-			
-		</div>
- 
- 	note the brackets that are now around [myHighlight], which were not there when it was simply a directive.  The brackets indicate it can take input.
- 	
- 	
-#### Adding Events/Handlers to the Directive
+### C. Creating a Custom Structural Directive
+1. As we have noted, a **structural directive**, *i.e.*, one that affects the structure of the DOM, is notated with a preceding "*" (*e.g., *\*ngIf*, *\*ngFor*). The star(\*) is a bit of syntax that tells Ng4 to create **\<ng-template>s** to add if called for.  For example:
+    ```html
+    <div *ngIf="!onlyOdd">
+        <li
+        class="list-group-item"
+        [ngClass]="{even: number % 2 === 0}"
+        *ngFor="let number of evenNumbers">
+        {{ number }}
+        </li>
+    </div>
+    ```
+    actually is simply syntax for:
+    ```html
+    <ng-template [ngIf]="!onlyOdd">
+        <div>
+            <li
+            class="list-group-item"
+            [ngClass]="{even: number % 2 === 0}"
+            *ngFor="let number of evenNumbers">
+            {{ number }}
+            </li>
+        </div>
+    </ng-template>
+    ```
 
-1.	As an example, let's say we want the background color of text to highlight when we mouse over it, and return to normal when we leave it. We can do this in CSS, of course, but we can also add events to our directive, as well as the methods to handle these events.
+2. In this section, we are going to create a simple structural directive, which we will name **\*unless**. It will hide the element on which it sits, unless a given condition is false (*i.e.*, the opposite action of **\*ngIf**). First, create a directive file, and provision it just like with an attribute directive:
+    ```javascript
+    // unless.directive.ts
+    import { Directive } from '@angular/core';
 
-2.	First, we should add into our directive Decorator the following property: **host**, then add our event/handler key pairs as follows:
+    @Directive({
+        selector: '[appUnless]'
+    })
 
-		@Directive({
-    		selector: '[myHighlight]',
-    		inputs: ['highlightColor: myHighlight'],
-    		host: {
-        		'(mouseenter)': 'onMouseEnter()',
-        		'(mouseleave)': 'onMouseLeave()'
-    		}
-		})
-		
-	As shown above, *host* takes a JavaScript object into which we can pass events (pay close attention to the '()' syntax and associated handler methods).
-		
-4.	Then, we define the *onMouseEnter()* and *onMouseLeave()* events in the directive's class.
+    export class UnlessDirective {
+        constructor( ) {}
+    }
+    ```
+    Don't forget to add into *app.module.ts*.
 
-5.	For now, this is our use of the *host* property in the @Directive decorator. 
-	
+3. Next, we will want to get access to the input value on the directive, which we can do using the **@Input** decorator. We will want to run a method any time the value is changed, so we will use the **set()** method to run a function any time the value is updated:
+    ```javascript
+    // unless.directive.ts
+    import { Directive, Input } from '@angular/core';
 
+    @Directive({
+        selector: '[appUnless]'
+    })
 
+    export class UnlessDirective {
+        @Input() set appUnless(condition: boolean) {
+            if(!condition) {
+                . . .
+            } else {
+            
+            }
+        constructor( ) {}
+    }
+    ```
+    **Note**: the set method will be for the directive selector name ("appUnless", in this case).  Also, note the parameter that the method takes, which is the boolean expression assigned to it.  
 
-#####Attribute Binding
+4. We will need access to two things: first, the template we will be inserting, based on the condition and, second, the location where the *\<ng-container>* will sit. They can both be injected through the constructor, the former with **TemplateRef** and the other with **ViewContainerRef**. 
+    ```javascript
+    // unless.directive.ts
+    import { Directive, Input,
+        TemplateRef, ViewContainerRef } from '@angular/core';
 
-The following are examples of binding to various attributes that are present on the HTML element:
+    @Directive({
+        selector: '[appUnless]'
+    })
 
-attribute: This is used to add an attribute to an HTML tag if an expression evaluates to true. For example:
+    export class UnlessDirective {
+        @Input() set appUnless(condition: boolean) {
+            if(!condition) {
+                . . .
+            } else {
+            
+            }
+        constructor(
+            private template: TemplateRef<any>,
+            private viewCont: ViewContainerRef
+        ) {}
+    }
+    ```
+5. Finally, we will use methods on the ViewContainerRef: *createEmbeddedView( )* takes as a parameter the view to embed (the TemplateRef) and places the view into the template at the designated location; **clear( )** removes any view from the location:
+    ```javascript
+    // unless.directive.ts
+    import { Directive, Input,
+        TemplateRef, ViewContainerRef } from '@angular/core';
 
-<button [disabled]="inputElement.value !== 'yes'">It's Yes!</button>
-hidden: This directive hides the element from the DOM, as if it did not exist, if the condition proves true. This means it does not hold a place in the rendered DOM. For example:
+    @Directive({
+        selector: '[appUnless]'
+    })
 
-<h2 [hidden]="trueFalse">Hello</h2>
-<h2>Jordan</h2>
-If trueFalse is true in the above example, "Hello" will show above "Jordan". However, if it is false, then "Jordan" will go up to its position.
-
-disabled: This property disables the tag (such as input or button) if it evaluates to true.
-
-<input type='text' [value]='name' [disabled]="1===1"/>
-
-
-
-ngSwitch: This structural directive allows us to check on the state of a particular variable, and then render accordingly. It functions much like a switch statement in plain JavaScript. Its syntax is very straightfoward, but does have several parts:
-
-<div>
-    Enter red, blue, or green
-    <br/>
-    <input type="text" #color (keyup)="0"/>
-</div>
-
-<div [ngSwitch]="color.value">
-    <template [ngSwitchWhen]="'red'">
-        <span style="color: red">Color is Red</span>
-    </template>
-    <template [ngSwitchWhen]="'blue'">
-        <span style="color: blue">Color is Blue</span>
-    </template>
-    <template [ngSwitchWhen]="'green'">
-        <span style="color: green">Color is Green</span>
-    </template>
-    <template ngSwitchDefault>
-        <span>Color is Undetermined</span>
-    </template>
-</div>
-In the above snippet, note that [ngSwitch] designates the variable to be tested. Then we have a number of possible templates to be inserted, each with the [ngSwitchWhen] directive stating a condition (note the use of single equal signs), and ngSwitchDefault which gets chosen if no other template does. Note that the first two directives are wrapped in brackets, because they take input, but the default is not, because it does not take any input.
-
-
-		
-		
-## Directives
-
-
-
-
-
-
-#####Attribute Binding
-1.	The following are examples of binding to various attributes that are present on the HTML element:
-
-2.	**attribute**: This is used to add an attribute to an HTML tag if an expression evaluates to true.  For example:
-
-		<button [disabled]="inputElement.value !== 'yes'">It's Yes!</button>
-
-3.	**hidden**: This directive hides the element from the DOM, as if it did not exist, if the condition proves true.  This means it does not hold a place in the rendered DOM.  For example:
-
-		<h2 [hidden]="trueFalse">Hello</h2>
-		<h2>Jordan</h2>
-	
-	If trueFalse is true in the above example, "Hello" will show above "Jordan".  However, if it is false, then "Jordan" will go up to its position.
-	
-4.	**disabled**: This property disables the tag (such as input or button) if it evaluates to true.
-
-		<input type='text' [value]='name' [disabled]="1===1"/>
+    export class UnlessDirective {
+        @Input() set appUnless(condition: boolean) {
+            if(!condition) {
+               this.viewCont.createEmbeddedView(this.template);
+            } else {
+                this.viewCont.clear();
+            }
+        constructor(
+            private template: TemplateRef<any>,
+            private viewCont: ViewContainerRef
+        ) {}
+    }
+    ```
+    
 
 
-
-
-
-		
-	 
-
-
-
-
-### Creating a Custom Structural Directive
 
 1.	First, we will take care of the basics.
 
@@ -1459,7 +1426,6 @@ In the above snippet, note that [ngSwitch] designates the variable to be tested.
 		}
 	
 	In the above, first note the *inputs* property of @Directive.  This does not have to be the same as the name for the selector.
-
 
 
 

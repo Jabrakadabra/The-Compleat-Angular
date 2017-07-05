@@ -6,7 +6,7 @@ import { Directive, HostListener, HostBinding, Input } from '@angular/core';
 
 export class BetterHighlightDirective {
 	@Input() defaultColor;
-	@Input() highlightColor;
+	@Input('appBetterHighlight') highlightColor;
 	@HostBinding('style.backgroundColor') bc = this.defaultColor || 'grey';
 
 	@HostListener('mouseenter') hover(eventData: Event) {
