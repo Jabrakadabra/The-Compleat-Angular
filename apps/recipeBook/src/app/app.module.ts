@@ -7,7 +7,7 @@ import { RecipeSectionComponent } from './components/recipeSection';
 import { RecipeListComponent, RecipeItemComponent } from './components/recipeSection/recipeList';
 import { RecipeDetailComponent } from './components/recipeSection/recipeDetail';
 import { ShoppingListComponent } from './components/shopping-list';
-import { ShoppingListEditComponent } from './components/shopping-list/shoppingListEditComponent';
+import { ShoppingListEditComponent } from './components/shopping-list/shoppingListEdit';
 
 @NgModule({
 	declarations: [

@@ -3,15 +3,15 @@ import { Response } from '@angular/http';
 import { HttpService } from '../services/httpService';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+	selector: 'app-root',
+	templateUrl: './app.component.html',
+	styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
 	constructor(
 		private http: HttpService
 	){}
-  servers = [
+	servers = [
     {
       name: 'Testserver',
       capacity: 10,
