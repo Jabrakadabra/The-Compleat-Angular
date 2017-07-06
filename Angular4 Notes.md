@@ -2426,20 +2426,19 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ### A. Introduction
 
-1.	**Pipes** can be used to transform the way a stream of data appears in HTML. Not only does Angular2 have several built-in pipes, we can design custom pipes.
+1. **Pipes** can be used to transform the way a stream of data appears in HTML. Not only does Ng4 have several built-in pipes, we can design custom pipes.
 
-2.	It is important to note that the pipe **only** transforms the view of the data in the html template, it does **not** modify the underlying value. So, if the variable "name" is assigned the value "Jordan" and in the template we have:
-
-		{{name | uppercase}}
-		
-	we will see JORDAN in the view, but the name variable remains the string "Jordan."
+2. It is important to note that the pipe **only** transforms the view of the data in the html template, it does **not** modify the underlying value. So, if the variable "name" is assigned the value "Jordan" and in the template we have:
+    ```html
+    {{name | uppercase}}
+    ```	
+    we will see JORDAN in the view, but the name variable remains the string "Jordan."
 
 ### B. Basic Use
 
 1. Examine the following example:
-
     ```javascript
-    import {Component} from 'angular2/core';
+    import {Component} from '@angular/core';
 
     @Component({
         selector: . . .
@@ -2456,75 +2455,95 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     }
     ```
 
-2.	In the above example, we have a simple base case for assigning a date to a variable and interpolating it into the text.  Without the **date** pipe, the text would be the entire date/time string. In this example, of course, we could use JavaScript functions, but this shows the use of the pipe:
+2. In the above example, we have a simple base case for assigning a date to a variable and interpolating it into the text.  Without the **date** pipe, the text would be the entire date/time string. In this example, of course, we could use JavaScript functions, but this shows the use of the pipe:
 
 	i)  on the left side is what goes in (an unformatted date)
 	
 	ii) on the right side is the transforming method that outputs transformed data.
 	
-3.	As shown in some of the pipe descriptions below (*date* and *slice*, for example), we can pass in parameters to our pipe. The syntax for this is to have a preceding colon, followed by the parameter. *Multiple parameters* should each be preceded by a colon:
+3. As shown in some of the pipe descriptions below (*date* and *slice*, for example), we can pass in parameters to our pipe. The syntax for this is to have a preceding colon, followed by the parameter. *Multiple parameters* should each be preceded by a colon:
     ```javascript
 	{{ value | slice: '3' : '10'}} //spaces are not relevant
 	```	
-4.	Pipes can be linked together, so that what comes out of the prior pipe goes into the subsequent pipe.  Note that this is **not always transitive**, *i.e.*, the end result may differ depending upon the order of the pipes.
+4. Pipes can be linked together, so that what comes out of the prior pipe goes into the subsequent pipe.  Note that this is **not always transitive**, *i.e.*, the end result may differ depending upon the order of the pipes.
 		
 ### C. Built-In Pipes
 
-1.	**date**:	This pipe can take formatting arguments to control the output of the date/time string.  Built in formats can be seen in the Angular2 API docs. Components to include can be specified. For example, the following:
+1. **date**: This pipe can take formatting arguments to control the output of the date/time string. Built in formats can be seen in the Ng4 API docs. Components to include can be specified. For example, the following:
     ```html
-	<p>Today is: {{today | date:'d MMMM, y'}}</p>
-	```
-	outputs "3 April, 2016".
-	
-	Note that times will show based on the location of the machine.  So a new date, although kept in UTC time, shows the local EST without offset if given: {{today | hh:mm:ss}};
-	
-2.	**uppercase**: This pipe transforms text to all uppercase.  Very straightforward.
-
-3.	**lowercase**: This pipe transforms text to all lowercase.  Very straightforward.
-
-4.	**slice**: This pipe takes beginning and ending parameters to indicate the portion of a string from which to take a slice.
-    ```html
-	<div>Output: {{inputSlicePipe.value | slice:start.value:end.value}}</div>
-	//or
-	<div>Output: {{inputSlicePipe.value | slice:'3':'10'}}</div>
+    <p>Today is: {{today | date:'d MMMM, y'}}</p>
     ```
-	Notice in the above example, the syntax for passing multiple arguments to the slice pipe, using colons.
-
-5.	**number**: This pipe allows for the formatting of a number (remember that the input to the pipe must be a number, *not a string*). 
-
-	A basic example:
-    ```html
-	<div>Decimal: {{1.0 * inputNumberPipes.value | number:'1.0-2'}}</div>
-    ```
-	The argument is interpreted as follows: the first number tells the minimum number of places to be exhibited before the decimal.  It must be at least 1. The range after the decimal (*i.e.*, ""1-2") shows the minimum number of places past the decimal to show, followed by the maximum number to show. So, in the above example, an integer would show as an integer, while PI would show as 3.14.
+    outputs "3 April, 2016".
 	
-6.	**currency**: This is similar to a number pipe. The default output (i.e., no arguments) is "USD12.34" (rounded to two places after the decimal).
+    Note that times will show based on the location of the machine.  So a new date, although kept in UTC time, shows the local EST without offset if given: {{today | hh:mm:ss}};
+	
+2. **uppercase**: This pipe transforms text to all uppercase.  Very straightforward.
+
+3. **lowercase**: This pipe transforms text to all lowercase.  Very straightforward.
+
+4. **slice**: This pipe takes beginning and ending parameters to indicate the portion of a string from which to take a slice.
+    ```html
+    <div>Output: { {inputSlicePipe.value | slice:start.value:end.value }}</div>
+    <!-- or -->
+    <div>Output: {{ inputSlicePipe.value | slice:3 :10 }}</div>
+    ```
+    Notice in the above example, the syntax for passing multiple arguments to the slice pipe, using colons.
+
+5. **number**: This pipe allows for the formatting of a number (remember that the input to the pipe must be a number, *not a string*). A basic example:
+    ```html
+    <div>Decimal: {{1.0 * inputNumberPipes.value | number:'1.0-2'}}</div>
+    ```
+    The argument is interpreted as follows: the first number tells the minimum number of places to be exhibited before the decimal.  It must be at least 1. The range after the decimal (*i.e.*, ""1-2") shows the minimum number of places past the decimal to show, followed by the maximum number to show. So, in the above example, an integer would show as an integer, while PI would show as 3.14.
+
+6. **percent**: This is very similar to the *number* pipe in syntax, but expresses the number as a percentage (*i.e.*, the input number '2' would be expressed '200%'). It takes the same formatting parameter as number.
+
+7. **currency**: This is similar to a number pipe. The default output (i.e., no arguments) is "USD12.34" (rounded to two places after the decimal).
  
-	a.	Can be assigned a currency argument, like so:
+    a. Can be assigned a currency argument, like so:
     ```html
-	<div>Currency: {{1.0 * inputNumberPipes.value | currency:'EUR'}}</div>
+    <div>Currency: {{1.0 * inputNumberPipes.value | currency:'EUR'}}</div>
     ```
-    This. argument can be any three letter string, and will display as uppercase letters.
+    This argument can be any three letter string, and will display as uppercase letters.
     
-	b.	A second argument shows the short form ($, E) if *true*, and long form (USD, EUR) if *false*.
-	```html
-	{{ 123.456 | currency: 'usd' :true }} //displays $123.46
-	```
-	c.	A third argument is for number styling, and is the same as for the number pipe, above.
+    b. A second argument shows the short form ($, E) if *true*, and long form (USD, EUR) if *false*.
+    ```html
+    <!-- displays $123.46 -->
+    {{ 123.456 | currency: 'usd' :true }}
+    ```
+    c. A third argument is for number styling, and is the same as for the number pipe, above.
+
+8. **I18nSelect**: This pipe allows us to include a mapping object to provide a value based on our key. For example, assume that we want to include the phrase "Invite him" or "Invite her" in our text. We could include in our HTML an interpolated {{ gender }} value, with the pipe, which would take as a parameter the mapping object, as so:
+    ```javascript
+    @Component({
+        . . .,
+        template: `
+            <div>{{gender | i18nSelect: inviteMap}} </div>
+         `
+     })
+    export class I18nSelectPipeComponent {
+        gender: string = 'male';
+        inviteMap: any = {
+            'male': 'Invite him.', 
+            'female': 'Invite her.', 
+            'other': 'Invite them.'
+        };
+    }
+    ```
+ 
 	
 ### D. Custom Pipes
 
-1.	We can build our own pipes, to alter output in the manner we wish, if there is not a satisfactory built-in pipe. Take the steps in the following example, in which we build a very simple pipe that doubles a number value.
+1. We can build our own pipes, to alter output in the manner we wish, if there is not a satisfactory built-in pipe. Take the steps in the following example, in which we build a very simple pipe that doubles a number value.
 
-	a.	For the project, create a *pipes* directory to hold the various pipes.
+    a.	For the project, create a *pipes* directory to hold the various pipes.
 	
-	b.	In our *pipes* directory, we add a file called *double.pipe.ts*:
+    b.	In our *pipes* directory, we add a file called *double.pipe.ts*:
     ```javascript
     import { Pipe, PipeTransform } from '@angular/core';
 
     @Pipe({
         name: 'double'
-	})
+    })
 
     export class Double implements PipeTransform {
         transform(value: any, arg1?: any): any {
@@ -2532,52 +2551,93 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-	Note that we must import *Pipe* and *Pipe Transform*, that we name our pipe in the *@Pipe decorator* and that we export a *transform()* method.
+    Note that we must import *Pipe* and *Pipe Transform*, that we name our pipe in the *@Pipe decorator* and that we export a *transform()* method.
 	
-	Note that the *transform()* method takes a value (*i.e.*, the left side of the pipe), then the parameters.  The "?" operator means "if there is one"; in the above case there would not be any parameters since we are just doubling the value.  We can ask for lots of arguments, like so:
+    Note that the *transform()* method takes a value (*i.e.*, the left side of the pipe), then the parameters.  The "?" operator means "if there is one"; in the above case there would not be any parameters since we are just doubling the value.  We can ask for lots of arguments, like so:
     ```javascript
-	transform(value: any, arg1?: any, arg2?: any, arg3?: any): any {
-		return value * 2;
-	}
-	```
-	c.	Let's say we also build another pipe, called *triple*, in file *triple.pipe.ts*.  In our *pipes* directory, create an *index.ts* file and have the following:
-	```javascript
-	import { Double } from './double.pipe';
-	import { Triple } from './triple.pipe';
+    transform(value: any, arg1?: any, arg2?: any, arg3?: any): any {
+        return value * 2;
+    }
+    ```
+    c. Let's say we also build another pipe, called *triple*, in file *triple.pipe.ts*.  In our *pipes* directory, create an *index.ts* file and have the following:
+    ```javascript
+    import { Double } from './double.pipe';
+    import { Triple } from './triple.pipe';
 
-	export const Pipes = {
-		pipes: [
-			Double,
-			Triple
-		]
-	}
-	```
-	
-	d. Then, in order to be able to use them throughout the application, go to the *app.module.ts* file and add the following:
-	```javascript
-	import { Pipes } from './pipes';
-		
-	@NgModule({
-	    declarations: [
-	        ...Pipes.pipes
-	    ]
-	```
-			
-### E. Pure vs. Impure Pipes
+    export const Pipes = {
+        pipes: [
+            Double,
+            Triple
+        ]
+    }
+    ```
+    d. Then, in order to be able to use them throughout the application, go to the *app.module.ts* file and add the following:
+    ```javascript
+    import { Pipes } from './pipes';
 
-1.	One problem that can arise is that Angular2's change detection will be triggered only if there is a change to a primitive or to a reference. A change in the contents of an object or an array will not.  So, if we have a filter pipe, for example, and are adding new values into an array of values, the filter will not update as new items are added. This is referred to as a **pure pipe**.
+    @NgModule({
+        declarations: [
+            ...Pipes.pipes
+        ]
+    ```
+### E. Using a Filter Pipe
+1. If we have an array of valuse, we can pass that array into a custom pipe as a value, and then test the items in the array and return the items that pass the test. In the following example, we are printing out on the page a list of servers, each with a number of properties, including an *instanceType* of "small", "medium", or "large".
 
-2.	One way to take care of the problem would be to create a new array on each change in our array.
+2. To start, we will have the following *input* tag in our page HTML:
+    ```html
+    <input type="text" [(ngModel)]="filteredStatus">
+    ```
+    and in the component class, we will establish the string variable *filteredStatus* with a value of empty string.
 
-3.	Another way is to create an **impure pipe**, one that is called on each event (such as keystroke). To do this, simply change the default in the *@Pipe* decorator as follows:
+3. Our pipe will be very simple, taking the array of servers as the first parameter, and the input value as the second parameter:
+    ```javascript
+    // fiterPipe.ts
+    import { Pipe, PipeTransform } from '@angular/core';
+
+    @Pipe({
+        name: 'filter'
+    })
+
+    export class FilterPipe implements PipeTransform {
+        transform(values: any, needle?: string): any {
+            return values.filter(val => {
+                return val.instanceType.includes(needle);
+            });
+        };
+    }
+    ```
+4. Finally, we include our pipe in the HTML as part of the *\*ngFor* directive:
+    ```html
+    . . .
+    <li
+    class="list-group-item"
+    *ngFor="let server of servers | filter: filteredStatus"
+    [ngClass]="getStatusClasses(server)">
+        <span
+        class="badge">
+            {{ server.status }}
+        </span>
+        <strong>{{ server.name }}</strong> | {{ server.instanceType }}
+    </li>
+    . . .
+    ```
+    
+### F. Pure vs. Impure Pipes
+
+1. One problem that can arise is that Ng4's change detection will be triggered only if there is a change to a primitive or to a reference. A change in the contents of an object or an array will not. So, if we have a filter pipe, for example, and are adding new values into an array of values, the filter will not update as new items are added. Instead, it will update only when the filtering value changes. This is referred to as a **pure pipe**.
+
+2. One way to take care of the problem would be to create a new array on each change in our array.
+
+3. Another way is to create an **impure pipe**, one that is called on each event (such as keystroke). To do this, simply change the default in the *@Pipe* decorator as follows:
     ```javascript
     @Pipe({
         name: 'filter',
         pure: false
     })
     ```
+4. **There is a reason pipes are pure by default!** An impure pipe will run every time any data on the page changes, which can impose a significant performance cost. Think carefully before making filter pipes impure. Note that Ng4 does not come with any filter pipes built-in, for performance reasons.
 
-### F. Async Pipe
+### G. Async Pipe
 
 1. This is a built-in, impure pipe. It has a very useful feature, in that it allows data to be placed into the template after rendering. It allows us to get a promise as a value to interpolate into our component, but not have it show up as *[object Object]*, but wait until the value arrives.
 
