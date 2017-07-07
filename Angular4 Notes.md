@@ -2865,6 +2865,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ## IX. Animations
 ### A. Introduction
+1. Ng4 comes with its own animations module, which provide a much easier way to handle events such as components being added to the DOM than use of CSS transitions. 
 
 ### Setup
 1. To use Ng4 animations, we will need to install a separate package, **@angular/animations**.
@@ -2875,11 +2876,80 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         '@angular/platform-browser/animations'
     ```
 
-3. Also, in *app.module*, we need to add *BroserAnimationsModule* to the *imports[]* array.
+3. Also, in *app.module*, we need to add *BrowserAnimationsModule* to the *imports[]* array.
 
-4. Finally, note that *trigger*, *state*, *style*, and other animation related items will be imported from *@angular/animationws*, and **not** from *@angular/core.*
+4. Finally, note that *trigger*, *state*, *style*, and other animation related items will be imported from *@angular/animations*, and **not** from *@angular/core.*
 
+### Creating a Basic Animation
+1. To begin, we will create a \<div> element that we will transition in color and size.
 
+2. What we are going to do is create two alternative **states**, one of which will be associated with a red backgroundColor, the other a blue. When we click on the button, our event-listener will change from one state to another, resulting in the change of the div color from red to blue. We will also prsscribe a **transition**, describing how it will get from one state to the next (*e.g.*, how fast).  
+
+3. We define that animations that we will need in the *animations array*, a property of the *@Component* decorator.
+
+3. Each animation must have a **trigger**, and this must be imported from @angular/animations. *trigger* will have the following arguments:
+
+    a. a string, which names the trigger, and is used in the HTLM page,
+    
+    b. an array of **states** and **transitions**. Each state will have a name and a style object containing CSS-like code. For example:
+    ```javascript
+    import { Component } from '@angular/core';
+    import { trigger, state, 
+        style, transition, animate } from '@angular/animations';
+    
+    @Component({
+        selector: 'app-root',
+        templateUrl: './app.component.html',
+        styleUrls: ['./app.component.css'],
+        animations: [
+            trigger('divState', [
+                state('normal', style({
+                    'background-color': 'red',
+                    transform: 'translateX(0)'
+                })),
+                state('highlighted', style({
+                    'background-color': 'blue',
+                    transform: 'translateX(100px)'
+                })),
+                transition('normal => highlighted', animate(10000)),
+                transition('highlighted => normal', animate(2000))
+            ]),
+        ]
+    })
+    ```
+    **Note**: If the *transition* is the same in each direction, we can use just one *transition*, with the syntax: *normal <=> highlighted*.
+    
+5. In the HTML, go to the element on which we wish to use the animation, and add the trigger name as a property bound to a component variable representing the state:
+    ```html
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h1>Animations</h1>
+                <button 
+                class="btn btn-primary" 
+                (click)="onAnimate()">
+                    Animate!
+                </button>
+                <button 
+                class="btn btn-primary" 
+                (click)="onShrink()">
+                    Shrink!
+                </button>
+                <hr>
+                <div id="testDiv" [@divState]="state">
+            </div>
+        </div>
+    </div>
+    ```
+    **Note**: The "@" is required in front of the name of the trigger.
+
+6. We can have **multiple states** and define transitions for each change of state. In our transitions, we can use an asterisk **\*** to serve as a wildcard for any state. 
+    
+    
+    
+    
+    
+    
 ## X. Debugging Angular Apps
 1. Obviously, the first step in debugging an Angular4 application is to open up the dev tools in the browser, particularly the **console**.
 
