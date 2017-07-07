@@ -2844,21 +2844,40 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         return Observable.throw(error);
     }
     ```
-		
 
-2.	All of the above was taking place in the *httpService*. Once the error observable is returned to the component, it can be manipulated with the second parameter of the observable.  For example:
+2. All of the above was taking place in the *httpService*. Once the error observable is returned to the component, it can be manipulated with the second parameter of the observable.  For example:
+    ```javascript
+    onGetData() {
+        this.httpService.getOwnData()
+        .subscribe (
+            res => {
+                for (let key in res) {
+                    this.items.push({ 
+                        'username': res[key].username, 
+                        'email': res[key].email 
+                    })
+                }
+            },
+            error => this.err = error
+        )
+    }
+    ```
 
-		onGetData() {
-			this.httpService.getOwnData()
-				.subscribe (
-					res => {
-						for (let key in res) {
-							this.items.push({ 'username': res[key].username, 'email': res[key].email })
-						}
-					},
-					error => this.err = error
-				)
-		}
+## IX. Animations
+### A. Introduction
+
+### Setup
+1. To use Ng4 animations, we will need to install a separate package, **@angular/animations**.
+
+2. Then, in our *app.module* file, we need to have the following import:
+    ```javascript
+    import { BrowserAnimationsModule } from 
+        '@angular/platform-browser/animations'
+    ```
+
+3. Also, in *app.module*, we need to add *BroserAnimationsModule* to the *imports[]* array.
+
+4. Finally, note that *trigger*, *state*, *style*, and other animation related items will be imported from *@angular/animationws*, and **not** from *@angular/core.*
 
 
 ## X. Debugging Angular Apps
@@ -2869,10 +2888,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 3. In development, the JavaScript files support **sourcemaps**, which allows us to map between the TypeScript code we are writing and the JavaScript code being output. To access the TypeScript, go to the **Sources** tab in the dev tools, and look for the **webpack://** entry in the *Sources* box on the left side. Once there, we can use the tools available for debugging.
 
 4. Finally, one tool for understanding the layout of the application is **Augury**, which can be added to Chrome as a browser extension.
-
-## IX. Animations
-### A. Introduction
-
 
 
 ## XI. Unit Testing Angular4 Apps
@@ -3494,46 +3509,215 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 ### B. Customization of Angular2 Setup
 
 <span id='typescript'></span>
-## XIII. Typescript Introduction
+## XIII. Typescript
+### Introduction
 
-1.  TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself. However, TypeScript provides a number of extra features, such as *types*, *classes*, *interfaces*, *etc.*).
+1. TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself. However, TypeScript provides a number of extra features, such as *types*, *classes*, *interfaces*, *etc.*.
 
-2.	The browser cannot run TypeScript, so it must always be transpiled into JavaScript.  Keep in mind that in transpiling, many features may be unenforceable in JavaScript, but will throw an error during the transpilation.  For example, failure to declare a type for a variable will not make the resulting JavaScript go bad, but it will create a compilation error.
+2. The browser cannot run TypeScript, so it must always be transpiled into JavaScript.  Keep in mind that in transpiling, many features may be unenforceable in JavaScript, but will throw an error during the transpilation.  For example, failure to declare a type for a variable will not make the resulting JavaScript go bad, but it will create a compilation error.
 
-3.  The file extension for TypeScript files is **.ts**.
+3. The file extension for TypeScript files is **.ts**.
 
-4.	The basic goal of TypeScript is to provide a familiar coding environment for users of object-oriented languages such as C#, by providing features such as strong typing and classes.
+4. The basic goal of TypeScript is to provide a familiar coding environment for users of object-oriented languages such as C#, by providing features such as strong typing and classes.
 
-5.	Although much of TypeScript looks foreign to traditional ES5 JavaScript, much of its syntax is now incorporated into ES6 or the ES7 standard.
+5. Although much of TypeScript looks foreign to traditional ES5 JavaScript, much of its syntax is now incorporated into ES6 or the ES7 standard.
 
-6.  Reasons to use TypeScript:
+6. Reasons to use TypeScript:
 
-    a.  The strong typing will catch a lot of errors before they occur.
+    a. The strong typing will catch a lot of errors before they occur.
     
-    b.  Many ECMA-2015, ECMA-2016, *etc.* features come built into TypeScript, giving us access to them without having to deal with Babel or other transpilers.
+    b. Many ECMA-2015, ECMA-2016, *etc.* features come built into TypeScript, giving us access to them without having to deal with Babel or other transpilers.
     
-    c.  Ng4 was designed with the use of TypeScript in mind, and although everything *can* be done with JavaScript, it is much easier to find documentation, examples, *etc.*, that employ TypeScript.
+    c. Ng4 was designed with the use of TypeScript in mind, and although everything *can* be done with JavaScript, it is much easier to find documentation, examples, *etc.*, that employ TypeScript.
 
-7.  There is no need to install TypeScript onto one's machine, as the project setup will take care of that through the npm modules.  However, if one wishes to install TypeScript, enter the following command to install the TypeScript cli:
+7. There is no need to install TypeScript onto one's machine, as the project setup will take care of that through the npm modules.  However, if one wishes to install TypeScript, enter the following command to install the TypeScript cli:
     ```
     sudo npm install typescript -g
     ```
 
-8.	If the cli tool is installed, we can convert a .ts file into JavaScript by running the command:
+8. If the cli tool is installed, we can convert a .ts file into JavaScript by running the command:
     ```
-	tsc [filename]
+    tsc [filename]
     ```
-	This will save the JavaScript file in the same directory. To save it to another location, use the option --outDir, as so:
-	```
-	tsc [filename] --outDir [target directory]
+    This will save the JavaScript file in the same directory. To save it to another location, use the option --outDir, as so:
+    ```
+    tsc [filename] --outDir [target directory]
+    ```
+9. Note that even though our code may contain TypeScript errors (for example, we assign a number to a string variable), it will still transpile and create a JavaScript file if the code is valid as JavaScript.
+
+### Types and Typing
+1. The defining feature of Typescript is the ability to use typed variables. This is accomplished with the following syntax:
+    ```javascript
+    var isGood: boolean = true;
+    ```
+    Note that the declaration of the variable includes the trailing colon and identification of type; in addition, we can assign a value.
+    
+2. Note that if a type is not assigned to a variable, it will be assigned the type of its initially assigned value.  For example, if we have:
+    ```javascript
+    let num = "Now is the winter";
+		
+    num = 4;
+    ```
+    We will throw a compilation error, because num is given the type of string when it was assigned a string value at time of declaration. The inferring of type **only occurs if assignment is at time of declaration of the variable.**
+
+3. These are basic data types in TypeScript:
+
+    a. **boolean**: true or false
+	
+    b. **number**: all numbers are floating point values
+	
+    c. **string**: uses double or single quote marks to delineate strings.
+	
+    d. **any**: this allows any type, as in JavaScript.
+	
+    e. **void**: commonly used as the return type of functions that do not return a value.
+	
+    f. **array**: Arrays are given types (including *any* for a mixed-type array).  There are two ways to denote an array:
+    ```javascript
+    var myList: number[] // or
+		
+    var myList: Array<boolean>
+		
+    var myList: new Array<{name: string, age: number}>
     ```
 
+    g.	**enum**: This is a way of assigning easy-to-access names to sets of numerical values.  Examine the following syntax:
+    ```javascript
+    enum Height {Short, Medium, Tall};
+		
+    var x: Height = Height.Short;
+    ```
+    The above code would establish the enum type *Height* in the first line, then use it in the second line.  In the above case, x would be assigned the default value of 0 (*Height.Medium would be 1, etc.* ).  The default values can be altered as follows:
+    ```javascript
+    // starts count at 5;
+    enum Height {Short = 5, Medium, Tall}
+    
+    // manually sets each value
+    enum Height {Short = 60, Medium = 70, Tall = 76}
+    ```
+4. In addition, we can create our own types and classes and use them to insure that a variable be only of that type or class.
+
+### Classes
+
+1. Much of the class syntax in TypeScript is now part of the ECMA 6 standard.  However, using TypeScript may be a safer bet, because it transpiles to ECMA 5, and thus we won't have to worry about browser version nearly as much.
+
+2. One concept that does not directly exist in ECMA 6 is private properties of a class. For example:
+    ```javascript
+    class Car {
+        engineName: string;
+        gears: number;
+        private speed: number;
+			
+        constructor(speed: number) {
+            this.speed = speed || 0;
+        }
+			
+        accelerate(): void {
+            this.speed++;
+        }
+			
+        getSpeed(): void {
+            console.log(this.speed);
+        }
+        
+        static wheelCount(); number {
+            return 4;
+        }
+    }
+    ```
+
+    If marked as **private*, the property is only accessible from within the class, and will throw an error in the TypeScript compiler if one tries to access it from without.  So, in the above example, if one had an instance of the class named *myCar*, one could refer to *myCar.gears*, or *myCar.engineName*, but **not** to *myCar.speed*.  However, *myCar.accelerate()* would be able to increase the speed, and we could actually see the speed by calling *myCar.getSpeed()*; 
+
+3. The **static** keyword is used to indicate a class method that is called on the Class, and **not on an instance** of the Class.  For example, the in the above *Car* class, we find out the number of wheels by **Car.wheelCount()**, not *myCar.wheelCout()*.
+
+4. **A Simple Shortcut**: When creating a **model** (basically, a class that consists only of a constructor), we can perform a shortcut instead of declaring all our variables and assigning them to *this*, as follows:
+    ```javascript
+    export class Ingredient {
+        constructor(
+            public name: string,
+            public amount: number,
+        )
+    }
+    ```
+    The above code is the equivalent of:
+    ```javascript
+    export class Ingredient {
+        public name: string;
+        public amount: number;
+
+        constructor(
+            name: string,
+            amount: number,
+        ) {
+            this.name = name;
+            this.amount = amount;
+        }
+    }
+    ```
+
+### Interfaces
+
+1. An **interface** is basically a template for a collection of data, such as an object, so that we can define each property and type in one place, then use the interface in every place we would otherwise be defining types.
+
+2. Note that this does **not** have any effect on the transpiled JavaScript code, as there is no support for types. However, is does make writing in TypeScript more convenient.
+
+3. An example of an interface would be:
+    ```javascript
+    interface User {
+        username: string;
+        password: string;
+        confirmPassword?: string;
+    }
+    
+    let user: User;
+    ```
+    In the above, we are requiring that any User (such as *user*) must have a *username* that will be a string, and a *password* that will be a string. In addition, the **trailing ?** means that a User may have an optional *confirmPassword* value.
+
+4. A good example of using an interface is in the shopping-list app. In that, we were constantly defining an item by its two properties and their types:
+    ```javascript
+    item<{name: string, amount: number}>
+    ```
+5. We then created a file for the item interface, *list-item.ts*, with the following simple code:
+    ```javaswcript
+    export interface ListItem {
+        name: string,
+        amount: Number
+    }
+    ```
+6. An interface can also prescribe *methods*; however, it does not contain the body of the method, just its name, parameters, and return type:
+
+    ```javascript
+    interface CanDrive {
+        accelerate(speed: number): void;
+    }
+    
+    let car: CanDrive = {
+        accelerate(speed: number) {
+            . . .
+        }
+    }
+    ```
+### Generics
+1. A **type variable** is a special kind of variable that works on *types* rather than *values*. It is denoted with the \< > syntax, as follows:
+    ```javascript
+    function identity<T>(arg: T): T {
+        return arg;
+    }
+    ```
+    In the above method, which simply returns whatever we input as an argument, we  are able to know that our method returns the same type that is input (symbolized by "T"). Then, when we call the method, we can either rely on **type argument inference**, or explicitly set the type, as follows:
+    ```javascript
+    let myOutput = identity<string>("Now is the winter . . .");
+    ```
+    
+2. A **generic** is a type that can hold or use several types. For example, an **Array** can take any type of value, numbers, strings, etc. We can specify what type it is holding with the type specifier \< > (used as a variable in the function definition above).
+    ```javascript
+    let numberArray = Array<number>;
+    ```
 ---
 :::danger
 ####Anything below here is still in preliminary draft form and may contain outdated information
 :::
 ---
-
 
 ## The End
 
@@ -3722,129 +3906,3 @@ Be sure to include information regarding the relative path issue
 	
 
 
-<h3 id='test'>TypeScript Notes</h3>
-
-
-
-#### Basic Types in Typescript
-
-1. **A Simple Shortcut**: When creating a model (basically, a class that consists only of a constructor), we can perform a shortcut instead of declaring all our variables and assigning them to *this*, as follows:
-    ```javascript
-    export class Ingredient {
-        constructor(
-            public name: string,
-            public amount: number,
-        )
-    }
-    ```
-    This is the equivalent of:
-    ```javascript
-    export class Ingredient {
-        public name: string;
-        public amount: number;
-
-        constructor(
-            name: string,
-            amount: number,
-        ) {
-            this.name = name;
-            this.amount = amount;
-        }
-    }
-    ```
-
-1.	The defining feature of Typescript is the ability to use typed variables.  This is accomplished with the following syntax:
-
-		var isGood: boolean = true;
-		
-	Note the declaration of the variable, the following colon and identification of type and, optionally, the assignment of a value.
-
-2.  These are the data types:
-
-	a.	**boolean**: true or false
-	
-	b.	**number**: all numbers are floating point values
-	
-	c.  **string**: uses double or single quote marks to delineate strings.
-	
-	d.	**any**: this allows any type, as in JavaScript.
-	
-	e.	**void**: commonly used as the return type of functions that do not return a value.
-	
-	f.	**array**: Arrays are given types (including *any* for a mixed-type array).  There are two ways to denote an array:
-	
-		var myList: number[]   or
-		
-		var myList: Array<boolean>
-		
-		var myList: new Array<{name: string, age: number}>
-		
-	g.	**enum**: This is a way of assigning easy-to-access names to sets of numerical values.  Examine the following syntax:
-	
-			enum Height {Short, Medium, Tall};
-		
-			var x: Height = Height.Short;
-		
-		The above code would establish the enum type *Height* in the first line, then use it in the second line.  In the above case, x would be assigned the default value of 0.  The default valus can be altered as follows:
-		
-			enum Height {Short = 5, Medium, Tall}  //starts count at 5;
-			
-			enum Height {Short = 60, Medium = 70, Tall = 76}  //manually sets each value
-			
-3.	Note that if a type is not assigned to a variable, it will be assigned the type of its initially assigned value.  For example, if we have:
-
-		let num = "Now is the winter";
-		
-		num = 4;
-		
-	We will throw a compilation error, because num is given the type of string when it was assigned a string value at time of declaration. The inferring of type **only occurs is assignment is at time of declaration of the variable.**
-	
-			
-####Classes
-
-1.	Much of the class syntax in TypeScript is now part of the ECMA 6 standard.  However, using TypeScript may be a safer bet, because it transpiles to ECMA 5, and thus won't have to worry about browser version nearly as much.
-
-2.	One concept that does not directly exist in ECMA 6 is private properties of a class.  For example:
-
-		class Car {
-			engineName: string;
-			gears: number;
-			private speed: number;
-			
-			constructor(speed: number) {
-				this.speed = speed || 0;
-			}
-			
-			accelerate(): void {
-				this.speed++;
-			}
-			
-			getSpeed(): void {
-				console.log(this.speed);
-			}
-		}	
-
-	If marked as private, the property is only accessible from within the class, and will throw an error in the TypeScript compiler if one tries to access it from without.  So, in the above example, if one had an instance of the class named myCar, one could refer to myCar.gears, or myCar.engineName, but not to myCar.speed.  However, myCar.accelerate() would be able to increase the speed, and we could actually see the speed by calling myCar.getSpeed(); 		
-
-####Interfaces
-
-1.	An **interface** is basically a template for a group of data, such as an object, so that we can define each property and type in one place, then use the interface in every place we would otherwise be defining types.
-
-2.	Note that this does **not** have any effect on the transpiled JavaScript code, as there is no support for types. However, is does make writing in TypeScript more convenient.
-
-3.	A good example of using an interface is in the shopping-list app. In that, we were constantly defining an item by its two properties and their types:
-
-		item<{name: string, amount: number}>
-		
-4.	We then created a file for the item interface, *list-item.ts*, with the following simple code:
-
-		export interface ListItem {
-    		name: string,
-    		amount: Number
-		}
-
-
-
-
-
- 
