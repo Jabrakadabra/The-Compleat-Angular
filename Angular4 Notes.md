@@ -3512,8 +3512,139 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     
 3.  if we look at the second-to-last test, we see that the value of *comp.data* is undefined. This is because of the async nature of the *getDetails()* method; when *fixture.detectChanges()* is called, the promise has not yet resolved.  In order to make this work, we must wrap the entire thing with the **async()** method, which is imported from '@angular/core/testing'. 
   
+## XII. Observables 
+
+### Introduction
+
+1. Use of **observables** is an alternative to callbacks or promises for handling asynchronous data, which is used a great deal by Ng4.
+
+2. An **observable** can be thought of as a *data source*. It could be a button waiting for user interaction, an HTTP request, an event triggered in our code, *etc.*
+
+3. In addition to the *observable*, we also have the **observer**, *i.e.*, our code (a *subscribe()* method). Over time, the *observable* might emit a series of events, which our *observer* will listen for and act upon. Eventually, the *observable* might (or might not) complete its task and close. For example, an HTTP request observable will complete upon receipt of the response; an observable waiting for button clicks may exist indefinitely, waiting for more clicks.
+
+4. The observable may emit multiple events, or data packages. The *observer* will have three callbacks, one for handling a data response, one for handling an error response, and one for handling a completion response.
+
+5. Most of what we do in Ng4 is simply understanding that certain items are observables created by Ng4, and then subscribing to them and handling them. However, we can create our own observables, and do more with them.
+
+### Creating an Observable
+
+1. There are many ways of creating an observable. We will start with a very simple example:
+
+    a. In our component, import the *Observable* object from 'rxjs/Observable', and import the package 'rxjs/Rx.
+    
+    b. In *ngOnInit*, create an Observable that will emit an ascending integer number periodically, with a parameter that gives us the number of milliseconds between number emits:
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { Observable } from 'rxjs/Observable';
+    import 'rxjs/Rx';
+
+    @Component({
+    . . . 
+    })
+    
+    export class HomeComponent implements OnInit {
+        constructor() { }
+        ngOnInit() {
+            const myNumbers = Observable.interval(1000);
+            myNumbers
+            .subscribe(
+                (num: number) => {
+                    console.log(num);
+                }
+            );
+        }
+    }
+    ```
+    Of course, the above example is a "prepackaged" observable, but it is an example of the kind of things that are available from **rxjs/Rx**.
+    
+2. In addition, we can create our own, custom observables. What we will do is create the observable using the **Observable.create()** method, which will take as a parameter the **observer** to which it will be linked.
+
+3. Note that this will require import of the **Observer** object from *rxjs/Observer*, in addition to the imports in the prior example.
+
+4. The *observer* will have three methods, **next()**, **error()**, and **complete()**. *next()* is used to transmit data contained as an argument on a success, *error()* is used to deliver data contained as an argument on an error, and *commplete* takes no arguments.
+
+5. As seen in the following example, once we create the observable, we can then subscribe to it, using our three methods.
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { Observer } from 'rxjs/Observer';
+    import { Observable } from 'rxjs/Observable';
+    import 'rxjs/Rx';
+
+    @Component({
+    . . .
+    })
+    export class HomeComponent implements OnInit {
+        constructor() { }
+
+        ngOnInit() {
+            const myObservable = Observable
+                .create((observer: Observer<string>) => {
+                    setTimeout(() => {
+                        observer.next('first package');
+                    }, 2000);
+                    setTimeout(() => {
+                        observer.next('second package');
+                    }, 4000);
+                    setTimeout(() => {
+                        observer.error('this does not work');
+                    }, 5000);
+                    setTimeout(() => {
+                        observer.complete();
+                    }, 8000);
+                });
+            myObservable
+            .subscribe(
+                (data: string) => {
+                    console.log(data);
+                },
+                (err: string) => {
+                    console.log(err);
+                },
+                () => {
+                    console.log('All aboard!');
+                }
+            );
+        }
+    }
+    ```
+    Note that the subscription ends once the observable gets to *complete()*, or *error()*.
+
+### Killing our Observables
+1. If we run the first example, we will note that the Observable does not end; *i.e.*, it continues to emit incrementing numbers *ad inifinitum*. Even if we navigate away from the page and the component instances are destroyed, the observable keeps on going. This can be a big waste of resources (*i.e.*, memory leak), if we do not handle it correctly.
+
+2. In order to handle this, we should always be careful to kill off any observables when they are no longer needed - in most cases, when we have navigated away from the page on which they sit.
+
+3. To do this, we should make use of the *OnDestroy* hook and inside it run the **unsubscribe** method on each active **subscription** (not on the observable itself! To do this, we must import *Subscription*, and we must assign our subscriptions to object variables so we can access them in the *OnDestroy()* method, as follows:
+    ```javascript
+    import { Component, OnInit, OnDestroy } from '@angular/core';
+    import { Observer } from 'rxjs/Observer';
+    import { Observable } from 'rxjs/Observable';
+    import { Subscription } from 'rxjs/Subscription';
+    import 'rxjs/Rx';
+
+    @Component({
+    . . .
+    })
+    export class HomeComponent implements OnInit, OnDestroy {
+        constructor() { } 
+        
+        myNumbersSub: Subscription;
+        ngOnInit() {
+            const myNumbers = Observable.interval(100);
+            this.myNumbersSub = myNumbers.subscribe(
+                (num: number) => {
+                    console.log(num);
+                }
+            );
+        })
+        ngOnDestroy() {
+            this.myNumbersSub.unsubscribe();
+        }
+    }
+    ```
+
 <span id='webpack'></span>
-## XII. Webpack Setup
+## XIII. Webpack Setup
 1. Setup of Ng4 projects can become extremely complex, due to the large number of component imports, the use of Typescript, and the use of Webpack and compilers to be able to safely use ES6 and more modern features. The easiest way, by far, to get started is to use the Ng4 command line interface (CLI) to get projects up and running.
 
 ### A. Using the Angular4 CLI
