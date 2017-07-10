@@ -5,14 +5,12 @@
 		</h1>
 	</div>
 	<div class="col-md-5">
-		<app-recipe-list
-		(recipeNumber1)="passIndex($event)"
-		></app-recipe-list>
+		<app-recipe-list></app-recipe-list>
 	</div>
 	<div class="col-md-7">
 		<app-recipe-detail
-		*ngIf="hotRecipe; else infoText"
-		[recipe]="hotRecipe"></app-recipe-detail>
+		*ngIf="selectedRecipe; else infoText"
+		[recipe]="selectedRecipe"></app-recipe-detail>
 		<ng-template #infoText>
 			<p>
 				Please select a Recipe!

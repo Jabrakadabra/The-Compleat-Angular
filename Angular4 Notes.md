@@ -2392,6 +2392,64 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     }       
     ```
 
+### E. Example - Push Notification of Updates
+1. **The Situation**: We have an initial array of ingredients that we list in our shopping list. We also have a form on which we can add the name and amount of a new item, which is added to the list when we click on the add button, and which should be visible in an updated list when we click.
+
+2. In our service, we have an array of the initial list of ingredients. When the component initially renders, we  In our service, we call the *getIngredients()* method from the service, which returns a **copy** of the initial array. **We could just use the original array, but we want to keep it unchanged, so we are using the copy (Array.from(array)). However, when we add a new item, it is going to the original array, not the copy, so our list is not updating.
+
+3. We can solve this by adding an *EventEmitter* to the service, which will emit a new copy of the array every time it updates. Then, in the list component, we will *subscribe* to the EventEmitter in the *ngOnInit()* method.  See the following:
+    ```javascript
+    // shopping-list.service.ts
+    import { Ingredient } from '../shared/models/ingredient.model';
+    import { EventEmitter } from '@angular/core';
+
+    export class ShoppingListService {
+        ingredientsChanged = new EventEmitter<Ingredient[]>();
+        
+        private ingredients: Ingredient[] = [
+            new Ingredient('Apples', 5),
+            new Ingredient('Tomatoes', 10)
+        ];
+        
+        getIngredients() {
+            return Array.from(this.ingredients);
+        }
+        addIngredient(item: Ingredient) {
+            this.ingredients.push(item);
+            this.ingredientsChanged.emit(Array.from(this.ingredients));
+        }
+    }
+    ```
+    **Note:** The need for this is the fact that the *getIngredients()* method returns a copy of the ingredients array. I'm still not exactly sure why this is necessary; after all, we mutate the array by adding items to it.
+    ```javascript
+    // shopping-list.component.ts
+    import { Component, OnInit } from '@angular/core';
+    import { Ingredient } from '../../shared/models/ingredient.model';
+    import { ShoppingListService } from '../../services/shopping-list.service';
+
+    @Component ({
+	. . .
+    })
+
+    export class ShoppingListComponent implements OnInit {
+        ingredients: Array<Ingredient>;
+
+        constructor(
+            private shoppingList: ShoppingListService
+        ) { }
+
+        ngOnInit() {
+            this.ingredients = this.shoppingList.getIngredients();
+            this.shoppingList.ingredientsChanged
+            .subscribe(
+                (ingredients: Ingredient[]) => {
+                    this.ingredients = ingredients;
+                }
+            )
+        }
+    }
+    ```
+
 ## VII. Pipes
 
 ### A. Introduction
