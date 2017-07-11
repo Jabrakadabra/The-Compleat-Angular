@@ -268,7 +268,7 @@
     }
     ```
 
-### B. Nesting Components
+### C. Nesting Components
 
 1. If we wish to place a component into another component, we can easily do so, as follows:
 
@@ -294,7 +294,7 @@
     ```
     The normal behaviour is for Ng4 to strip out the content between the child-element tags.  This can be overridden by using the **\<ng-content>** directive, which instructs Ng4 to render the contained matter. So, if our child component is really just a container for other HTML, we can insert the contents. Note that the content is stripped out of its component, so that component's styling will no longer apply.
 
-### C. Passing Data Among Components
+### D. Passing Data Among Components
 1. While it is great to be able to split up our app into reusable components, it will not work if we are not able to get the components to share data. In this section, we look at ways to pass data from a parent to a child (the much easier task), and then to pass data from a child component to an ancestor, or to a sibling component.
 
 2. Compare these tasks with the concepts of *property binding* and *event binding*. Those served to connect the view with the component class. Here, we are trying to communicate between different components.
@@ -524,7 +524,7 @@
 
 2. The above approach can get very unwieldy, so it is often advisable to share data through **services**. See the section on services for details on creating singleton services through which data can be shared among components.
 
-### C. Databinding
+### E. Databinding
 #### Introduction
 1. Databinding is a key element of both Angular Classic and Ng4, which allows **communication** between the template being viewed and the component's logic. Altough the terminology surrounding it is sometimes opaque, the concept is very simple. For example, imagine a page with a button and text input. We want the user to enter the name of a city, then have our application get from a weather service the temperature in the city, which will display on the screen.
 
@@ -677,8 +677,10 @@
 
     For example, a button may have the following:
     ```html
-    <button (click)="myClickHandler"></button>
+    <button (click)="myClickHandler()"></button>
     ```
+    **Don't forget the parens!**
+    
     We simply place the name of the event in parens (the above could have been "mouseover", "dblclick", etc.), followed by an expression to evaluate within quotation marks, as with the property binding.
 
 2. To see the list of events available for an element, we can *console.log* the element, or google "[element name] events".
@@ -1487,7 +1489,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 		
     b.	We can use the default *PathLocationStrategy* which will require:
     
-      i. make sure we have inserted the \<base href='/'> as the first line of the head of the *index.html* page,
+      i. make sure we have inserted the "\<base href='/'>" as the first line of the head of the *index.html* page,
       
       ii. in Webpack, make the following setting:
     ```json
@@ -1615,6 +1617,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     a. import *ActivatedRoute* from "@angular/router",
 
     b. in the class definition of the component, include the *ActivatedRoute* object in the constructor,
+    
     c. grab the parameter from the **params** property of the **snapshot** property, of the *ActivatedRoute*, as follows:
     ```javascript
     export class UserComponent {
@@ -1782,39 +1785,58 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ### G. Nested (Child) Routes
 
-1.	Once we set up a primary level of routes, we might want to add subroutes.  For example, we may have a *user* route, which can then be used with a parameter to identify different users, for example, *user/1*, *user/2*, *etc*.  However, for each user we might want specific pages, for example, *user/1/info*, *user/1/edit*, etc.  To set this up, we need to do the following:
+1. Once we set up a primary level of routes, we might want to add subroutes.  For example, we may have a *user* route, which can then be used with a parameter to identify different users, for example, *user/1*, *user/2*, *etc*.  However, for each user we might want specific pages, for example, *user/1/info*, *user/1/edit*, etc.  To set this up, we need to do the following:
 
-	a.	**Create a file to hold the subroutes.**  This file will only export routes, not the routing module as does the primary routes file. Also, it will be located in the folder of the parent component. For example:
-	```javascript
+    a. **Create a file to hold the subroutes.**  This file will only export routes, not the routing module as does the primary routes file. Also, it will be located in the folder of the parent component. For example, the following is created to hold subroutes of the "/servers" routes:
+    ```javascript
+    // servers.routes.ts
     import { Routes } from '@angular/router';
-		
-    export const SUB_ROUTES: Routes = [
-        {
-            path: . . .,     //name does not include portion through parent route
-            component: . . . 
-        }
-    ]
+    import { ServerComponent } from ' . . .';
+    import { EditServerComponent } from '. . .';
+
+    const SERVERS_ROUTES: Routes = [
+        { path: ':id', component: ServerComponent },
+        { path: ':id/edit', component: EditServerComponent }
+    ];
+
+    const serverRouting = {
+        SERVERS_ROUTES,
+        serverComponents: [
+            ServerComponent,
+            EditServerComponent
+        ]
+    }
+
+    export default serverRouting;
     ```
     Note that the path is just the part after the parent, **and does not include a preceding /**.
-    
-	b.	**Import the SUB_ROUTES object.**  In the parent routes file (might be *app.routing.ts*), import the exported *SUB_ROUTES* object. Then, add a path to the child routes as follows:
-	```javascript
+
+    b. **Import the routing object.**  In the parent routes file (might be *app.routing.ts*), import the exported *SUB_ROUTES* object. Then, add a path to the child routes as follows:
+    ```javascript
+    import { RouterModule, Routes } from '@angular/router';
+    import {. . . components } from '';
+    import ServerRouting from './servers.routes';
+
     const APP_ROUTES: Routes = [
-        {
-            path: 'user/:id',
-            component: UserComponent
-        },
-        {
-            path: 'user/:id',
-            component: UserComponent,
-            children: SUB_ROUTES
-        }
-    ]
+        { . . . paths },
+        { path: 'servers', component: ServersComponent },
+        { 
+            path: 'servers', 
+            component: ServersComponent, 
+            children: ServerRouting.SERVERS_ROUTES },
+    ];
+
+    export const routing = {
+        routes: RouterModule.forRoot(APP_ROUTES),
+        components: [
+            ...ServerRouting.serverComponents,
+            . . . Other Components
+        ]
+    };
     ```
+    The original path must be retained, if we want to be able to access it without a child appended to the path. If the parent route will not be used without a child appended, it may be removed.
 		
-	The original path must be retained, if we want to be able to access it without a child appended to the path. If the parent route will not be used without a child appended, it may be removed.
-		
-	c.	**Add \<router-outlet>.** In the parent component template, we must add a *\<router-outlet></router-outlet>* tag to place in the parent template where the routed material should be placed.
+    c. **Add \<router-outlet>.** In the parent component template, we must add a *\<router-outlet></router-outlet>* tag to place in the parent template where the routed material should be placed.
 
 2.  Note that when we use *[routerLink]* to link to a child route, we only need to include the child part of the route if we are on the parent. However, if we are clicking on a link to use the *router.navigate* method, we should refer to the entire path.  
 	
