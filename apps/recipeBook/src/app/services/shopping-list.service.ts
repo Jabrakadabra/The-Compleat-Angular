@@ -14,4 +14,10 @@ export class ShoppingListService {
 		this.ingredients.push(item);
 		this.ingredientsChanged.emit(Array.from(this.ingredients));
 	}
+
+	addIngredients(ingredients: Array<Ingredient>) {
+		console.log('ing', ingredients);
+		this.ingredients.push(...ingredients);
+		this.ingredientsChanged.emit(Array.from(this.ingredients));
+	}
 }
