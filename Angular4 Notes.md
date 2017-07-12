@@ -1483,6 +1483,8 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	
 7. One final thing for basic routing: we must designate the place where our selected templates are to be inserted.  This is done with the **\<router-outlet>\</router-outlet>** directive tag in our main component.
 
+8. **Alternate Architecture**: We can also put our routes in a separate **module** and import it into the *app.module.ts* file. For more information regarding that setup, see the section on **modules** in Ng4.
+
 8. One post-script for basic routing. Without the following, we will not be able to type the URL into the browser, or refresh the browser from anywhere but the '/' root, without getting a 404 error:
 
     a.	We can implement the "#" strategy, using *HashLocationStrategy*
@@ -1579,11 +1581,23 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 2. Compare the behaviour of *router.navigate* with that of *routerLink*. Navigate does **not** know the current route on which it is being called, so if we pass it a relative path (*i.e.*, without a leading "/"), it will **not** add it onto the current path, as is the case with links.
 
+3. **Adding Parameters**: Our navigate array can take a template literal, allowing us to incorporate dynamically generated pieces into our URL path. In addition, we can add **query parameters** into the mix in the options object, with the property **queryParams**, which takes an object of query key/value pairs:
+    ```javascript
+    const serverNum = this.route.snapshot.params['id'];
+    const editable = this.route.snapshot.queryParams['allowEdit'];
+    this.router.navigate(
+        [`/servers/${serverNum}/edit`], 
+        {queryParams: { allowEdit: editable }}
+    );
+    ```
+
 3. If we wish to use relative paths, we can override this behavior by passing a second parameter to the *navigate()* method, an options object that contains the property **relativeTo**.  We can pass this a path to serve as the relative root; by default, this is "/", which explains why it acts as it does.
     ```javascript
     this.router.navigate(['new'], {relativeTo: this.route}
     ```
     In the above, *route* is the injected **Activated Route**, which is the current route on which the application sits. To have access to it, we must import it from *@angular/router*, and then inject it through the constructor.
+    
+4. Another property in the *navigate()* options object is **queryParamsHandling**. This can be set to *preserve*, which will keep any existing query parameters on the query, or *merge*, which will merge new and existing query parameters. The default behavior is to drop the query parameters.
 
 ### F. Route Parameters
 
@@ -1859,11 +1873,14 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     'user/15',
     'user/132'
     ```
-	To modify this behaviour, we use the **pathMatch** attribute. It defaults to 'prefix', but can be set to *full*, which requires a complete match.
+    To modify this behaviour, we use the **pathMatch** attribute. It defaults to 'prefix', but can be set to *full*, which requires a complete match.
+    ```javascript
+    { path: 'user', redirectTo: 'elsewhere', pathMatch: 'full' }
+    ```
 	
 3.  **Note**: There is some funny behaviour on the *redirectTo* property. It works as expected when used in the brawser address bar, but does not work reliably when links are going to the detected path.
 
-4.  Finally, the *redirectTo* property can be used to set up a default route, by setting a final path of '**', wich sets up a wildcard path, which we can redirect to an error page.
+4.  Finally, the *redirectTo* property can be used to set up a default route, by setting a final path of **\*\***, wich sets up a wildcard path, which we can redirect to an error page. ==Make sure this is the last route listed!==
 
 
 ### J. Activating/Deactivating Routes
