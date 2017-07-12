@@ -5,6 +5,7 @@ import { UserComponent } from '../users/user/user.component';
 import { ServersComponent } from '../servers/servers.component';
 import ServerRouting from './servers.routes';
 import UserRouting from './users.routes';
+import { PageNotFoundComponent } from '../page-not-found/page-not-found.component';
 
 const APP_ROUTES: Routes = [
 	{ path: '', component: HomeComponent },
@@ -12,6 +13,8 @@ const APP_ROUTES: Routes = [
 	{ path: 'users', component: UsersComponent, children: UserRouting.USERS_ROUTES },
 	{ path: 'servers', component: ServersComponent },
 	{ path: 'servers', component: ServersComponent, children: ServerRouting.SERVERS_ROUTES },
+	{ path: 'notFound', component: PageNotFoundComponent},
+	{path: 'mystery', redirectTo: 'users'}
 ];
 
 export const routing = {
@@ -22,6 +25,7 @@ export const routing = {
 		HomeComponent,
 		UsersComponent,
 		UserComponent,
-		ServersComponent
+		ServersComponent,
+		PageNotFoundComponent
 	]
 };
