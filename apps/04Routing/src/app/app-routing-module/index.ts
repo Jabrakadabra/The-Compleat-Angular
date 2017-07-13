@@ -21,13 +21,13 @@ const APP_ROUTES: Routes = [
 	},
 	{ path: 'notFound', component: PageNotFoundComponent},
 	// { path: 'notFound', component: ErrorPageComponent, data: { message: 'This is the message!'} },
-	{ path: 'mystery', redirectTo: 'users'}
+	{ path: '**', redirectTo: 'users'}
 ];
 
 
 @NgModule({
 	imports: [
-		RouterModule.forRoot(APP_ROUTES)
+		RouterModule.forRoot(APP_ROUTES, {useHash: true})
 	],
 	exports: [
 		RouterModule
