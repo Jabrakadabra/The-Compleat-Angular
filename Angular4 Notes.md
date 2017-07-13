@@ -803,7 +803,7 @@ For directive and component properties, we can add custom binding with the *@Out
     
     **Note**: If, somewhere else, the value of serverName was modified, the value shown in the input box would itself get updated; *i.e.*, the change in the input field flows *from* the input box and *to* the input box.
 
-### D. Lifecycle Hooks
+### F. Lifecycle Hooks
 
 1. Ng4 supports several **lifecycle hooks**. These are points at which we can set code to run; for example, upon the creation of a component, or upon any changes to the component. Maybe we would like, every time a certain page is rendered, to call to a weather API and get current waeather data to display on the page.
 
@@ -2201,12 +2201,147 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 #### Passing in Dynamic Data
 1. Above, we address how to pass in **static data** along with our route. In addition, we can pass it data dynamically, including data that might have to be fetched from eleswhere.
 
-2. To do this, we need to use a hook called **resolver**. This is somewhat similar to *canActivate*, or *canDeactivate*, except it does not guard whether to go to, or leave, a route, rather, it postpones a route until data is obtained.
+2. To do this, we need to use a hook called the **resolve guard**. This is somewhat similar to *canActivate*, or *canDeactivate*, except it does not guard whether to go to, or leave, a route; rather, it postpones a route until data is obtained.
 
 3. Of course, much the same effect can be accomplished using the *OnInit()* interface, perhaps displaying a spinner while waiting for data initialization. This is a little different, in that the route does not load until the data response is obtained.
 
-4. 
+4. In the following example, we are going to create a **resolver** that will obtain information on an individual server **before** going to the route associated with that server (/servers/:id). This will replace the code previously run in the *ngOnInit()* lifecycle hook.
+
+5. As a first step, again perhaps working a little bit backwards, we know that we are going to add the data to our *servers/:id* path, so we will add to that path the **resolve** property. This property takes as its value an object, the keys of which are a name we give, and the values of which are the various resolvers. **We can have multiple resolvers**, and the data will be organized by the keys of the *resolve* object.
+    ```javascript
+    // servers.routes.ts
+    import { Routes } from '@angular/router';
+    import { ServerComponent } from '../servers/server/server.component';
+    import { ServerResolver } from '../services/server-resolver.service';
+
+    const SERVERS_ROUTES: Routes = [
+        {
+            path: ':id',
+            component: ServerComponent,
+            resolve: {
+                server: ServerResolver
+            }
+        }
+    ];
+
+    . . .
     
+    export default serverRouting;
+    ```
+    Note that the resolver must be imported. In addition, don't forget that it must be imported into the *app.modulet.ts* file and made available in the *providers* array, just like any other service.
+
+6. Now, moving forward to the end stage before going backwards, we will need to access our data provided to the route by this *resolve* property. Going to the *ServerComponent* (see above), we will need to import in *ActivatedRoute* again to have access to the route info. Once it is incorporated through the constructor, we can access the data as:
+    ```javascript
+    // where route was paired to ActivatedRoute in the constructor
+    this.route.snapshot.data['objectName']
+    ```
+    **Note**: Not exactly sure why, but we are unable to use dot notation to access the various properties that are in the data object. **Use of bracket notation is required.**
+    
+    **Note**: Alternatively, and required if it is possible the info might be updated elsewhere, we can forgoe use of *snapshot* and subscribe to the event in the *ngOnInit* hook:
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { ActivatedRoute, Params, Router, Data } from '@angular/router';
+
+    // import { ServersService } from '../../services/servers.service';
+
+    @Component({
+        selector: 'app-server',
+        templateUrl: './server.component.html',
+        styleUrls: ['./server.component.css']
+    })
+
+    export class ServerComponent implements OnInit {
+        server: {id: number, name: string, status: string};
+
+        constructor(
+            // private serversService: ServersService,
+            private route: ActivatedRoute,
+            private router: Router
+        ) { }
+
+        ngOnInit() {
+            this.route.data
+            .subscribe(
+                (data: Data) => {
+                    this.server = data['server'];
+                }
+            );
+        }
+    }
+    ```
+    **Note**: The use of the *Data* type is not necessary to make things run, but is the best practice in the Typescript world, so don't forget to  import the Data type from *@angular/router*.
+    
+7. Okay, now we just have to create our resolver, which is a service that will get the information to our resolve method. Note that it will be referring to a method in another service to actually get the information desired, so it will require the *@Injector* decorator. In addition, we will be implementing the **Resolve** interface from *@angular/router*, so we will need to import that, along with RouterStateSnapshot (where we are), and ActivatedRouteSnapshot (where we are going).
+
+    a. The first thing we will do is create an interface that the *Resolve* generic can use for a type:
+    ```javascript
+    import {Injectable} from '@angular/core';
+    import {ActivatedRouteSnapshot, Resolve, 
+        RouterStateSnapshot} from '@angular/router';
+    import { ServersService } from './servers.service';
+    import {Observable} from 'rxjs/Observable';
+
+    interface Server {
+        id: number;
+        name: string;
+        status: string;
+    }
+    ```
+    b. Next, we add the class and create a resolve method:
+    ```javascript
+    import {Injectable} from '@angular/core';
+    import {ActivatedRouteSnapshot, Resolve, 
+        RouterStateSnapshot} from '@angular/router';
+
+    interface Server {
+        id: number;
+        name: string;
+        status: string;
+    }
+    
+    @Injectable()
+    export class ServerResolver implements Resolve<Server> {
+        constructor(
+            private serversService: ServersService
+        ) {}
+
+        resolve (
+            route: ActivatedRouteSnapshot, 
+            state: RouterStateSnapshot
+        ): Observable<Server> | Promise<Server> | Server {
+            // include here the logic to get the data
+            return this.serversService.getServer(route.params['id']);
+        }
+    }
+    
+    ```
+    **Note**: We can get back from our call to the serversService either an Observable, a Promise, or a Server object directly. We then define what the return value of our resolve method will be.
+
+### N. Hash Routing
+1. Finally, we can go back to a very basic concept of routing, dealing with the way the route will be parsed on our server. In our development mode, we are using routes analyzed by our dev server. In production, we will have our app on a real server, and it will parse the route first, **before** Ng4 parses the route locaally.
+
+2. It is critically important that our server knows that when it looks for the route on its server and cannot find it (a 404 event) that it goes to the *index.html* page of our Ng4 application. This is what we set up in the *index.html* file as the **base href**:
+    ```html
+    <head>
+        <title>Ball Dev</title>
+        <base href="/Ng4">
+    </head>
+    ```
+    With the above base, any time the server cannot match the route (always), it will go to *hostname/Ng4*. If the href were "/", it would go to *hostname*.  From there, Ng4 will take a crack at parsing the route, and will go to where it is supposed to, as directed by its routes.
+    
+3. This is already set up to work in the webpack devServer, and will need to be set on the production server as well (covered later in notes on deployment). Sometimes, with older browsers or servers, it may be difficult to make this implementation work, and the unknown route to the server will just return a 404 error page, rather than rolling over to our Ng4 base route. If that is the case, we can address it by configuration in the **forRoot** method in our *app-routing-module* (or wherever we are keeping it). This takes a configuration object as a second parameter, and there we can set the **useHash** property to true (the default is false), as follows:
+
+    ```javascript
+    @NgModule({
+        imports: [
+            RouterModule.forRoot(APP_ROUTES, {useHash: true})
+        ],
+        exports: [
+            RouterModule
+        ]
+    })
+    ```
+    What this does is sets a # mark at the end of the hostname, which basically tells the server to only worry about what is before the hash, and Ng4 will handle everything to the right of the hash. It works great, but some people do not like the way the urls look.
 
 ## V. Forms
 
@@ -3970,7 +4105,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 <span id='typescript'></span>
 ## XIII. Typescript
-### Introduction
+### A. Introduction
 
 1. TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself. However, TypeScript provides a number of extra features, such as *types*, *classes*, *interfaces*, *etc.*.
 
@@ -4005,7 +4140,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 9. Note that even though our code may contain TypeScript errors (for example, we assign a number to a string variable), it will still transpile and create a JavaScript file if the code is valid as JavaScript.
 
-### Types and Typing
+### B. Types and Typing
 1. The defining feature of Typescript is the ability to use typed variables. This is accomplished with the following syntax:
     ```javascript
     var isGood: boolean = true;
@@ -4057,7 +4192,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 4. In addition, we can create our own types and classes and use them to insure that a variable be only of that type or class.
 
-### Classes
+### C. Classes
 
 1. Much of the class syntax in TypeScript is now part of the ECMA 6 standard.  However, using TypeScript may be a safer bet, because it transpiles to ECMA 5, and thus we won't have to worry about browser version nearly as much.
 
@@ -4115,7 +4250,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     }
     ```
 
-### Interfaces
+### D. Interfaces
 
 1. An **interface** is basically a template for a collection of data, such as an object, so that we can define each property and type in one place, then use the interface in every place we would otherwise be defining types.
 
@@ -4157,7 +4292,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-### Generics
+### E. Generics
 1. A **type variable** is a special kind of variable that works on *types* rather than *values*. It is denoted with the \< > syntax, as follows:
     ```javascript
     function identity<T>(arg: T): T {
