@@ -1483,8 +1483,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	
 7. One final thing for basic routing: we must designate the place where our selected templates are to be inserted.  This is done with the **\<router-outlet>\</router-outlet>** directive tag in our main component.
 
-8. **Alternate Architecture**: We can also put our routes in a separate **module** and import it into the *app.module.ts* file. For more information regarding that setup, see the section on **modules** in Ng4.
-
 8. One post-script for basic routing. Without the following, we will not be able to type the URL into the browser, or refresh the browser from anywhere but the '/' root, without getting a 404 error:
 
     a.	We can implement the "#" strategy, using *HashLocationStrategy*
@@ -1499,7 +1497,83 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     index: path.resolve(rootDir, '/')
     },
     ```
-### C. Adding Links
+### C. Setting Up Routes - Modules
+1. **Alternate Architecture**: We can also put our routes in a separate **module** and import it into the *app.module.ts* file. For more information regarding the use of modules generally, see the section on **modules** in Ng4. Here, however, we will quickly look at a setup for routing.
+
+2. The structure we have in place above is, functionally, similar to the use of modules and gets the job done just as well. However, from a subsequent-developer perspective, it may be better to use the module approach, as that is more likely to be recognized.
+
+3. To start, we create a file for the routing module, *app-routing-module*, and import the **NgModule** decorator. Or, as shown in the routing example in the repository, we can create a routing module directory, which will give us a place to hold sub-routes, if we wish. In the *app-routing-module* directory, we should have an *index.js* file to hold our primary file, and files for the subroutes, if needed.
+
+4. In the *app.module.ts* file, we import modules at the top, including our **AppRoutingModule**, which is our own module, whereas all the others so far are built in Ng4 modules. We will also import all components and declare them in the *declarations* array of the *@NgModule* decorator, and be sure to include our new routing module in the *imports* array.
+    ```javascript
+    // app.module.ts
+    // import our modules
+    import { BrowserModule } from '@angular/platform-browser';
+    import { NgModule } from '@angular/core';
+    import { FormsModule } from '@angular/forms';
+    import { HttpModule } from '@angular/http';
+    import { AppRoutingModule } from './app-routing.module';
+    
+    // import components, services
+
+    import { [components] } from './[paths]';
+    import { [service] } from './[paths]';
+
+    @NgModule({
+        declarations: [
+            [components]
+	],
+	imports: [
+            BrowserModule,
+            FormsModule,
+            HttpModule,
+            AppRoutingModule
+        ],
+        providers: [ServersService],
+        bootstrap: [AppComponent]
+    })
+
+    export class AppModule { }
+    ```
+
+5. In our *app-routing-module* file, we have:
+    ```javascript
+    // app-routing-module/index.ts
+    import { NgModule } from '@angular/core';
+    import { Routes, RouterModule } from '@angular/router';
+    import various components
+    import ServerRouting from './servers.routes';
+    import UserRouting from './users.routes';
+
+    // create our routes array
+    const APP_ROUTES: Routes = [
+        { path: '', component: HomeComponent },
+        { path: 'users', component: UsersComponent },
+        { path: 'users', 
+            component: UsersComponent, 
+            children: UserRouting.USERS_ROUTES },
+        { path: 'servers', component: ServersComponent },
+        { path: 'servers', 
+            component: ServersComponent, 
+            children: ServerRouting.SERVERS_ROUTES },
+        { path: '**', redirectTo: 'users'}
+    ];
+
+    @NgModule({
+        imports: [
+            RouterModule.forRoot(APP_ROUTES)
+        ],
+        exports: [
+            RouterModule
+        ]
+    })
+
+    export class AppRoutingModule {
+
+    } 
+    ```
+
+### D. Adding Links
 1. Because we have set it up, we can access our routes by typing them directly into the browser. The next step is to be able to select a route by clicking on it, as discussed below:
 
 2. **Something that works, but don't do it:** It is possible to use the traditional \<a href=""> links; however, this will cause a full page refresh and defeat the purpose of using Ng4.
@@ -1526,7 +1600,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 7. As an alternative, we can use the *routerLink* directive without property binding, in which case the assigned path must be a string, not an array of strings.
 
-### D. Styling Links
+### E. Styling Links
 
 1. One can add a class to a link based on whether the path is currently being matched, by using the *routerLinkActive* attribute directive on the link, as follows:
     ```html
@@ -1550,7 +1624,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     This will cause the \<div> to show the effects of the class when the routerLink matches the url.
 
-### E. Imperative Routing
+### F. Imperative Routing
 
 1. To navigate from within our code (as opposed to clicking on a link, for example), we can use the **navigate** property of the Router object. For example, if we add a button into our component, then navigate away to a specific route when we click on the button, that will often require just a link. However, sometimes we may want to obtain some data, or do some calculations, *etc,*, in addition to navigating to the new route. We can do the following:
 
@@ -1599,7 +1673,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     
 4. Another property in the *navigate()* options object is **queryParamsHandling**. This can be set to *preserve*, which will keep any existing query parameters on the query, or *merge*, which will merge new and existing query parameters. The default behavior is to drop the query parameters.
 
-### F. Route Parameters
+### G. Route Parameters
 
 1. First, in our identification of the route path, we add at the end of the path our parameters, preceded by colons:
     ```javascript
@@ -1715,7 +1789,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-### G. Query Parameters
+### H. Query Parameters
 
 1. **Query Parameters** are the parameters at the end of a URL, separated from the path by a **question mark**. For example:
     ```
@@ -1759,7 +1833,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 5. Remember, query parameters do not belong to any particular route. The default action in Ng4 is to wipe out the query parameters on a change of route; however, this default action can be overridden, as discussed below.
 
-### F. Fragments
+### I. Fragments
 
 1.	**Fragments** are pieces of an url that come at the end, like query parameters, but are preceded by a "#". It instructs the browser where to go on the web-page. For example, the url might be:
     ```
@@ -1797,7 +1871,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	
 5.	Extracting fragments works just the same as with query parameters or Params.  Use ActivatedRoute, with *snapshot* or *subscribe*.
 
-### G. Nested (Child) Routes
+### J. Nested (Child) Routes
 
 1. Once we set up a primary level of routes, we might want to add subroutes.  For example, we may have a *user* route, which can then be used with a parameter to identify different users, for example, *user/1*, *user/2*, *etc*.  However, for each user we might want specific pages, for example, *user/1/info*, *user/1/edit*, etc.  To set this up, we need to do the following:
 
@@ -1854,7 +1928,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 2.  Note that when we use *[routerLink]* to link to a child route, we only need to include the child part of the route if we are on the parent. However, if we are clicking on a link to use the *router.navigate* method, we should refer to the entire path.  
 	
-### H. Redirection
+### K. Redirection
 
 1.	Sometimes, we may wish to handle a path that does not actually exist. For example, if all our paths are of the form *user/:id*, we may wish to provide for someone entering *user/* as the path. We can set up a real path, or can use a **redirect** to send such a bad path to a different location, using the following syntax:
     ```javascript
@@ -1883,78 +1957,176 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 4.  Finally, the *redirectTo* property can be used to set up a default route, by setting a final path of **\*\***, wich sets up a wildcard path, which we can redirect to an error page. ==Make sure this is the last route listed!==
 
 
-### J. Activating/Deactivating Routes
+### L. Activating/Deactivating Routes
 
-1.	**Guards** are a feature of Angular2 routing that controls access to particular routes. Angular2 has two guards: the **canActivate** guard, which can be set to be triggered whenever one attempts to access a route, and the **canDeactivate** guard, which can be set up to be triggered whenever one attempts to navigate away from a certain route.
+1. **Guards** are a feature of Angular2 routing that controls access to particular routes. Angular2 has two guards: the **canActivate** guard, which can be set to be triggered whenever one attempts to access a route, and the **canDeactivate** guard, which can be set up to be triggered whenever one attempts to navigate away from a certain route.
 
-2.	**NOTE**: This feature will come into much use in the authentication section of this outline, so go there to see more examples.
+2. **NOTE**: This feature will come into much use in the authentication section of this outline, so go there to see more examples.
 
-#### i. canActivate
+#### canActivate
 
-3.	The following are the steps to create a basic *canActivate* guard that controls access to a page, *user-detail.component*.
+1. The following are the steps to create a basic *canActivate* guard that controls access to components for *server.component* and *edit-server.component*. To start, we will create a service file to hold this functionality.
 
-	a.	**Create the Guard File**: Create a file in the *user* directory (where our *user-detail.component* file is), named *user-detail.guard.ts*,
-	
-	b.	**Create our Export Class**: From that file, export a class that implements the CanActivate module from *@angular/router*, as follows:
+2. **Create a Guard Service**: In that file, export a class that implements the CanActivate interface from *@angular/router*, as follows:
     ```javascript
     import { CanActivate } from "@angular/router";
 		
     export class UserDetailGuard implements CanActivate { }
     ```
-
-	c.  **Create our canActivate Method**: Also, we must import *RouterStateSnapshot* and *ActivatedRouteSnapshot* from *@angular/router*.  The former is current state, *i.e.*, the route on which we are currently sitting, and the latter is the currently active route, *i.e.*, the route to which we want to navigate.  The *canActivate* method will return an observable that will deliver a boolean, or will return a boolean directly. Thus, we have:
+    **Note**: When our service class implements the CanActivate interface, we are requiring that there will be a **canActivate** method in our service. In that method, we perform the test to see if the user can access the route, as discussed below. So, in our routes file, we can import the service and, as the value of the route's **canActivate** property, we simply add the service as an item in the array of guards, and Ng4 knows to get the *canActivate* method from the service, *i.e*., we do not need to call something along the lines of *authGuardService.canActivate()*.
+    
+3. Also, we must import two types: *RouterStateSnapshot* and *ActivatedRouteSnapshot* from *@angular/router*.  The former is current state, *i.e.*, the route on which we are currently sitting, and the latter is the currently active route, *i.e.*, the route to which we want to navigate. We will call the **canActivate** method with parameters of these two types, which will return  either a boolean, a Promise, which would resolve to a boolean, or an observable, which will deliver a boolean. Thus, we have:
     ```javascript
-    import { CanActivate, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
-    import { Observable } from 'rxjs/Rx';
+    import { 
+        CanActivate, 
+        RouterStateSnapshot, 
+        ActivatedRouteSnapshot } from '@angular/router';
+    import { Observable } from 'rxjs/Observable';
 
-    export class UserDetailGuard implements CanActivate {
+    export class AuthGuardService implements CanActivate {
         canActivate (
             route: ActivatedRouteSnapshot,
             state: RouterStateSnapshot
-        ): Observable<boolean> | boolean {
+        ): Observable<boolean> | Promise<boolean> | boolean {
             //here would go our conditions
         }
     }
     ```
+    Note that it returns either a boolean value directly, or through a promise or observable, *i.e.*, an answer to the question, "can we load the route into the browser?". Often, there might be an asynchronous call in the evaluation; for example, to check the user's authorization, which is why we may need to use the observable or promise.
 
-	Note that it returns either an observable or a boolean, *i.e.*, an answer to the question, "can we load the route into the browse?". Often, there might be an asynchronous call in the evaluation; for example, to check the user's authorization, which is why we need to use the observable.
-	
-	d.	**Add the Guard to the Route**: Then we need to add the guard to the route. To do this, to the routes file where it is defined and add to the route object the *canActivate* property, with a value of an array containing all the guards, as follows:
+4. **Create the Checker Method**: In the following *canActivate* method, we will be calling on another service, which checks to see if the user is authorized. That method returns a promise, since it will have to go to an auth API and check the credentials of our user:
+    ```javascript
+    import { Injectable } from '@angular/core';
+    import { Router, CanActivate, ActivatedRouteSnapshot, 
+        RouterStateSnapshot } from '@angular/router';
+    import { Observable } from 'rxjs/Observable';
+    import { AuthService } from './auth.service';
+
+    // because we need AuthService in this service
+    @Injectable()
+    export class AuthGuardService implements CanActivate {
+        constructor(
+            private authService: AuthService,
+            private router: Router
+        ) {}
+
+        canActivate(
+            route: ActivatedRouteSnapshot,
+            state: RouterStateSnapshot
+        ): Oservable<boolean> | Promise<boolean> | boolean {
+            
+            return this.authService.isAuthenticated()
+            .then(
+                (authenticated: boolean) => {
+                    if (authenticated) {
+                        return true;
+                    } else {
+                        // this will prevent access to the path
+                        return false;
+                        // alternate, this will redirect
+                        this.router.navigate(['/']);
+                    }
+                }
+            );
+        }
+    }
+    ```
+
+4. **Add the Guard to the Route**: Then we need to add the guard to the route. To do this, to the routes file where it is defined and add to the route object the *canActivate* property, with a value of an array containing all the guards, as follows:
     ```javascript
     //user.routes.ts
     import { Routes } from '@angular/router';
-    import { UserDetailComponent } from './user-detail.component';
-    import { UserEditComponent } from './user-edit.component';
-    import { UserDetailGuard } from './user-detail.guard';
+    import components . . .;
+    import { AuthGuardService } from [path];
 
-    export const SUB_ROUTES: Routes = [
+    const APP_ROUTES: Routes = [
         {
-            path: 'detail',
-            component: UserDetailComponent,
+            path: 'servers',
+            component: ServersComponent,
             canActivate: [
-                UserDetailGuard  //NOTE: multiple guards can be included in this array
-            ]
-        },
-        {
-            path: 'edit',
-            component: UserEditComponent
+                AuthGuardService
+            ],
+            children: ServerRouting.SERVERS_ROUTES
         }
-	]
-	```
+    ]
+    ```
+    The example above places the guard on the **servers route**, and the children thereof. If we want access to the *servers* route, but wish to limit access to the child routes, we could go through each route individually and apply the guards. This can be accomplished more efficiently, however, by using the **CanActivateChildren** interface in the service and the matching property in the routes file. It works exactly the same, but will apply to the child routes of the route on which it is placed.
+    
+6. **Register the Guard in app.module**: Finally, don't forget to import the guards into the *app.module* file and place them in the providers property of *@NgModule*.
 
-	e.	**Register the Guard in app.module**: Finally, don't forget to import the guards into the *app.module* file and place them in the providers property of *@NgModule*.
+#### canDeactivate
+1. We can also control whether a user can leave a designated route, using the **canDeactivate** guard. Using the **canDeactivate** guard is a bit more complex than using the **canActivate** guard. Below is an example, in which a user is editing the attributes of a server, and we don't want the user to be able to leave the form until she is finished, at least without a reminder.
 
-#### ii. canDeactivate
-4.	Using the canDeactivate guard is a bit more complex than using the canActivate guard. Below is an example, in which a user is completing a form and we don't want the user to be able to leave the form until she is finished. We could put a "Complete" button at the bottom, which clicking changes the "completed" variable in the class from false to true.  Then, we allow the user to leave the route only if completed === true.  In order to do so, take the following steps:
+2. First, we will add in our *edit-serveer* component, we will add a new property, *changesSaved*, which will be set to false and will keep track of whether the save button has been pressed to commit changes made.
 
-	a.	**Create a Guard File**: We will create a new file in which to write the guard, *user-edit.guard.ts*. As expected, we import *CanDeactivate* and { Observable }, and export our class with the canDeactivate() method:
-	```javascript
-	import { CanDeactivate } from '@angular/router';
+3. When we click on the button, we call a method that updates the properties of our server, and we add the following lines to the event handler method:
+    ```javascript
+    this.changesSaved = true;
+    this.router.navigate(['../'], {relativeTo: this.route});
+    ```
+    At this point, we can make our changes, click on the Save button, which will save our changes and take us to our original server-info page. However, nothing keeps us from clicking on the back button and leaving the page, without saving our changes.
+
+4. To get started (albeit working in a backwards manner), let's go to the route we want to protect. The path in the path array is originally:
+    ```javascript
+    {
+        path: ':id/edit',
+        component: EditServerComponent
+    }
+    ```
+    We want to make it so that if we try to leave the page, some functionality is kicked off, specifically, we will check to see if any of the fields have been changed and, if so, display a confirm message. To tie such functionality to the act of leaving the route, we will assign to the **canDeactivate** property of the path the *MyDeactivateGuard* component, like so:
+    ```javascript
+    import { MyDeactivateGuard } from [path];
+    {
+        path: ':id/edit',
+        component: EditServerComponent,
+        canDeactivate: [MyDeactivateGuard]
+    }
+    ```
+5. Note that the actual functionality, *i.e.*, comparing the fields and putting up a confirm box, is **not** contained in the deactivate-guard service. It is contained in the route's component class, and made available upon a route change by the *MyDeactivateGuard*.
+
+6. Just to get it out of the way, as an example, the following are relevent parts of the *edit-server.component.ts*.
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { ActivatedRoute, Params, Router } from '@angular/router';
+    import { Observable } from 'rxjs/Observable';
+
+    import { ServersService } from [path];
+    import { CanComponentDeactivate } from [path];
+
+    @Component({
+        . . .
+    })
+
+    export class EditServerComponent implements 
+        OnInit, CanComponentDeactivate {
+
+        . . .
+
+        canDeactivate(): Observable<boolean> | Promise<boolean> 
+            | boolean {
+            if (!this.allowEdit) {
+                return true;
+            }
+            if ((this.serverName !== this.server.name 
+                || this.serverStatus !== this.server.status) 
+                && !this.changesSaved) {
+                return confirm('Do you want to discard?');
+            } else {
+                return true;
+            }
+        }
+    }
+    ```
+    **Note:** Although it is unnecessary to export out the interface *CanComponentDeactivate* to the above component in order to get it to work, it is very bad practice not to do so. Including the  interface means an error will be thrown on compiliation if the canDeactivate method was not included in the coponent.
+
+7. To make the above **canDeactivate** method available on leaving a route, we will create a new service in which to write the guard, *can-deactivate-guard.service.ts*. From it, we will export an **interface**, a "contract" that assures us that any component that imports the interface will contain some specified data or logic. We do not place the body of the method in the inteface, only its name, parameters, and return types.  As expected, we import *CanDeactivate* and { Observable }, and export our class with the canDeactivate() method:
+    ```javascript
+    import { CanDeactivate } from '@angular/router';
     import { Observable } from 'rxjs/Rx';
 		
     export class UserEditGuard implements CanDeactivate {
         canDeactivate(): Observable<boolean> | boolean {
-		    //insert testing code here	
+            //insert testing code here	
         }
     }
     ```
@@ -1975,48 +2147,66 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-    In the above code snippet, we are exporting an interface (which we can name as we want), and this interface must make available a method, *canDeactivate*, which returns a function that takes no parameters and returns a boolean or an *Observable\<boolean>*.
+    In the above code snippet, we are exporting a class (which we can name as we want), and this class, through its implementation of Ng4's CanDeactivate object, to which we assign a type of ComponentCanDeactivate, will require that there be available a method, *canDeactivate*, which returns a function that takes no parameters and returns a boolean, a Promise\<boolean>, or an *Observable\<boolean>*.
 
-	b.	**Implement canDeactivate Method in Component**: Our component, *user-edit.component*, will implement the *ComponentCanDeactivate* interface. This gives it the *canDeactivate* method, which is then defined in the component class, as follows:
-	```javascript
-    export class UserEditComponent implements ComponentCanDeactivate {
-        done = false;
-        constructor(private routing: Router) {}
+### M. Passing Data into Routes
+1. Our routes can also take a **data** property, the value of which can be an object of key-value pairs. To access the data, we can assign it to values in the component, throuth the *this.route.snapshot.data* property. For example:
+    ```javascript
+    // app-routing-module/index.ts
+    import { NgModule } from '@angular/core';
+    import { Routes, RouterModule } from '@angular/router';
+    . . . components, etc.
 
-        onNavigate() {
-            this.routing.navigate(['/']);
+    const APP_ROUTES: Routes = [
+        { 
+            path: 'notFound', 
+            component: ErrorPageComponent, 
+            data: { message: 'This is the message!'}
+        },
+    ];
+    
+    export class AppRoutingModule {
+
+    }
+    ```
+    Then, in the ErrorPageComponent:
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import {ActivatedRoute} from "@angular/router";
+
+    @Component({
+        . . .
+    })
+
+    export class ErrorPageComponent implements OnInit {
+        errorMessage: string;
+
+        constructor(
+		private route: ActivatedRoute
+        ){}
+
+        ngOnInit() {
+            this.errorMessage = this.route.snapshot.data['message'];
         }
         
-        canDeactivate(): Observable<boolean> | boolean {
-            if (!this.done) {
-                return confirm('Do you wish to leave?');
-            }
-            return true;
-        }
-	}
-	```
-	
-	c.  **Add Guard to the Path**: In our routes file, find the UserEditComponent and add to the array paired to the *canDeactivate* property the *UserEditGuard* component.
-	```javascript
-    export const SUB_ROUTES: Routes = [
-        {
-            path: 'detail',
-            component: UserDetailComponent,
-            canActivate: [
-                UserDetailGuard
-            ]
-        },
-        {
-            path: 'edit',
-            component: UserEditComponent,
-            canDeactivate: [
-                UserEditGuard
-            ]
-        }
-    ]
+        // altermatively, we can use subscribe() if the data could change
+            this.route.data.subscribe(
+                (data: Data) => {
+                    this.errorMessage = data['message'];
+                }
+            );
+    }
     ```
-    d.  **Import to app.modules File**: Be sure to import the guard into the *app.module.ts* file, and to add the guard into the array of providers.
 
+#### Passing in Dynamic Data
+1. Above, we address how to pass in **static data** along with our route. In addition, we can pass it data dynamically, including data that might have to be fetched from eleswhere.
+
+2. To do this, we need to use a hook called **resolver**. This is somewhat similar to *canActivate*, or *canDeactivate*, except it does not guard whether to go to, or leave, a route, rather, it postpones a route until data is obtained.
+
+3. Of course, much the same effect can be accomplished using the *OnInit()* interface, perhaps displaying a spinner while waiting for data initialization. This is a little different, in that the route does not load until the data response is obtained.
+
+4. 
+    
 
 ## V. Forms
 
