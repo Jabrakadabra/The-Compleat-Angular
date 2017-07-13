@@ -4,28 +4,49 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 // our components, services, routes
+import { AppRoutingModule } from './app-routing-module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { UsersComponent } from './users/users.component';
-import { ServersComponent } from './servers/servers.component';
 import { UserComponent } from './users/user/user.component';
-import { EditServerComponent } from './servers/edit-server/edit-server.component';
+import { ServersComponent } from './servers/servers.component';
 import { ServerComponent } from './servers/server/server.component';
-import { ServersService } from './servers/servers.service';
-import { routing } from './routes/app.routing';
+import { EditServerComponent } from './servers/edit-server/edit-server.component';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { ServersService } from './services/servers.service';
+import { AuthGuardService } from './services/auth-guard.service';
+import { AuthService } from './services/auth.service';
+import { MyDeactivateGuard} from './services/can-deactivate-guard.service';
+import { ErrorPageComponent } from './error-page/error-page.component';
+import {ServerResolver} from './services/server-resolver.service';
 
 @NgModule({
 	declarations: [
 		AppComponent,
-		...routing.components,
+		HomeComponent,
+		UsersComponent,
+		ServersComponent,
+		UserComponent,
+		EditServerComponent,
+		ServerComponent,
+		PageNotFoundComponent,
+		ErrorPageComponent
+
 	],
 	imports: [
 		BrowserModule,
 		FormsModule,
 		HttpModule,
-		routing.routes
+		AppRoutingModule
+
 	],
-	providers: [ServersService],
+	providers: [
+		ServersService,
+		AuthGuardService,
+		AuthService,
+		MyDeactivateGuard,
+		ServerResolver
+	],
 	bootstrap: [AppComponent]
 })
 
