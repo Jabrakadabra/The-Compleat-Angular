@@ -2210,15 +2210,15 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ## V. Forms
 
-1. In our previous work on directives, we built a form by putting down a couple of labels and input components, with everything done by hand as far as validation and handling input.  This could be much improved, first by using a form element, and allowing Angular to handle the entire form object.
+1. In our previous work on directives, we built a form by putting down a couple of labels and input components, with everything done by hand as far as validation and handling input.  This could be much improved, first by using a form element, and allowing Ng4 to handle the entire form object.
 
-2.	One of the main topics here will be Angular2's options for validating form data.  We need to be able to manage the **state** of the form. Angular2 does not use the HTML5 form, but creates its own FormGroup object, which it keeps in sync with the HTML form, but uses for handling validation, submission, *etc*.
+2. One of the main topics here will be Ng4's options for validating form data.  We need to be able to manage the **state** of the form. Ng4 does not use the HTML5 form, but creates its own JavaScript objecty representation of the form, allowing us to have easy access to the form data and metadata, which we can use for handling validation, submission, *etc*.
 	
-3.	There are two major ways of creating forms in Angular2:
+3. Ng4 has two alternative approaches to handling forms:
 
-	a.	**Template driven**:  We set up and configure the form in the HTML template, then submit the form via the ngSubmit() directive to allow Angular 2 to recognize it as a form.  We do **not** create the actual Ng2 form object, it is inferred from the HTML.
-	
-	b.	**Data driven**: We set up and configure the form in the TypeScript code in the class body, then Angular2 is instructed to use the created FormGroup, and the data from the form can be used throughout the class body without passing it via ngSubmit().
+    a. **Template driven**: We set up and configure the form in the HTML template, then submit the form via the **ngSubmit( )** directive to allow Ng4 to recognize it as a form.  We do **not** create the actual Ng4 form object, it is inferred from the HTML.
+
+    b. **Reactive**: We define the structure of the form in the TypeScript code in the class body, then Ng4 is instructed to use the created FormGroup, and the data from the form can be used throughout the class body without passing it via ngSubmit(). We also set up the HTML code and manually connect the two pieces.
 
 4.  **IMPORTANT:** Be sure to add *FormsModule* to the *@NgModule* decorator in the *app.module* file for the template-driven forms approach, and *ReactiveFormsModule* for the data-driven approach.
 
