@@ -3912,13 +3912,16 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 1. Use of **observables** is an alternative to callbacks or promises for handling asynchronous data, which is used a great deal by Ng4.
 
-2. An **observable** can be thought of as a *data source*. It could be a button waiting for user interaction, an HTTP request, an event triggered in our code, *etc.*
+2. An **observable** can be thought of as a *data source*. It could be a button waiting for user interaction, something imported from *rx/js*, an HTTP request, an event triggered in our code, *etc.*
 
 3. In addition to the *observable*, we also have the **observer**, *i.e.*, our code (a *subscribe()* method). Over time, the *observable* might emit a series of events, which our *observer* will listen for and act upon. Eventually, the *observable* might (or might not) complete its task and close. For example, an HTTP request observable will complete upon receipt of the response; an observable waiting for button clicks may exist indefinitely, waiting for more clicks.
 
-4. The observable may emit multiple events, or data packages. The *observer* will have three callbacks, one for handling a data response, one for handling an error response, and one for handling a completion response.
+4. The observable may emit multiple events, or data packages. The *observer* will have ==three callbacks==, one for handling a data response, one for handling an error response, and one for handling a completion response.
 
 5. Most of what we do in Ng4 is simply understanding that certain items are observables created by Ng4, and then subscribing to them and handling them. However, we can create our own observables, and do more with them.
+
+6. This is just an introduction to Observables. While it should be enough info for the large majority of use cases for Ng4, further info on Observables can be gathered from the RxJS website, **reactice.io/rxjs/**. For example, there is a *bindCallback()* method that converts a callback API to a function that returns an Observable.
+
 
 ### B. Creating an Observable
 
@@ -3949,11 +3952,11 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-    Of course, the above example is a "prepackaged" observable, but it is an example of the kind of things that are available from **rxjs/Rx**.
+    Of course, the above interval example is a "prepackaged" observable, but it is an example of the kind of things that are available from **rxjs/Rx**.
     
 2. In addition, we can create our own, custom observables. What we will do is create the observable using the **Observable.create()** method, which will take as a parameter the **observer** to which it will be linked.
 
-3. Note that this will require import of the **Observer** object from *rxjs/Observer*, in addition to the imports in the prior example.
+3. Note that this will require import of the **Observer** object from *rxjs/Observer*, in addition to the imports in the prior example. The Observer is a generic, so we should pass to it the type of data it will receive, *e.g.*, **Observer\<string>**.
 
 4. The *observer* will have three methods, **next()**, **error()**, and **complete()**. *next()* is used to transmit data contained as an argument on a success, *error()* is used to deliver data contained as an argument on an error, and *commplete* takes no arguments.
 
@@ -4008,7 +4011,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 2. In order to handle this, we should always be careful to kill off any observables when they are no longer needed - in most cases, when we have navigated away from the page on which they sit.
 
-3. To do this, we should make use of the *OnDestroy* hook and inside it run the **unsubscribe** method on each active **subscription** (not on the observable itself! To do this, we must import *Subscription*, and we must assign our subscriptions to object variables so we can access them in the *OnDestroy()* method, as follows:
+3. To do this, we should make use of the *OnDestroy* hook and inside it run the **unsubscribe** method on each active **subscription** (not on the observable itself). To do this, we must import *Subscription*, and we must assign our subscriptions to object variables so we can access them in the *OnDestroy()* method, as follows:
     ```javascript
     import { Component, OnInit, OnDestroy } from '@angular/core';
     import { Observer } from 'rxjs/Observer';
@@ -4036,6 +4039,113 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
+### D. Subjects
+1. **Subjects** are another object (along with Observables) provided by RxJS. It is similar to an Observable, but allows us to emit data in our code. It is basically an Observable and an Observer in a single object.
+
+2. It may also be seen as similar to an event emitter, and the Ng4 eventEmiitter is actually built on the Subject architecture. However **it is considered best practice to use a Subject rather than an eventEmitter for cross component communication.
+
+3. The following is an example of the use of a *Subject*. Note how similar it is to an eventEmitter.
+
+    a. First, let's create a Service, where we will create our *Subject*, super easy, but don't forget to register the service in the *app.module.ts* providers section:
+    ```javascript
+    // services/users.service.ts
+    import {Subject} from 'rxjs/Subject';
+
+    export class UsersService {
+        userActivated = new Subject();
+
+    } 
+    ```
+    b. Next, put up a button to allow some user input; in this case, to click if the user is "activated":
+    ```javascript
+    // user.component.html
+    <p>User with <strong>ID {{ id }}</strong> was loaded</p>
+    <button class="btn btn-primary" (click)="onActivate()">Activate!</button>
+    ```
+    c. Upon being clicked, the button calls on the *onActivate()* method of the component. That method will get the Subject created in the service, then use its **next()** method to emit the data. This operates the same as the *Observable.next()* method. In addition, there are **error()** and **complete()** methods.
+    ```javascript
+    import { Component, OnInit } from '@angular/core';
+    import { ActivatedRoute, Params } from '@angular/router';
+    import {UsersService} from '../services/users.service';
+
+    @Component({
+      . . .
+    })
+    export class UserComponent implements OnInit {
+        id: number;
+
+        constructor(
+            private route: ActivatedRoute,
+            private usersService: UsersService
+        ) { }
+
+        ngOnInit() {
+        // note the use of the built-in Observable to get the route param
+            this.route.params
+            .subscribe((params: Params) => {
+                this.id = parseInt(params['id'], 10);
+            });
+        }
+
+        onActivate() {
+            this.usersService.userActivated.next(this.id);
+        }
+    }
+    ```
+    d. Now that we have emitted the id using the *next()* method, let's go to the component where we need this information and listen for it, using the *subscribe()* method.
+    ```javascript
+    // app.component.ts
+    import {Component, OnInit} from '@angular/core';
+    import {UsersService} from './services/users.service';
+
+    @Component({
+      . . .
+    })
+    export class AppComponent implements OnInit{
+        user1Activated = false;
+        user2Activated = false;
+
+        constructor(
+            private users: UsersService
+        ) {}
+
+        ngOnInit() {
+            this.users.userActivated.subscribe(
+                (id: number) => {
+                    if (id === 1) {
+                        this.user1Activated = true;
+                    } else if (id === 2) {
+                        this.user2Activated = true;
+                    }
+            . . .
+    }
+    ```
+    e. Then, once the information is received and acted upon, the page will rerender, incorporating the changes.
+
+4. **Don't forget to unsubscribe!**
+
+### E. Operators
+1. **Operators** are methods that allow us to transform the data in an Observable, while still maintaining its status as an observable.
+
+2. To use an operator, we must first import as follows:
+    ```javascript
+    import 'rxjs/Rx';
+    ```
+3. As a easy example, the **map** operator is very commonly used, as follows:
+    ```javascript
+    ngOnInit() {
+        const myNumbers = Observable.interval(5000)
+        .map((data: number) => data * 2);
+
+        this.myNumbersSub = myNumbers.subscribe(
+            (num: number) => {
+            console.log(num);
+        }
+    );
+    ```
+    The above will end up sending a list of even number to the console. Behind the scenes, rxjs is taking the Observable, applying the mapping function, and **returning a new Observable**. This means, of course, that we can chain the operators.
+    
+4. *map()* may be the most useful of all the Observable operators, but there are a large number of them, so check them out on the rxjs website.
 
 
 
