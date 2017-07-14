@@ -9,6 +9,7 @@ export class RecipeService {
 
 	private recipes: Recipe[] = [
 		new Recipe(
+			0,
 			'Tasty Schnitzel',
 			'A super-tasty Schnitzel - just awesome!',
 			'https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG',
@@ -18,6 +19,7 @@ export class RecipeService {
 			]
 		),
 		new Recipe(
+			1,
 			'Big Fat Burger',
 			'What else do I need to say?',
 			'https://upload.wikimedia.org/wikipedia/commons/b/be/Burger_King_Angus_Bacon_%26_Cheese_Steak_Burger.jpg',
@@ -38,12 +40,12 @@ export class RecipeService {
 		return this.recipes.slice();
 	}
 
-	getRecipe(ind) {
-		return this.recipes[ind];
+	getRecipe(id) {
+		const numId = parseInt(id, 10);
+		return this.recipes.find(recipe => recipe.id === numId);
 	}
 
 	addIngredientsToShoppingList(ingredients: Array<Ingredient>) {
-		console.log('done', ingredients);
 		this.shoppingService.addIngredients(ingredients);
 	}
 }
