@@ -16,7 +16,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor() { }
 
   ngOnInit() {
-    const myNumbers = Observable.interval(100);
+    const myNumbers = Observable.interval(5000)
+    .map((data: number) => data * 2);
     this.myNumbersSub = myNumbers.subscribe(
       (num: number) => {
         console.log(num);
@@ -29,9 +30,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         observer.next('second package');
       }, 4000);
-      setTimeout(() => {
-        observer.error('this does not work');
-      }, 5000);
+      // setTimeout(() => {
+      //   observer.error('this does not work');
+      // }, 5000);
       setTimeout(() => {
         observer.complete();
       }, 8000);
@@ -53,8 +54,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.myObservableSub.unsubscribe();
-    this.myNumbersSub.unsubscribe();
+    this.myObservableSub ? this.myObservableSub.unsubscribe() : null;
+    this.myNumbersSub ? this.myNumbersSub.unsubscribe() : null;
   }
 
 }
