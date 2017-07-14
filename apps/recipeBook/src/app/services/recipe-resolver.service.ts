@@ -5,6 +5,7 @@ import {Ingredient} from '../shared/models/ingredient.model';
 import {Observable} from 'rxjs/Observable';
 
 interface Recipe {
+	id: number,
 	name: string,
 	description: string,
 	imagePath: string,
@@ -21,6 +22,6 @@ export class RecipeResolver implements Resolve<Recipe> {
 		route: ActivatedRouteSnapshot,
 		state: RouterStateSnapshot
 	): Observable<Recipe> | Promise<Recipe> | Recipe {
-			return this.recipeService.getRecipe(0);
+			return this.recipeService.getRecipe(route.params['id']);
 	}
 }

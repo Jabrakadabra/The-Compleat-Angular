@@ -3908,7 +3908,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
   
 ## XII. Observables 
 
-### Introduction
+### A. Introduction
 
 1. Use of **observables** is an alternative to callbacks or promises for handling asynchronous data, which is used a great deal by Ng4.
 
@@ -3920,7 +3920,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 5. Most of what we do in Ng4 is simply understanding that certain items are observables created by Ng4, and then subscribing to them and handling them. However, we can create our own observables, and do more with them.
 
-### Creating an Observable
+### B. Creating an Observable
 
 1. There are many ways of creating an observable. We will start with a very simple example:
 
@@ -4003,7 +4003,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     Note that the subscription ends once the observable gets to *complete()*, or *error()*.
 
-### Killing our Observables
+### C. Killing our Observables
 1. If we run the first example, we will note that the Observable does not end; *i.e.*, it continues to emit incrementing numbers *ad inifinitum*. Even if we navigate away from the page and the component instances are destroyed, the observable keeps on going. This can be a big waste of resources (*i.e.*, memory leak), if we do not handle it correctly.
 
 2. In order to handle this, we should always be careful to kill off any observables when they are no longer needed - in most cases, when we have navigated away from the page on which they sit.
@@ -4036,6 +4036,11 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
+
+
+
+
+
 
 <span id='webpack'></span>
 ## XIII. Webpack Setup

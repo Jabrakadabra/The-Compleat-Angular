@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router, Data } from '@angular/router';
 
-
-import { Ingredient } from '../../../shared/models/ingredient.model';
+import { Recipe } from '../../../shared/models/recipe.model';
 import { RecipeService } from '../../../services/recipe.service';
 
 @Component({
@@ -12,7 +11,7 @@ import { RecipeService } from '../../../services/recipe.service';
 })
 
 export class RecipeDetailComponent implements OnInit {
-	recipe: { name: string, description: string, imagePath: string, ingredients: Array<Ingredient>}
+	recipe: Recipe
 
 
 	constructor(
@@ -28,6 +27,10 @@ export class RecipeDetailComponent implements OnInit {
 				this.recipe = data['recipe'];
 			}
 		)
+	}
+
+	onEditRecipe() {
+		this.router.navigate(['edit'], { relativeTo: this.route });
 	}
 
 	addIngredients() {
