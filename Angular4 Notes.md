@@ -2345,6 +2345,8 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ## V. Forms
 
+### A. Introduction
+
 1. In our previous work on directives, we built a form by putting down a couple of labels and input components, with everything done by hand as far as validation and handling input.  This could be much improved, first by using a form element, and allowing Ng4 to handle the entire form object.
 
 2. One of the main topics here will be Ng4's options for validating form data.  We need to be able to manage the **state** of the form. Ng4 does not use the HTML5 form, but creates its own JavaScript objecty representation of the form, allowing us to have easy access to the form data and metadata, which we can use for handling validation, submission, *etc*.
@@ -2355,15 +2357,15 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
     b. **Reactive**: We define the structure of the form in the TypeScript code in the class body, then Ng4 is instructed to use the created FormGroup, and the data from the form can be used throughout the class body without passing it via ngSubmit(). We also set up the HTML code and manually connect the two pieces.
 
-4.  **IMPORTANT:** Be sure to add *FormsModule* to the *@NgModule* decorator in the *app.module* file for the template-driven forms approach, and *ReactiveFormsModule* for the data-driven approach.
+4.  **IMPORTANT:** Be sure to add *FormsModule* to the *@NgModule* decorator in the *app.module* file for the template-driven forms approach, and *ReactiveFormsModule* for the reactive approach.
 
-
+:::danger
 5.  Add in the hack as follows:
     ```javascript
     <input type="text" #id (input)='0'>
     ```
     The (input)='0' is simply a workaround, to cause the page to rerender every time the input is changed in the input field.
-
+:::
 
 
 
@@ -2371,31 +2373,31 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 ### A.  Template Driven Approach
 
-1.	This method requires only that one simply build a \<form>\</form> element inside a component template. This will be automatically recognized by Angular2 as a form element and the *ngForm* directive will be attached to it.
+1. This approach requires only that one build a \<form>\</form> element inside a component template. Assuming we have implemented the *FormsModule*, this will be automatically recognized by Ng4 as a form element and the *ngForm* directive will be attached to it. Note that in our \<form> tag we do not place any route or action (*i.e.*, "POST") for our form. We do not want it to be submitted by HTTP; rather, we will pass it on to Ng4 and it will submit via an HTTP request.
 
-2.	However, we have to add the **ngModel** directive to each input field that we wish to be treated as part of that form, as well as a name property for the field.  Otherwise, the field does not become part of the javascript object that Angular2 makes from the form.  So, we have something like the following:
+2. However, Ng4 will not automatically detect the inputs in our form. We have to add the **ngModel** directive to each input field that we wish to be treated as part of that form, as well as a name property for the field. Otherwise, the field does not become part of the JavaScript object that Ng4 creates from the form. So, we have something like the following:
     ```javascript
     <input type="text" id="username" ngModel name="username"/>
     ```
-    Note that the *ngModel* directive here does not need the parens and brackets, as it is not establishing two-way data binding, it is only marking the field as a control in the Ng2 form object.
+    Note that the *ngModel* directive here does not need the parens and brackets, as it is not establishing two-way data binding, it is only marking the field as a control in the Ng4 form object.
 
-3.	We also need to add an (ngSubmit) directive to the \<form> element, as follows:
+3. So far, we have assigned values to properties in our form object, but we have no way to access any of this. We also need to add an (ngSubmit) directive to the \<form> element, as follows:
     ```html
     <form (ngSubmit)="onSubmit()">
     ```
-		
-4.	The *template-driven* approach does not give direct access to form values. However, we can pass the Angular2 representation of the form, as **ngForm**, to a variable, which we can then pass into our *ngSubmit* method. For example:
+    This directive overrides the HTML submit actions, and allows us to control what happens on submission.
+
+4. This *template-driven* approach does not give direct access to form values. However, we can pass the Ng4 representation of the form, as **ngForm**, to a variable, which we can then pass into our *ngSubmit* method. For example:
     ```html
-    <form (ngSubmit)="onSubmit(f)" #f="ngForm">
+    <form (ngSubmit)="onSubmit(myForm)" #myForm="ngForm">
 						
     </form>
     ```
-		
-	In the above, **ngForm** is both a directive that is invisibly attached to the form, but also is a reference to the form that is marked as part of the Ng2 form with *NgModel*. So, in the above, we are passing the *onSubmit* method the form object. An element can be recognised as a form by Angular2 either by explicitly adding the *ngForm* directive, or by simply using the HTML \<form> tag. 
-	
-	To access the input values in the form, refer to *f.value*, which will be an object of name: value pairs.
-	
-5.	Don't forget, for TypeScript to recognize the object type, we should import the *NgForm* object from the *@angular/forms* module. So, we should have something along these lines:
+    In the above, **ngForm** is both a directive that is invisibly attached to the form, but also is a reference to the form that is marked as part of the Ng4 form with *NgModel*. So, in the above, we are passing the *onSubmit* method the form object. An element can be recognised as a form by Ng4 either by explicitly adding the *ngForm* directive, or by simply using the HTML \<form> tag. 
+
+    The form object is quite an extensive one. To access the input values in the form, refer to *myForm.value*, which will be an object of name: value pairs.
+
+5. Don't forget, for TypeScript to recognize the object type, we should import the *NgForm* object from the *@angular/forms* module. So, we should have something along these lines:
     ```javascript
     import { Component } from '@angular/core';
     import { NgForm } from '@angular/forms';
@@ -2409,10 +2411,39 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
-		
-6.	Angular2 manages not only the state of the form overall, but also of each control on the form. Thus, The *NgForm* object has a *controls* property, which takes as a value an object of the controls on the form, which are *FormControls*, and each of them has many properties similar to those on the form.
+6. As an alternative to the assignment of the form to a varaiable, then passing in the variable as a parameter to a method bound to the *ngSubmit()* directive, we can access our form using the *@ViewChild* decorator. So, in our form, we may have:
+    ```html
+    <form (ngSubmit)="onSubmit()" #myForm="ngForm">
+    ```
+    then, in the *component.ts* file, we could have access to the form object as follows:
+    ```javascript
+    import {Component, ElementRef, ViewChild} from '@angular/core';
+    import { NgForm } from '@angular/forms';
 
-7.	To set default values for a template-driven form, we can do the following:
+    @Component({
+        . . .
+    })
+    export class AppComponent {
+        @ViewChild('myForm') cjbForm: NgForm;
+
+        onSubmit() {
+            console.log('submitted', this.cjbForm.controls);
+        }
+    }    
+    ```
+    This approach is very useful if we need access to any properties of the form prior to the user submitting it.
+
+### Validation
+
+1. **Important**: A knowledgeable user can always get around front-end restrictions, so the validations discussed herein should be considered applicable **only** to user experience concerns. Front-end validations **cannot replace** back-end validations.
+
+2. Ng4 manages not only the state of the form overall, but also of each control on the form. Thus, The *NgForm* object has a *controls* property, which takes as a value an object of the controls on the form, which are *FormControls*, and each of them has many properties similar to those on the form.
+
+3. Note that Ng4 disables HTML5 validation. To enable it on a control, add **ngNativeValidate** to the control.
+
+#### Default Values
+
+1. To set default values for a template-driven form, we can do the following:
 
 	a.	enclose *ngModel* in brackets, making it one-way, property data-binding.
 	
@@ -2431,32 +2462,9 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	    }
     };
     ```
-8.	We can add validation to our *NgControl*s, with two common validators as follows:
-
-	a.	*required*,
-	
-	b.	*pattern*: This takes a regular expression to match (note, the regexp is in the quotes, not enclosed in  "/ /"").
-
-	
-9.	As with Angular Classic, the following css classes are added to controls in an Angular form:
-
-	a.	**ng-pristine**: this means the input value equals the default value and hasn't been modified (not necessarily blank).
-	
-	b.	**ng-valid** / **ng-invalid**: whether the input value passes any validation tests.
-	
-	c.	**ng-touched**: Indicates when the control has been clicked into, no need for inputing anything. It does not take effect until the control is left.
-	
-	d.	**ng-dirty**: this means the input value has been changed from its default state. This persists even if the value is returned to its default state.
-		
-		
-10. As discussed abave, *ngModel* is added to a control to indicate that it is a control object in the Ng2 form object. However, it can be used with "[ ]" or "[( )]" to bind the control to data in the component class.
-
-    a.  With "[ngModel] = test.property", the initial value of the form control will be set to the value of *test.property*; however, this can be changed in the form without affecting the value of the *test* object.
+    Note that the code above will allow the user to change what is typed in the username box, and the change will affect the value of the control in the form object; however, it will not change the value of the *user.username* property in the *user* object. To do that, we would need to change the property binding to two-way data binding (change "[ngModel]" to "[(ngModel)]").
     
-    b.  With "[(ngModel)] = test.property", the initial value of the form control will be set to the value of *test.property*; in this case, there is two-way data binding and the value of the *test* object will be affected by changes in the control.
-    
-    c.  Note that values can be accessed upon submit either through the form, or through the object bound to the controls.
-    
+    Note that values can be accessed upon submit either through the form, or through the object bound to the controls.
     ```javascript
     export class TemplateDrivenComponent {
 	    user = {
@@ -2466,7 +2474,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	    }
 
 	    onSubmit(form: NgForm) {
-            console.log(form);
+            console.log(form.controls['username'].value);
         }
         //or
         onSubmit(form: NgForm) {
@@ -2474,6 +2482,73 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         }
     }
     ```
+
+#### required
+
+1. We can also add the **required** attribute to the input field; this is an HTML attribute, but when present on an Ng4 form, it is a directive. If there is nothing in the input that on which the directive sits, the *valid* and *invalid* fields of the form object will be false and true, respectively. 
+
+#### maxlength / minlength
+
+1. These two are pretty self-explanatory. They take a number (in quotes) and the input must be no longer than *maxlength* and no shorter than *minlength*.
+    ```html
+    <input type="text" id="username" class="form-control"
+        [(ngModel)]="username" name="username" maxlength="8" minlength="4">
+    ```
+
+#### email
+
+1. This is an Ng4 ==new in Ng4== convenience directive that checks the formal validity of an e-mail address. Not really necesary, as we could use the *pattern* validator just as well.
+
+#### pattern
+
+1. This takes a regular expression to match (note, the regexp is in the quotes, not enclosed in  / /).
+
+2. One problem here is how to use flags (the i-flag being the important one here) if using between quotes. We can get around this by binding the pattern attribute to a regular expression, as follows:
+    ```html
+    <input type="text" . . . [pattern]="myRegExp" />
+    ```
+    and in the component.ts:
+    ```javascript
+    export class AppComponent {
+        username = 'fork!';
+        myRegExp = /jordan/i;
+    }
+    ```
+
+
+#### Ng4 Classes Added
+
+1. As with Angular Classic, the following CSS classes are added to the form and to the control in an Ng4 form:
+
+    a. **ng-pristine**: the input value equals the default value and hasn't been modified (not necessarily blank). If modified and then changed back to original value, it is still **not** pristine.
+
+    b. **ng-valid** / **ng-invalid**: whether the input value passes all validation tests.
+
+    c. **ng-touched**: Indicates that the control has received the focus, no need for inputing anything. It does not take effect until the control is left.
+
+    d. **ng-dirty**: this means the input value has been changed from its default state. This persists even if the value is returned to its default state.
+
+2. These properties will also be in the form object, without the "ng" prefix, and taking boolean values.
+
+3. These properties can be very useful. As a simple example, if we have created a reference to the form as described above:
+    ```html
+    <form (ngSubmit)="onSubmit()" #myForm="ngForm">
+    </form>
+    ```
+    then we can disable the submit button based on whether the form is valid:
+    ```html
+    <button class="btn btn-primary" type="submit" 
+        [disabled]="myForm.invalid">
+        Submit
+    </button>
+    ```
+4. To access a form element directly, as opposed to as a property of the form, we can assign it to a variable as well, using *ngModel* in place of *ngForm*.
+    ```html
+    <input type="email" id="email" class="form-control" ngModel
+        name="email" required email #email="ngModel"
+    />
+    ```
+
 #### Data Grouping
 
 1.  In our form, we can group controls together using the **ngModelGroup** directive.  Here is an example:
