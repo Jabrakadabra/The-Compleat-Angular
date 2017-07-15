@@ -2371,7 +2371,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 
 
-### A.  Template Driven Approach
+### B.  Template Driven Approach
 
 1. This approach requires only that one build a \<form>\</form> element inside a component template. Assuming we have implemented the *FormsModule*, this will be automatically recognized by Ng4 as a form element and the *ngForm* directive will be attached to it. Note that in our \<form> tag we do not place any route or action (*i.e.*, "POST") for our form. We do not want it to be submitted by HTTP; rather, we will pass it on to Ng4 and it will submit via an HTTP request.
 
@@ -2549,6 +2549,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     />
     ```
 
+:::danger
 #### Data Grouping
 
 1.  In our form, we can group controls together using the **ngModelGroup** directive.  Here is an example:
@@ -2688,7 +2689,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     	}
 
 
-
+:::
 
 ## VI. Services
 ### A. Introduction

@@ -9,6 +9,7 @@ import { NgForm } from '@angular/forms';
 export class AppComponent {
   username = 'fork!';
   regExpIt = /jordan/i;
+  myChoice = 'pet';
 
   @ViewChild('myForm') cjbForm: NgForm;
 
@@ -19,5 +20,6 @@ export class AppComponent {
   onSubmit() {
     console.log('submitted', this.cjbForm);
     console.log('user', this.username);
+    console.log('value', this.myChoice);
   }
 }
