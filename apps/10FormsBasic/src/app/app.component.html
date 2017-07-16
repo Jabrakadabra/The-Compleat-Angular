@@ -6,13 +6,11 @@
           <div class="form-group">
             <label for="username">Username</label>
             <input
-              type="number"
+              type="text"
               id="username"
               class="form-control"
               [(ngModel)]="username"
               name="username"
-              min="4"
-              max="6"
               required
             >
           </div>
@@ -23,7 +21,7 @@
               type="email"
               id="email"
               class="form-control"
-              ngModel
+              [ngModel]="'cjordanball@icloud.com'"
               name="email"
               required
               email
@@ -52,6 +50,12 @@
           ></textarea>
         </div>
         <p>Your reply: {{ myAnswer }}</p>
+        <div class="radio" *ngFor="let gender of genders">
+          <label>
+            <input type="radio" name="gander" [ngModel]="genders[2]" [value]="gender"/>
+            {{ gender }}
+          </label>
+        </div>
         <button
           class="btn btn-primary"
           type="submit"

@@ -10,6 +10,7 @@ export class AppComponent {
   username = 'fork!';
   regExpIt = /jordan/i;
   myChoice = 'pet';
+  genders = ['male', 'female', 'complicated'];
 
   @ViewChild('myForm') cjbForm: NgForm;
 

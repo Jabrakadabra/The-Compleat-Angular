@@ -2549,7 +2549,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     />
     ```
 
-:::danger
+
 #### Data Grouping
 
 1.  In our form, we can group controls together using the **ngModelGroup** directive.  Here is an example:
@@ -2562,7 +2562,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         </div>
         <input ngModel name="password" />
     ```
-    In the above case, if we enter some data into the form and console.log out the form.value, we would get:
+    In the above case, if we enter some data into the form and log the **form.value** property to the console, we get:
     ```javascript
     {
         userData: {
@@ -2572,31 +2572,51 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         password: "test"
     }
     ```
-    
+2. In addition, in the *controls* property of the form object, we will have a *userData* property with all the properties we would expect from a form group. And, of course, we can add a local reference to the ngModelGroup so that we can access it from anywhere in our template.
+
+
 #### Example: Radio Buttons
 
+1. In this example, we will create a simple radio button through which the user selects either "Male" or "Female" for the gender field.
 
+2. First, create the variable *genders* in our component, and assign to it the value of an array of two strings:
+    ```javascript
+    // spp.component.js
+    . . .
+    export class AppComponent {
+    genders = ['male', 'female', 'complicated']
+    ```
 
-4.	**PAY ATTENTION**: Angular2 does a bit of automagical here with *ngControl*. Inside the form, we can reference a form field by assignment of *ngForm* to a field variable name, as follows:
-
-		<input ngControl="email" type='text' id='mail' required #email='ngForm'>
-
-	Angular2 will recognize the context in which *ngForm* is used, *i.e.*, a field or the entire form.
-
-
-5.	By adding the *ngControl* directive, for example, the elements now have angular classes such as *ng-untouched*, *ng-pristine*, *ng-invalid* added to the element. The *ngControl* should be bound with a name given, as so:
-
-		<input ngControl="email" type="text" id="mail" required>
-		
-6.	Values in the form can be accessed in a number of ways.  The most straightforward is through the *formName*.value[*fieldName*] object, or through *formName*.controls[*fieldName*].value.
-
-
-
-
+3. In the template file, create a \<div> to hold the choices, using *\*ngFor* to iterate over the array:
+    ```html
+    // app.component.html
+    
+    <div class="radio" *ngFor="let gender of genders">
+        <label>
+            <input type="radio" name="userGender" ngModel [value]="gender" />
+            {{ gender }}
+        </label>
+    </div>
+    ```
+    In the above, the name of the control will be the name property, "userGender". Each radio entry will have the value assiged to the *[value]* property, and the value of the control will be the value of the entry selected. The label will be in placed after the input (the "{{ gender }}" in the above example.
+    
+    To set a default value for the radio buttons, we can use property binding on *ngModel*, as follows:
+    ```html
+        <input type="radio" 
+            name="userGender" 
+            [ngModel]="genders[2]" 
+            [value]="gender" />
+    ```
 
 
 
 #### Data-Driven
+
+
+
+
+
+
 
 1.	This approach takes care of things primarily in our code, rather than in the \<form> created in our template.
 
@@ -2688,8 +2708,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         	});
     	}
 
-
-:::
 
 ## VI. Services
 ### A. Introduction
