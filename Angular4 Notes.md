@@ -2433,7 +2433,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     This approach is very useful if we need access to any properties of the form prior to the user submitting it.
 
-### Validation
+### C. Validation
 
 1. **Important**: A knowledgeable user can always get around front-end restrictions, so the validations discussed herein should be considered applicable **only** to user experience concerns. Front-end validations **cannot replace** back-end validations.
 
@@ -2608,8 +2608,65 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
             [value]="gender" />
     ```
 
+### D. Programmatic Setting of Form Values
+1. As an example, imagine we had a button on a form under the password that said "Enter Default Password", and when the user clicked it, the password "password" would be entered in the field. Among other possible means of accomplishing this, Ng4 offers a couple of form instance methods: **setValue()** and **form.patchValue()**.
 
+#### setValue()
+1. This method belongs to the form instance, so we assume here that we have obtained access to the form in our *component.ts* file using *ViewChild()*. We can then use the *setValue()* method, passing in as a parameter an object, containing all the fields of the form and their respective values. **We are setting all the values of the form, and all fields will be updated. If fields are left out of the object, then it will throw an error.**
 
+#### patchValue()
+1. Most of the time, we will probably want to access just a single field, or a small numbeer of them. To update the values of some fields, while leaving the remaining fields as-is, we can use the *form.patchValue()* method. This method takes as a parameter an object of the fields to be changed, and the remaining fields stay as they are. Note that the *patchValue()* method is called on the **form** property of the form instance, not on the form instance directly.
+    ```javascript
+    // app.component.ts
+    . . .
+    export class AppComponent {
+        username = 'fork!';
+
+        @ViewChild('myForm') cjbForm: NgForm;
+
+        fixPassword() {
+            const newPassword = 'password';
+            this.cjbForm.form.patchValue({
+                password: newPassword
+            })
+        }
+        
+        // alternatively set the entire value object
+           
+        fixPassword() {
+            const newPassword = 'password';
+            this.cjbForm.setValue({
+                username: 'myName',
+                password: newPassword,
+                sex: 'male',
+                secretQuestion: 'pet',
+                . . .
+            })
+        }
+    }
+    ```
+### E. Resetting the Form
+1. Once we submit the form, we will probably want to clear it out, or reset it to its original state if it contains default valuse. This is very easy to do with the **reset()** method of the form instance. With no parameter, it simply puts the form into a completely empty state (default values are not set). It becomes *ng-pristine*, *ng-untouched*, *etc*.
+
+2. To return it to a true original state with default values, we can pass in an object of key/value pairs, being the properties we want to set and their values:
+    ```javascript
+    // from app.component.ts
+    
+    onSubmit() {
+        this.user.username = this.cjbForm.value.username;
+        this.user.email = this.cjbForm.value.email;
+        this.user.secretQuestion = this.cjbForm.value.secret;
+        this.user.answer = this.cjbForm.value['questionAnswer'];
+        this.user.gender = this.cjbForm.value['gander'];
+        this.cjbForm.reset({
+            username: 'myName'
+        });
+    }
+    ```
+    The above code will give us access to submiteed data through the *user* object, and will clear out the form, with a default value of "myName" sitting in the username field.
+    
+:::danger    
+  
 #### Data-Driven
 
 
@@ -2707,7 +2764,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
             	'confirm': ['', Validators.required]
         	});
     	}
-
+:::
 
 ## VI. Services
 ### A. Introduction
