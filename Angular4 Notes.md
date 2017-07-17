@@ -2608,6 +2608,25 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
             [value]="gender" />
     ```
 
+#### Example: Select
+1. The following is a quick example of a Select drop-down, offering three choices, which are in an array assigned to the variable "subscriptions" in the component.ts file.
+    ```html
+    <label for="subscription" >Choose a Subscription</label>
+    <select
+        class="form-control"
+        name="subscription"
+        [ngModel]="'Advanced'"
+        #mySelection ="ngModel"
+    >
+        <option 
+            *ngFor="let subscription of subscriptions" 
+            [value]="subscription">{{ subscription }}
+        </option>
+    </select>
+    ```
+    Note that we have created a default value of "Advanced" by assigning it to *[ngModel]* and how we assign the values to the options through the [value] property binding.
+    
+
 ### D. Programmatic Setting of Form Values
 1. As an example, imagine we had a button on a form under the password that said "Enter Default Password", and when the user clicked it, the password "password" would be entered in the field. Among other possible means of accomplishing this, Ng4 offers a couple of form instance methods: **setValue()** and **form.patchValue()**.
 
@@ -2663,70 +2682,185 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         });
     }
     ```
-    The above code will give us access to submiteed data through the *user* object, and will clear out the form, with a default value of "myName" sitting in the username field.
-    
-:::danger    
+    The above code will give us access to submiteed data through the *user* object, and will clear out the form, with a default value of "myName" sitting in the username field.  
   
-#### Data-Driven
+### Reactive Approach to Forms
+1. This approach comes at forms from the other end; instead of inferring a form object from the presence of a \<form> \</form> in the DOM, we create the form programstically and then place it in the DOM. Note, however, that this does not mean we have to create the form from scratch; Ng4 provides a large number of tools to assist in the process.
 
+2. This approach requires that we import the **FormGroup** constructor from *@angular/forms*, so we must begin with:
+    ```javascript
+    import {Component} from 'angular2/core';
+    import {FormBuilder} from 'angular2/common';
 
+    @Component({
+        . . .
+        export class AppComponent {
+            signupForm: FormGroup
+        }
+    }
+    ```
+3. Also, in our *app.module.ts* file, we do not make the import of **FormsModule**, but instead we need to import, and then include in the imports array of the @NgModule object, **ReactiveFormsModule**.
 
+### Hello World - Creating a Basic Form
+1. First, let's place the code for form creation in a method, and place that method in the *OnInit* lifecycle hook.
 
+2. Creating the form is super easy, just call the *FormGroup* constructor with the *new* keyword and pass in a configuration object as a parameter:
+    ```javascript
+    ngOnInit() {
+        this.signupForm = new FormGroup({
+            
+        });
+    }
+    ```
+3. The keys of the configuration object will be the names of our form controls, as shown below. Similar to the *FormGroup*, these form controls will be created by the **FormControl()** constructor, which is imported from *@angular/form.* The first argument will be the initial state of the control, the second argument will be the validator (or an array of validators), the third argument may be an asyc validator.
+    ```javascript
+    ngOnInit() {
+        this.signupForm = new FormGroup({
+            'username': new FormControl(null),
+            'email': new FormControl(null),
+            'gender': new FormControl('male')
+            
+        });
+    }
+    ```
+    The above creates our new, basic form of three fields, two text inputs and a "male/female" radio button. However, our form will not yet do anything, because we have to connect it to the HTML DOM representation. In fact, at this point, without any direction to the contrary, Ng4 will detect the form in the HTML and create a *template driven form*, as we exammined previously.
 
+4. To hook up the HTML form to our code form, bind the *[formGroup]* property to it, as follow:
+    ```html
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+        <form [formGroup]=""signupForm>
+        </form>
+    </div>
+    ```
 
+5. To hook up the controls to those identified in our form, add the **formControlName** value to the controls:
+    ```html
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-offset-2">
+        <form [formGroup]="signupForm">
+            <div class="form-grooup">
+                <label for="userName">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    class="formControl"
+                    formControlName="username"
+                />            
+        </div>
+    </form>
+    ```
+6. To submit the form, we use the *ngSubmit* directive as with the template-driven form:
+    ```html
+    <form (ngSubmit)="onSubmit()" [formGroup]="signupForm">
+    ```
+    However, there is one **big difference.** We don't have to (and cannot) paass the form to our *onSubmit()* method by assigning it to a variable and then passing that variable in as an argument. The form object is already available to us.
 
-1.	This approach takes care of things primarily in our code, rather than in the \<form> created in our template.
+7. We can also create "nested" forms by placing a *FormGroup* as an property of a *FormGroup*. For example, we might want to have username and password as a "signin" subsection of a form, which we could designate as so:
+    ```javascript
+    ngOnInit() {
+        this.signupForm = new FormGroupt({
+            'signin': new FormGroup({
+                'username': new FormControl(null, Validators.required),
+                'password': new FormControl(null, Validators.required)
+            }),
+            'gender': new FormControl('male')
+        })
+    }
+    ```
+    In our HTML form, we need to wrap the new group in a \<div> and assign a value to **formGroupName**, as follows:
+    ```html
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <div formGroupName="signin">
+        <label for="username">UserName</label>
+        . . .
+    
+    ```
+### Form Validation
+1. Validation does **not** work in the same manner for the reactive approach as for the template approach. Remember, we are hooking up the form object to the HTML form, but we are not adopting the HTML5 attributes as in the template approach.
 
-2.	This approach requires use of Angular2's **FormBuilder** module, so we must begin by importing:
+2. As noted above, the **second argument** of the **FormControl** constructor takes a *validator*, or an *array of validators*.
+    
+3. To make use of validators, we will have to import the **Validators** object from *@angular/forms* and access the validation from that object. **Interesting note**: *Validators.required* (as an example) is actually a ==method==; we do not pass it in with parens because we are only passing in a reference to the method, which Ng4 will execute later.
 
-		import {Component} from 'angular2/core';
-		import {FormBuilder} from 'angular2/common';
-		
-	**Note**: the import of FormBuilder is from the *angular2/common* module, not the *core* module.
+4. There are other built-in validators: 
 
-3.	We must then inject this module via the constructor of our exported class component.
+    a. **Validators.required**,
+    
+    b. **Validators.requiredTrue**,
+    
+    b. **Validators.minLength**,
+    
+    c. **Validators.maxLength**,
+    
+    d. **Validators.email**,
+    
+    e. **Validators.pattern**: takes either a string or a regular expression ("/ /", with flags) as an argument.
 
-		export class DataDrivenFormComponent {
-			user = {mail: '', password: ''};
-			
-			constructor(private _formBuilder: FormBuilder) {
-			
-			}
-			. . .
+#### Gaining Access to Form Values in Template
+1. We often need to get access to the values of our form in the template. For example, we may need to get the value of the *valid* property of the form, or of a specific control, in order to decide whether to show it (*i.e.*, \*ngIf), or highlight it. We do not have access to a variable to call, as with the template approach, but we can use the **get()** method of the form instance. For example, if we need access to the value of the *valid* property of the *username* control of our *signup* form, we could do as follows:
+    ```html
+    *ngIf="signupForm.get('username').valid"
+    ```
 
-4.	Also, we will want to build the form on the OnInit lifecycle stage, so we should import OnInit, and implement it on the exported class declaration, as described elsewhere.
+2. If the controls are divided into groups and nested, the *get()* method described above can take as a parameter a "path" to the target element. The path is created using dot notation, as follows:
+    ```html
+    *ngIf="signupForm.get('userData.username').valid"
+    ```    
 
-5.	To build the form, we will need to access the **group()** method of the FormBuilder object. We must also create a new property in the class declaration (called *myForm* in this example).  In Typescript, this will be of type *ControlGroup*.  This type will have to be imported from *angular2/common*.
+#### Form Control Arrays
+1. We can also group controls into an array. For example, if we wanted the user to enter a list of all siblings, we could have a form item where we had a button that says "Add Another". When the user clicks on it, a text box appears in which the user can type in a sibling's name. Upon submission, the control's value would be an array of all values submitted. There are a couple of "tricks" to doing this, however, as demonstrated below.
 
-6.	The *group()* method of the FormBuilder takes an object argument, as follows:
+2. The first step in adding the array will be to create a place for it in our HTML page form:
+    ```html
+    <div>
+        <h4>Brothers and Sisters</h4>
+        <button 
+        class="btn btn-primary" type="button" (click)="onAddSibling()">
+            Add Another
+        </button>
+    </div>
+    ```
+3. Next, we go to the *component.ts* page and set up our *onAddSibling()* event listener and create a "sibling" form control.
+    ```javascript
+    // app.component.ts
+    . . .
+    ngOnInit() {
+        this.familyForm = new FormGroup({
+            userData: new FormGroup({
+                'username': new FormControl(null, Validators.required),
+                'email': new FormControl(null)
+            }),
+            'gender': new FormControl('male'),
+            'siblings': new FormArray([])
+        });
+    }
+    onAddSibling() {
+        const control = new FormControl(null, Validators.required);
+        (<FormArray>this.familyForm.get('siblings')).push(control);
+    }
+    ```
+    **Note**: Note the new kind of control assigned to siblings, **FormArray()**. Don't forget to impoort it from *@angular/forms*.
 
-		ngOnInit():any {
-			this.myForm = this._formBuilder.group({
-				'email': ['', Validators.required],
-				'password': ['', Validators.required],
-				'email': ['', Validators.required],
-			});
-		}
-		
-	a.	Note that the form is set with an object where the key is the field name, and the value is an array. The first item in the array is a default value (set to '' in the example), and the second is validation.
-	
-	b.	The validation item references a *Validators* object, which must be imported from *angular2/common*.  There are three built-in validators: **required**, **minLength**, and **maxLength**. The last two take a numerical argument.
+    **Note**: When we click on the button, we are creating a new *FormControl* and pushing it onto our array of formControls.  **It is necessary to typecast the *FormArray* as shown** in the last line.
+    
+4. Finally, we need to hook up our control with the HTML form. Since we have an array of form controls, we will iterate over them using *\*ngFor*:
+    ```html
+    <div>
+        <h4>Brothers and Sisters</h4>
+        <div 
+        *ngFor="let sibling of familyForm.get('siblings').controls; 
+            let i = index"
+        class="form-group">
+            <input type="text" class="form-control" [formControlName]="i"/>
+        </div>
+        <button 
+        class="btn btn-primary" type="button" (click)="onAddSibling()">
+            Add Another
+        </button>
+    </div>
+    ```
+    **Note**: We are using the index to assign a name to each of our array controls. Because we are passing a variable, not a string, to the *formControlName*, we must enclose it with the brackets.
 
-7.	Of course, we are building the Angular2 form object, and we also have an HTML form and component fields. We need to joing them together, which we do with the following directives:
-
-	a.	The **[ngFormModel]** directive goes on the \<form> tag and overrides Angular2's default action on coming upon such tag. We bind our angular form from the class declaration to the \<form> with this directive:
-	
-	
-			<form [ngFormModel]='myForm' (ngSubmit)="onSubmit()">
-		
-	b.	The **[ngFormControl]** directive goes on the \<input> tags and assigns a form field to the input, as follows:
-	
-			<input [ngFormControl]="myForm.controls['email']"
-
-		**Note** that the form accesses the inputs through its control object, not directly to the name of the control (i.e., not "myForm.email").
-
-	c.	We can also continue to use the *#variableName='ngForm'* syntax in the input tag to identify the tag.
-	
+:::danger
 ####Custom Validation
 
 1.	In addition to the built-in validators, we can set up custom validation, using regular expressions, or any other JavaScript to check on the input.
