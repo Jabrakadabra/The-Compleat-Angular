@@ -20,6 +20,7 @@
               id="email"
               class="form-control"
               formControlName="email">
+            <span *ngIf="signupForm.get('userData.email').invalid && signupForm.get('userData.username').touched">Invalid email!</span>
           </div>
         </div>
         <div class="radio" *ngFor="let gender of genders">

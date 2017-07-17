@@ -2685,7 +2685,9 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     The above code will give us access to submiteed data through the *user* object, and will clear out the form, with a default value of "myName" sitting in the username field.  
   
 ### Reactive Approach to Forms
+
 1. This approach comes at forms from the other end; instead of inferring a form object from the presence of a \<form> \</form> in the DOM, we create the form programstically and then place it in the DOM. Note, however, that this does not mean we have to create the form from scratch; Ng4 provides a large number of tools to assist in the process.
+
 
 2. This approach requires that we import the **FormGroup** constructor from *@angular/forms*, so we must begin with:
     ```javascript
@@ -2860,45 +2862,94 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     **Note**: We are using the index to assign a name to each of our array controls. Because we are passing a variable, not a string, to the *formControlName*, we must enclose it with the brackets.
 
-:::danger
-####Custom Validation
+#### Custom Validation
 
-1.	In addition to the built-in validators, we can set up custom validation, using regular expressions, or any other JavaScript to check on the input.
+1. In addition to Ng4's built-in validators, we can create custom validation, using regular expressions, or any other JavaScript to check on the input.
 
-2.	To begin, set up one or more validator functions. They could be wrapped in their own object, or just written as independent functions.
+2. A **validator** is, at its core, simple a function that gets executed by Ng4 automatically when it checks the validity of the form control inputs. The validator function must receive as an argument the control it is to check, and must return an object that has a key-value pair of a string key and a boolean value. So our validator must have the form:
+    ```javascript
+    tester(control: FormControl): {[s: string]: boolean} {
+    
+    }
+    ```
 
-3.	The validator function will have a parameter of type **Control**, which must be imported from *angular2/common*. It will return a JavaScript object, with a string key and a boolean value.  In TypeScript, set it up as:
+3. Then, we insert our validation code into the function, so that it will return *null* if the entry passes validation, or the object if it does not. If the input **fails** the validation, then it must return an object, and the key should be descriptive of the test failed. If the input **passes**, the validation function **must return null or nothing**. It **must not** return an object with the value being *false*. 
 
-		function hasbach(control: Control): {[s: string]: boolean} {
-    		if (!control.value.match(/bach/i)) {
-        		return {noBach: true};
-    		}
-		}
-		
-	Note that the above is making full use of TypeScript.  For example, we could leave out the return type declaration and the type declaration of the parameter, and it would still work as valid JavaScript.  I.e., the following would work just fine:
-	
-		function hasbach(val) {
-    		if (!val.value.match(/bach/i)) {
-        		return {noBach: true};
-    		}
-		}
+4. To apply our new validator, simply include it in the second argument of the new FormControl instantiation. Remember that it is only a reference, not an execution, so do **not** include trailing parens. Also, note that it will be called in another context, so we must either bind it to the current *this*, using **bind()**, or use an arrow function for our validator, so that its "this" will remain the class it is in.
 
-4.	Whatever the syntax for writing the function, **it must return an object with a string key and boolean value** if it fails the test. If the object is not returned, the validation test will be considered passed.  The key of the returned object should identify the problem, and the boolean value should be true, but they do not need to, to fail the test.
+5. As a simple example, the following custom validator checks to see if the input name is "Jordan" or "Jay", and fails if they are:
+    ```javascript
+    import {Component, OnInit} from '@angular/core';
+    import {FormControl, FormGroup, Validators} from '@angular/forms';
 
-5.	To attach the custom validator methods to a field, modify the object in *FormBuilder.group()*.  For the field where one wants to add the custom validator, call the **compose** method on the Validators object, and give it an array of all validators to apply to the field, **including built-in methods**:
+    @Component({
+        . . .
+    })
 
-		ngOnInit():any {
-        	this.myForm = this._formBuilder.group({
-            	'email': ['', Validators.required],
-            	'password': ['', Validators.compose([
-                	Validators.required,
-                	hasNumbers,
-                	hasbach
-            	])],
-            	'confirm': ['', Validators.required]
-        	});
-    	}
-:::
+    export class AppComponent implements OnInit {
+        genders = ['male', 'female'];
+        signupForm: FormGroup;
+        forbiddenUserNames = ['Jordan', 'Jay'];
+
+        ngOnInit() {
+            this.signupForm = new FormGroup({
+                userData: new FormGroup({
+                    'username': new FormControl(
+                        null, 
+                        [Validators.required, this.forbiddenNames]),
+                    'email': new FormControl(null)
+                }),
+                'gender': new FormControl('male')
+            });
+        }
+        onSubmit() {
+            console.log('test', this.signupForm);
+        }
+
+        forbiddenNames = (control: FormControl): {[s: string]: boolean} => {
+            if (this.forbiddenUserName.includes(control.value)) {
+                return {'nameIsForbidden': true};
+            }
+            return null;
+        };
+    }
+    ```
+6. The string passed in as the key of the returned error will be added to the **errors** property object of the control on which it sits. So, we can gain access to the specific error message.  
+
+#### Async Custom Validation
+1. Often, it could be that our validation code will be asynchronous. For example, if we wish to check whether a username already exists in our database, then it would require a call to the application API. We can create such validators, by following the steps below:
+
+    a. Create our asynchronous validator. In our case, we will use the setTimeout method to simulate a method that takes some time. The important thing to note is that we are **not** returning a key/value object, we are returning a *promise* or an *observable*.
+    ```javascript
+    forbiddenEmails = (control: FormControl): Promise<any> | 
+        Observable<any> => {
+        const promise = new Promise<any>((res, rej) => {
+            setTimeout(() => {
+                if (control.value === 'test@test.com') {
+                    res({'emailIsForbidden': true});
+                } else {
+                    res(null);
+                }
+            }, 1500);
+        });
+        return promise;
+    }
+    ```
+    b. To add the validator to the control, we place it in the **third argument**, which takes all the async validators, whereas the second argument contains the synchronous validators.
+
+2. Note that a class is added to a form while it is waiting on the async validators **ng-pending**, in place of *ng-valid* or *ng-invalid*. This allows us to closely watch our form, or particular controls on the form, and react when changes are made. For example:
+    ```javascript
+    this.signupForm.valueChanges.subscribe(
+        (value) => console.log(value);
+    );
+    ```
+    The above will cause the entire value object to get logged to the console on every keystroke or other input to the form.
+
+#### Listening for Form Changes
+1. The form, and each control on it, has two *Observable* propeerties to which we can subscribe: **valueChanges** and **statusChanges**.
+
+#### Setting Values Programatically
+1. Just like with the template approach, we have access to the **setValue()** and **patchValue()** methods to set form values. We also have acces to **reset()**, as with the template approach. One caveat, however, is that for the reactive approach, *patchValue* will work on the form object instance directly, and not on the *form* property.
 
 ## VI. Services
 ### A. Introduction
