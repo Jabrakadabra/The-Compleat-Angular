@@ -17,7 +17,7 @@ import {RecipeService} from './services/recipe.service';
 import {RecipeEditComponent} from './components/recipes/recipe-edit/recipe-edit.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HttpModule} from '@angular/http';
-import {HttpService} from './services/http.service';
+import {HttpService} from './services/data-storage.service';
 
 
 @NgModule({

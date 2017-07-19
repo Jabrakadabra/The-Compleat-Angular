@@ -3607,6 +3607,36 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         )
     }
     ```
+## IX. Authentication / Route Protection
+1. Authentication is overwhelmingly a **back-end** subject, and should never be relied up to the extent it is handled on the front end. This section will not go into details of the authentication on the server, but will only examine how Ng4 can use the authentication information it receives to enhance the user experience.
+
+2. **Single Page Apps vs. Server Rendered Apps:** In a "traditional" web appplication, the client is, for the most part, viewing pages rendered by a server using a templating engine. With a SPA, the client receives a single page, and then generates views dynamically, supplemented by async calls for data as needed.
+
+    a. The treaditional app receives auth information from the client, checks it, then creates a **session**. The client will get returned a **session cookie**, which will contain the id of the session. Each time the user wants to access a new page, the client identifies itself with the session id. The server checks if there is such a session open and if the id is valid. If so, then it delivers the requested resource.
+    
+    b. With an SPA, there is a much looser connection between the client and server. The server basically delivers a single, bare-bones HTML page, accompanied by a big bunch of JavaScript allowing the client to generate views dynamically. Because the connection between the server and client is so attenuated, there will normally be no session. The client will have some auth information that it sends if it does have any requests, but the server will merely check it, respond, and be done.
+
+3. An SPA will typically send the client a **JSON Web Token (JWT)**, which encodes information about the user, which is hashed using a secret only known to the server. Then, if the client wishes to do something involving the server, it includes in its request the JWT.
+
+4. In the application example ("apps/12auth"), we see an example using Firebase for the backend authentication, so everything is pretty much automatically handled vis-a-vis the backend and token storage in *localstorage*.
+
+5. On the client side, we will need to modify our requests so that they access the token stored on *localstorage* and send it with the request. To start, we will create a method in our authorization service, *getToken()*:
+    ```javascript
+    getToken() {
+        return firebase.auth().currentUser.getToken();
+    }
+    ```
+    The above method actually is async and returns a promise. The firebase method not only gets the token from *localstorage*, but checks to see if it is still valid, etc., by contacting the firebase server.
+
+6. We might then wish to call this method as a first step in our AJAX methods to get, update, *etc.* our data. However, this "get it as you go" approach will cause great consternation and anxiety as a result of ordering issues from the asynchronous nature of the call. A much better approach is to get the token and assign it to a variable as soon as the user signs in, so that it is ready to go. Something like this:
+    ```javascript
+    
+    ```
+
+
+
+
+
 
 ## IX. Animations
 ### A. Introduction

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {HttpService} from '../../services/http.service';
+import {HttpService} from '../../services/data-storage.service';
 import {Response} from '@angular/http';
 import {RecipeService} from '../../services/recipe.service';
 import {Recipe} from '../../shared/models/recipe.model';
