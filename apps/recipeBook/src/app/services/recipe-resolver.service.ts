@@ -5,7 +5,6 @@ import {Ingredient} from '../shared/models/ingredient.model';
 import {Observable} from 'rxjs/Observable';
 
 interface Recipe {
-	id: number,
 	name: string,
 	description: string,
 	imagePath: string,

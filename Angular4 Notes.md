@@ -2691,8 +2691,8 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 2. This approach requires that we import the **FormGroup** constructor from *@angular/forms*, so we must begin with:
     ```javascript
-    import {Component} from 'angular2/core';
-    import {FormBuilder} from 'angular2/common';
+    import { Component } from '@angular/core';
+    import { FormGroup } from '@angular/common';
 
     @Component({
         . . .
@@ -2861,6 +2861,8 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     </div>
     ```
     **Note**: We are using the index to assign a name to each of our array controls. Because we are passing a variable, not a string, to the *formControlName*, we must enclose it with the brackets.
+    
+5. **Important**: A **FormArray** is not an array! Do not assume that an Array method will work on it. Check out the Ng4 API to see what is available. For example, there is a *push()* method, which allows us to add a control to the end of the FormArray. However, if we wish to remove a control from the FormArray, there is no *splice()* method; we must use **removeAt()**, passing in the index number as a parameter.
 
 #### Custom Validation
 
@@ -2872,7 +2874,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     
     }
     ```
-
 3. Then, we insert our validation code into the function, so that it will return *null* if the entry passes validation, or the object if it does not. If the input **fails** the validation, then it must return an object, and the key should be descriptive of the test failed. If the input **passes**, the validation function **must return null or nothing**. It **must not** return an object with the value being *false*. 
 
 4. To apply our new validator, simply include it in the second argument of the new FormControl instantiation. Remember that it is only a reference, not an execution, so do **not** include trailing parens. Also, note that it will be called in another context, so we must either bind it to the current *this*, using **bind()**, or use an arrow function for our validator, so that its "this" will remain the class it is in.
@@ -2914,7 +2915,21 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         };
     }
     ```
-6. The string passed in as the key of the returned error will be added to the **errors** property object of the control on which it sits. So, we can gain access to the specific error message.  
+6. In addition to the custom validator code being included in our class, we can also create a separate file for one or multiple validators, and create the validators as **static** methods of a class exported from this file. For example:
+    ```javascript
+    import { FormControl } from '@angular/forms';
+    
+    export class CustomValidators {
+        static invalidProjectName(control: formControl): {[s: string]: boolean} => {
+            if ((/test/i).test(control.value)) {
+                return {'noUseOfTest': true};
+            }
+            return null;
+        }
+    }
+    ```
+
+7. The string passed in as the key of the returned error will be added to the **errors** property object of the control on which it sits. So, we can gain access to the specific error message.  
 
 #### Async Custom Validation
 1. Often, it could be that our validation code will be asynchronous. For example, if we wish to check whether a username already exists in our database, then it would require a call to the application API. We can create such validators, by following the steps below:
@@ -3373,7 +3388,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 
 ## VIII. Http Requests
-### Introduction
+### A. Introduction
 1. In Ng4 there is a module for HTTP services. In the *app.module* file, import the HttpModule from *@angular/http* and include it in the *imports* section of the *@NgModule* decorator.
 
 2. Of course, the HTTP module is about interacting with a back-end server to get information. In a nutshell, we do so as follows in the appropriate class:
