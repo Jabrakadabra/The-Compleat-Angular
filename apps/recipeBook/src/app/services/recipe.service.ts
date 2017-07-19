@@ -2,14 +2,15 @@ import { Injectable  } from '@angular/core';
 import { Recipe } from '../shared/models/recipe.model';
 import { Ingredient } from '../shared/models/ingredient.model';
 import { ShoppingListService } from './shopping-list.service';
+import {Subject} from 'rxjs/Subject';
 
 @Injectable()
 export class RecipeService {
+	recipesChanged = new Subject<Recipe[]>();
 
 	private recipes: Recipe[] = [
 		new Recipe(
-			0,
-			'Tasty Schnitzel',
+			'Tasty Snot',
 			'A super-tasty Schnitzel - just awesome!',
 			'https://upload.wikimedia.org/wikipedia/commons/7/72/Schnitzel.JPG',
 			[
@@ -18,8 +19,7 @@ export class RecipeService {
 			]
 		),
 		new Recipe(
-			1,
-			'Big Fat Burger',
+			'Big Farts',
 			'What else do I need to say?',
 			'https://upload.wikimedia.org/wikipedia/commons/b/be/Burger_King_Angus_Bacon_%26_Cheese_Steak_Burger.jpg',
 			[
@@ -31,6 +31,12 @@ export class RecipeService {
 		)
 	];
 
+	setRecipes(recipes: Array<Recipe>) {
+		this.recipes = recipes;
+		console.log('setting', this.recipes);
+		this.recipesChanged.next(this.recipes.slice());
+	}
+
 	constructor(
 		private shoppingService: ShoppingListService
 	) {}
@@ -41,10 +47,28 @@ export class RecipeService {
 
 	getRecipe(id) {
 		const numId = parseInt(id, 10);
-		return this.recipes.find(recipe => recipe.id === numId);
+		return this.recipes[numId];
 	}
 
 	addIngredientsToShoppingList(ingredients: Array<Ingredient>) {
 		this.shoppingService.addIngredients(ingredients);
+	}
+
+	addRecipe(recipe: Recipe) {
+		this.recipes.push(recipe);
+		this.recipesChanged.next(Array.from(this.recipes));
+	}
+
+	updateRecipe(index: number, newRecipe: Recipe) {
+		console.log('update', index);
+		this.recipes[index] = newRecipe;
+		this.recipesChanged.next(Array.from(this.recipes))
+	}
+
+	removeRecipe(index: number) {
+		console.log('index', index);
+		this.recipes.splice(index, 1);
+		console.log('recipes', this.recipes);
+		this.recipesChanged.next(Array.from(this.recipes))
 	}
 }
