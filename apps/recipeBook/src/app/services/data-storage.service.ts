@@ -10,21 +10,31 @@ export class HttpService {
 	dbUrl = `https://ng-recipe-bb4e9.firebaseio.com/`
 
 	constructor (
-		private httpService: Http,
+		private http: Http,
 		private recipeService: RecipeService
 	) {}
 
 	storeRecipes() {
 		console.log('storeRecipes');
-		return this.httpService.put(`${this.dbUrl}recipes.json`, this.recipeService.getRecipes());
+		return this.http.put(`${this.dbUrl}recipes.json`, this.recipeService.getRecipes());
 	}
 
 	getRecipes() {
 		console.log('getRecipes');
-		this.httpService.get(`${this.dbUrl}recipes.json`)
+		this.http.get(`${this.dbUrl}recipes.json`)
+			.map(
+				(response: Response) => {
+					const recipes: Recipe[] = response.json();
+					for (let recipe of recipes) {
+						if (!recipe['ingredients']) {
+							recipe['ingredients'] = [];
+						}
+					}
+					return recipes
+				}
+			)
 			.subscribe(
-				(res: Response) => {
-					const recipes: Recipe[] = res.json();
+				(recipes: Recipe[]) => {
 					this.recipeService.setRecipes(recipes)
 				}
 			)
