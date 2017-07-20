@@ -3630,15 +3630,168 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 6. We might then wish to call this method as a first step in our AJAX methods to get, update, *etc.* our data. However, this "get it as you go" approach will cause great consternation and anxiety as a result of ordering issues from the asynchronous nature of the call. A much better approach is to get the token and assign it to a variable as soon as the user signs in, so that it is ready to go. Something like this:
     ```javascript
-    
+    import * as firebase from 'firebase';
+    import {Router} from '@angular/router';
+    import {Injectable} from '@angular/core';
+
+    @Injectable()
+    export class AuthService {
+        token: string;
+
+        constructor(
+            private router: Router
+        ) {}
+
+        signupUser(email: string, password: string) {
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+            .catch(
+                error => console.log(error)
+            );
+        }
+
+        signinUser(email: string, password: string) {
+            firebase.auth().signInWithEmailAndPassword(email, password)
+            .then(
+                response => {
+                    this.router.navigate(['/']);
+                    firebase.auth().currentUser.getIdToken()
+                    .then(
+                        (token: string) => {
+                            this.token = token;
+                        }
+                    );
+                }
+            )
+            .catch(
+                error => console.log(error)
+            );
+        }
+        
+        . . .
+    }
     ```
 
+## IX. Modules
+1. So far, with one exception (for our routes), we have kept all our application's pieces, including components, pipes, services, *etc.*, in a single **module**, our **AppModule** class, which we define in *app.module.ts*.
+
+2. As we have seen, all our different pieces must be *registered* to our module, *i.e.*, imported and then placed in the *@NgModule* decorator object. This explicit designation is required because Ng4 does not scan the app directory to see what is available.
+
+3. Use of a single module is okay, but oftentimes we can refactor an app into multiple modules to make it more efficient, more maintainable, *etc*.
+
+4. In the module class page, do not confuse the *import* statements with the *@NgModule* decorator. The former is simply the domain of TypeScript and Webpack, knowing which files/objects to import; the part that makes something visible to the module is the decorator.
+
+5. In our decorator configuration object, we have several different properties, each of which takes an array:
+
+    a. **declarations**: This is where we place all the **components**, **directives**, or **pipes** we want to have available in our module.
+    
+    b. **imports**: This is where we place all the other modules that we want to be available to our module. Often, these will be built-in Ng4 modules, such as *BrowserModule*, *FormsModule*, *etc.*, but can also be other modules we have created.
+    
+    c. **providers**: This is where we place the services we may use. Of course, by placing them here, we make them available throughout the module (we could place them farther down the structure if they would not be needed throughout the app).  
+
+    d. **bootstrap**: This is where we define our **root component.**
+    
+    e. **exports**: This is where we list what will be made available to other modules that may immport the current module.
+
+6. **Feature Modules**: We will often wish to create modules to hold specific features of our application, which allows us to compartmentalize our code.  This is different from the routing example, where we created a very simple module to hold all our routes in one place.
+
+7. When we are placing items into a new module, keep in mind that **components, pipes, and directives cannot be placed in more than one module's declaration array**. However, services and modules can be in multiple imports or provider arrays.
+
+    a. Obviously, this is a big problem, if we wish to share directives or pipes, *etc*, across multiple modules. We can solve this problem with a **shared module**. Typically, there will be a single such module in the application. We can place it in the "shared" directory with the file name *shared.module.ts*.
+    
+    b. The structure of the shared module is exactly the same as a normal module, the difference being in what we do with it. However, the only sections it should need will be the *declarations* and in the *exports*. To make anything in the module available outside the module, it must be explicitly exported. So, our *shared.module.ts* file will look like:
+    ```javascript
+    // shared.module.ts
+    import { NgModule } from '@angular/core';
+    import { DropdownDirective } from './dropdown.directive';
+    import { CommonModule } from '@angular/common;
+
+    @NgModule({
+        declarations: [
+            DropdownDirective
+        ],
+        exports: [
+            CommonModule,
+            DropdownDirective
+        ]
+    })
+
+    export class SharedModule {}
+    ```
+    **Note:** It is not necessary to import a module before exporting it out, as with the case of the CommonModule, above. But it still must be imported.
+    
+    c. Now we would go to any module that needs the Dropdown directive, add *SharedModule* to the imports of that module and, if it was already including the directive in its declarations, remove it. 
+
+8. Almost every module will want to import the **CommonModule**, which contains a large number of common directives that almost any module might need to use. In the root **app.module**, we do not need the *CommonModule*, because it is a subset of the **BrowserModule**, which also contains items necessary for the application startup.
+
+9. When we create a feature module, we will also have to move the applicable routes to that module. When we do this, keep in mind that:
+
+    a. we use the **forRoot** method **only** on the routes going to *app.module*. In other route modules, we use **forChild**. So, our recipe module routes would look like:
+    ```javascript
+    const recipeRoutes: Routes = [
+        { path: 'recipes', component: RecipesComponent, children: [
+            { path: '', component: RecipeStartComponent },
+            { path: 'new', component: RecipeEditComponent, 
+                canActivate: [AuthGuard] },
+            { path: ':id', component: RecipeDetailComponent },
+            { path: ':id/edit', component: RecipeEditComponent, 
+                canActivate: [AuthGuard] },
+	] },
+    ];
+
+    @NgModule({
+        imports: [RouterModule.forChild(recipeRoutes)],
+        exports: [RouterModule]
+    })
+    export class RecipesRoutingModule {
+    }
+    ```
+10. **Selectors vs. Routes**: When we place a *selector* into a component template, the component represented by that selector must be declared in the module in which the selector is placed. In contrast, a route names a component, but that component only needs to be declared somewhere, prior to when we are calling on that route.
+
+### Lazy Loading
+1. The use of modules discussed above is great for keeping our code organized, but it really is doing nothing for us from a performance perspective. In this section we look at the use of modules to enhance the performance of our apps. One way to achieve this is through **lazy loading**.
+
+2. **Lazy loading** has to do with the loading of parts of our application on an *as needed*  basis. For example, we may have portions of our code that are never visited by our user; if we load everything together in one big *dist* bundle, then we may be wasting a lot of time loading unnecessary files.
+
+3. In contrast to *lazy loading*, what we have been doing until now is **eager loading**, everything listed in the @NgModule decorator of our module class gets loaded as soon as it is seen by the client.
+
+4. So, to stop *eager loading*, we first have to remove a module selected for lazy loading from the imports array.
+
+5. To load it lazily, we go to the *app-routing.modules.ts* file, and add a route to the section we wish to load lazily. We create the route with a path property, and then, **instead of a component property**, we have a **loadChildren** property, which contains a relative path from our current location to the module we wish to load, followed by a hash mark and the nae of the exported module.  For example:
+    ```javascript
+    // app-routing.module.ts
+    import { NgModule } from '@angular/core';
+    import { Routes, RouterModule } from '@angular/router';
+
+    import { HomeComponent} from './home/home.component';
+
+    const authRoutes: Routes = [
+        { path: '', component: HomeComponent, pathMatch: 'full' },
+        { path: 'recipes', 
+            loadChildren: './recipes/recipes.module#RecipesModule' }
+    ];
+
+    @NgModule({
+        imports: [RouterModule.forRoot(authRoutes)],
+        exports: [RouterModule]
+    })
+    export class AppRoutingModule {
+
+    }
+    ```
+### Protecting Lazy-Loaded Routes
+1. We can protect lazy-loading routes in a manner very similar to placing the *canActivate* guard on our "regular" routes. However, *canActivate* would not be the best solution, because it would allow the loading of code that might turn out to be blocked.
+
+2. Instead, we need to use the *canLoad* guard, such as:
+    ```javascript
+    { path: 'recipes', 
+        loadChildren: './recipes/recipes.module#RecipesModule', 
+        canLoad: [AuthGuard] }
+    ```
+    In the above example, *AuthGuard* should implement the **CanLoad interface**.
 
 
 
-
-
-## IX. Animations
+## X. Animations
 ### A. Introduction
 1. Ng4 comes with its own animations module, which provide a much easier way to handle events such as components being added to the DOM than use of CSS transitions. 
 
