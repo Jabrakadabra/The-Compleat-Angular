@@ -3694,6 +3694,8 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 6. **Feature Modules**: We will often wish to create modules to hold specific features of our application, which allows us to compartmentalize our code.  This is different from the routing example, where we created a very simple module to hold all our routes in one place.
 
+7. **Core Module**: For restructuring purposes (*i.e.*, not for efficiency purposes), we should also consider placing any functionality that is only used on the basic, root part of our application into its own core module. For example, headers might often go into such a module, since they will always be there for the entire application.
+
 7. When we are placing items into a new module, keep in mind that **components, pipes, and directives cannot be placed in more than one module's declaration array**. However, services and modules can be in multiple imports or provider arrays.
 
     a. Obviously, this is a big problem, if we wish to share directives or pipes, *etc*, across multiple modules. We can solve this problem with a **shared module**. Typically, there will be a single such module in the application. We can place it in the "shared" directory with the file name *shared.module.ts*.
@@ -3789,6 +3791,61 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     In the above example, *AuthGuard* should implement the **CanLoad interface**.
 
+### Service Injection in Lazy Loaded Modules
+1. It is often very important to know how many instances of a service are created and which particular instance we are using at any given time, especially if we are using our service to hold information regarding our application state. If we include a service in the providers array of our application root, and in the providers array of another module that is eargerly loaded, *i.e.*, loaded at launch because it is listed in the other module, then it is provided on the **root level** as if it were included only in the root module.
+
+2. If another module is lazy loaded at a later time, it will have access to that service on the root module injected into components by the **Root Injector**.
+
+3. However, **if the lazy-loaded module includes that service in its providers**, then the lazy loaded module will be using its own instance of the service, injected into components by the **Child Injector**.
+
+4. Remember, and do not get confused: the above is dealing with modules. We can also create services with limited scope by providing for them in a component instead of a module.
+
+5. **CAUTION**: If we have a lazy-loaded module that is also importing a **shared module**, and the shared module is also imported by an eagerly-loaded module, and the shared module has a service in its providers array that is also in the root providers array, **the root injector will provide the service for the eagerly-loading module, but Ng4 will create a Child Injector for the lazy-loaded module.**
+
+6. From the above, we can make a general rule: **Don't provide Services in Shared Modules, *especially* if you plan to use them in lazy-loaded modules.**
+
+### Preloading Lazy-Loaded Routes
+1. If we think about the text above, we might see a problem deferred. A module and its supporting parts may not need to be loaded immediately with the entire app, but then when the user clicks on that route, everything will have to be downloaded, potentially causing a delay in the middle of the user's experience. This might be worse than just waiting a little bit longer at the start.
+
+2. An approach to mitigate this problem is to allow **preloading** of lazy-loaded code. So, the user goes to the home page and looks around. While he is there, the lazy-loaded modules are being downloaded. When the user clicks on a button to go to the lazy-loaded module, the downloading has already been taken care of, and the module is ready to go!
+
+3. The **preloading strategy** is a property of the configuration object that is the second parameter of the *RouterModule.forRoot* method. The default is no preloading. We can change this to:
+    ```javascript
+    @NgModule({
+        imports: [
+            RouterModule.forRoot(appRoutes, {preloadingStrategy: PreloadAllModules})
+        ]
+    })
+    ```
+    The above setting will preload all the lazy-loading modules, but **only after** the eager-loading modules have been downloaded.
+
+4. We can also custom load, but will leave that for later. See:
+
+https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-angular
+
+5. 
+    
+
+### Ahead-of-Time Compilation
+1. In this section, **compilation** refers to the process of parsing the component template HTML files and turning them into JavaScript. Ng4 does this because accessing the JavaScript ocde is much faster than working with the DOM in the browser.
+
+2. By default, Ng4 uses **Just-in-Time** compilation, where Ng4 parses and compiles the templates into JavaScript at the time the app is downloaded to the client browser.
+
+3. Of course, once we have finished writing our code and are ready to put it into production, Ng4 could go in and do all this compiling, and then download the already compiled JavaScript code to the client browser when requested. This is the idea of **Ahead-of-Time Compilation**.
+
+4. **Ahead-of-Time** compilation has several advantages:
+
+    a. faster startup of our application, since parsing and compilation is alread done,
+    
+    b. our templates get checked for errors during development, rather than occuring on the client's browser,
+    
+    c. much smaller file size as unused features will be removed, and the compiler will not be shipped,
+
+5. Note that using ahead-of-time compilation is **different** than running in production mode. That will minify the code and perform some optimizations. To use both in the CLI, run the following:
+    ```
+    ng build --prod --aot
+    ```
+6. In the section below on setting up an Ng4 webpack project manually, we will discuss production mode and ahead-of-time compilation without the CLI.
 
 
 ## X. Animations
