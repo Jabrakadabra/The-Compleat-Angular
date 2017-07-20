@@ -10,9 +10,10 @@ import { RecipeService } from '../recipe.service';
   styleUrls: ['./recipe-edit.component.css']
 })
 export class RecipeEditComponent implements OnInit {
-  id: number;
-  editMode = false;
-  recipeForm: FormGroup;
+	id: number;
+	editMode = false;
+	recipeForm: FormGroup;
+	myControls = (<FormArray>this.recipeForm.get('ingredients')).controls;
 
   constructor(private route: ActivatedRoute,
               private recipeService: RecipeService,
@@ -44,17 +45,19 @@ export class RecipeEditComponent implements OnInit {
     this.onCancel();
   }
 
-  onAddIngredient() {
-    (<FormArray>this.recipeForm.get('ingredients')).push(
-      new FormGroup({
-        'name': new FormControl(null, Validators.required),
-        'amount': new FormControl(null, [
-          Validators.required,
-          Validators.pattern(/^[1-9]+[0-9]*$/)
-        ])
-      })
-    );
-  }
+	onAddIngredient() {
+	(<FormArray>this.recipeForm.get('ingredients')).push(
+			new FormGroup({
+				'name': new FormControl(null, Validators.required),
+				'amount': new FormControl(null, [
+					Validators.required,
+					Validators.pattern(/^[1-9]+[0-9]*$/)
+				])
+			})
+		);
+	}
+
+
 
   onDeleteIngredient(index: number) {
     (<FormArray>this.recipeForm.get('ingredients')).removeAt(index);
