@@ -3823,7 +3823,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-angular
 
-5. 
     
 
 ### Ahead-of-Time Compilation
@@ -3844,6 +3843,10 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 5. Note that using ahead-of-time compilation is **different** than running in production mode. That will minify the code and perform some optimizations. To use both in the CLI, run the following:
     ```
     ng build --prod --aot
+    ```
+    In addition, we can set the ==base-href== property from the CLI like so:
+    ```
+    ng build --prod --aot --base-href /ng4App
     ```
 6. In the section below on setting up an Ng4 webpack project manually, we will discuss production mode and ahead-of-time compilation without the CLI.
 
@@ -5022,9 +5025,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 
 ## The End
 
-###Starting Up
-		
-####Setting Up a Project Manually with Webpack
+## Setting Up a Project Manually with Webpack
 
 1.	In order to document the workings of the setup, this section will begin with the setup of a project that is about as basic as one can devise.  This will be followed up with additional materials such as:
 
@@ -5194,11 +5195,23 @@ Be sure to include information regarding the relative path issue
 
 	a.	
 
+### Deployment
+1. **Steps here for building for production - enableProdMode(), webpack build, etc. How to do ahead-of-time with webpack?**
 
+2. Another thing to keep in mind is the **base element** that is set in the *index.html* file. That is discussed previously, but be sure in production that it is set correctly. If the app is running directly on the root domain, then it should be set to "/"; however, if the app is running in a nested path, such as "https://www.cjordanball.info/ng4app", the the *base element* should be set to "/ng4app".
 
+3. Also, we must double-check to make sure that the server **always** returns the *index.html* file in case of 404 errors. This is discussed previously, regarding the *path location strategy*.  
 
-
+#### Exaample - Deployment to AWS S3 Server
  	
+1. Set up an account with Amazon Web Services. Create an S3 bucket. Enable static website hosting.
+
+2. Important: Set the "error document" to be *index.html*.
+
+3. Set the bucket policy to allow anonymous users to read. To get the code for the policy, click on the "Documentation" link under the code editing window.
+
+4. 
+
 
 	
 
