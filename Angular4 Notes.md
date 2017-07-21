@@ -3850,7 +3850,6 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```
 6. In the section below on setting up an Ng4 webpack project manually, we will discuss production mode and ahead-of-time compilation without the CLI.
 
-
 ## X. Animations
 ### A. Introduction
 1. Ng4 comes with its own animations module, which provide a much easier way to handle events such as components being added to the DOM than use of CSS transitions. 
@@ -3871,9 +3870,9 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 ### Creating a Basic Animation
 1. To begin, we will create a \<div> element that we will transition in color and size.
 
-2. What we are going to do is create two alternative **states**, one of which will be associated with a red backgroundColor, the other a blue. When we click on the button, our event-listener will change from one state to another, resulting in the change of the div color from red to blue. We will also prsscribe a **transition**, describing how it will get from one state to the next (*e.g.*, how fast).  
+2. What we are going to do is create two alternative **states**, one of which will be associated with a red *background-color*, the other a blue. When we click on the button, our event-listener will change from one state to another, resulting in the change of the div color from red to blue. We will also prescribe a **transition**, describing how it will get from one state to the next (*e.g.*, how fast).  
 
-3. We define that animations that we will need in the *animations array*, a property of the *@Component* decorator.
+3. We define the animations that we will need in the *animations array*, a property of the *@Component* decorator.
 
 3. Each animation must have a **trigger**, and this must be imported from @angular/animations. *trigger* will have the following arguments:
 
@@ -3907,6 +3906,8 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```
     **Note**: If the *transition* is the same in each direction, we can use just one *transition*, with the syntax: *normal <=> highlighted*.
     
+    **Note**: We can use CSS (wasp) style property names in quotes, or sadCamel names without quotes (backgroundColor vs 'background-color'). Use one or the other - mixing can cause the transitions to hiccup.
+    
 5. In the HTML, go to the element on which we wish to use the animation, and add the trigger name as a property bound to a component variable representing the state:
     ```html
     <div class="container">
@@ -3924,7 +3925,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
                     Shrink!
                 </button>
                 <hr>
-                <div id="testDiv" [@divState]="state">
+                <div id="testDiv" [@divState]="status">
             </div>
         </div>
     </div>
@@ -3933,11 +3934,136 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 
 6. We can have **multiple states** and define transitions for each change of state. In our transitions, we can use an asterisk **\*** to serve as a wildcard for any state. 
     
+7. Also, the *transitions* can have an array of animations, not just one. they will occur in order, with the final one going to the destination state. For example, we set up a state of "shrunken", which has a background color of green, a scale of 0.5, and a translation of 1000px.  Then, we have the following transition:
+    ```javascript
+    transition('* => shrunken', [
+        animate(20000, style({
+            backgroundColor: 'orange',
+            borderRadius: '50px'
+        })),
+        animate(20000, style({
+            backgroundColor: 'orange',
+            borderRadius: '50px'
+        })),
+        animate(10000, style({
+            backgroundColor: 'yellow',
+            borderRadius: '10px'
+        }))
+    ])
+    ```
+    The above transition would do the following: first, for twenty seconds the red square would slowly turn into an orange circle. Second, it would sit there as an orange circle for twenty more seconds. Third, it would metamorphose into a yellow square with rounded edges for ten seconds. Then, in an instant, it would change into a small, green square on the right side of the screen.
     
+8. The keyword **void** is used for a state in which an element does not exist, but then does exist at the end (or does exist at the beginning, but disappears). For example, the following might be used when adding an element to a list:
+    ```javascript
+    trigger('list1', [
+        state('x', style({
+            opacity: 1,
+            transform: 'translateX(0)'
+        })),
+        transition('void => *', [
+            style({
+                opacity: 0,
+                transform: 'translateX(-100)'
+            }),
+            animate(300))
+        ]),   
+    ]
+    ```
+    In the above, we set an initial style in our transition for a new element. In the HTML, we set on that alement the **[@list1]** property, without the need to bind it to anything. It just goes from the void to the list1 state. 
+
+9. The above makes a transition to bring on a new element, by describing an initial state where it is off to the left and transparent, and then animates to its final state of opacity 1, *etc.* To **remove** and item, we place the final state after the time in the animate method:
+    ```javascript
+    trigger('list1', [
+        state('in', style({
+            opacity: 1,
+            transform: 'translateX(0)'
+        })),
+        transition('void => *', [
+            style({
+                opacity: 0,
+                transform: 'translateX(-100px)'
+            }),
+            animate(3000)
+        ]),
+        transition('* => void', [
+            animate(3000, style({
+                opacity: 0,
+                transform: 'translateX(-100px)'
+            }))
+        ])
+    ]),
+    ```
+### Keyframes
+1. **Keyframes** are a mechanism for dividing up a transition into pieces and controlling the progress of each attribute during the time of the transition. The following is an example of a transition using keyframes:
+    ```javascript
+    transition('void => *', [
+        animate(3000, keyframes([
+            style({
+                transform: 'translateX(-100px)',
+                opacity: 0
+            }),
+            style({
+                transform: 'translateX(-50px)',
+                opacity: 0.5
+            }),
+            style({
+                transform: 'translateX(-120px)',
+                opacity: 0.2
+            }),
+            style({
+                transform: 'translateX(0)',
+                opacity: 1
+            })
+        ]))
+    ]),
+    ```
+    The above pattern places four points on the timeline: beginning, end, and equally spaced in between. It goes from one to the other, hitting the targets for *transform* and *opacity* at each point. The above would actually have the transition backtrack in the middle.
     
+2. In addition, we can control the length of time of each piece by adding to the style object an **offset** property, setting it to the fraction of the complete time that the style point should be. For example, to keep even in the above example, we would set the offset values at 0, 0.33, 0.67, and 1.
+
+### Grouping Animations
+1. As seen above, we can have serial animations in our transition, *i.e.*, one animation occurs, then the next animation begins upon completion of the prior animation. We can also, of course, include multiple properties in a single animation, which will all modify on the same timeline. In this section, we shall address how to have multiple, simultaneous animations, which may be of different lengths of time.
+
+2. This is done by using the **group** property of our transition. This must be imported from *@angular/animations*, and will take an array of animations, all of which begin concurrently.
+
+3. Here is an example. In the first, the animations will run one after another. In the second, both animations run together, although one will end before the other.
+    ```javascript
+    // one after the other
+    transition('* => void', [
+        animate(3000, style({
+            color: 'red'
+        })),
+        animate(3000, style({
+            opacity: 0,
+            transform: 'translateX(-100px)'
+        }))
+    ])
     
+    // both together
+    transition('* => void', [
+        group([
+            animate(500, style({
+                color: 'red'
+            })),
+            animate(3000, style({
+                opacity: 0,
+                transform: 'translateX(-100px)'
+            }))
+        ])
+    ])
+    ```
+### Animation Trigger Callbacks
+1. We can attach callback functions to be executed when an animation begins, or is completed. To do this, we access the **start** and **done** properties of our animation trigger. For example, in our HTML code we might have:
+    ```html
+    <div style="width: 100px; height: 100px"
+        [@divState]="state"
+        (@divState.start)="startUpMethod($event)">
+    </div>
+    ```
+    This will call the "startUpMethod()" method in the component class when the animation begins. There is also a *done* property as well.
     
-    
+    **Note**: Notice the *$event* we included as the argument in our event handler. This is the *AnimationTransitionEvent*, which will provide the *fromState*, *toState*, and *totalTime* values.
+
 ## X. Debugging Angular Apps
 1. Obviously, the first step in debugging an Angular4 application is to open up the dev tools in the browser, particularly the **console**.
 
