@@ -5,8 +5,8 @@
       <button class="btn btn-primary" (click)="onAnimate()">Animate!</button>
       <button class="btn btn-primary" (click)="onShrink()">Shrink!</button>
       <hr>
-      <div id="testDiv" [@divState]="state"></div>
-      <div id="testDiv" [@wildState]="wildState"></div>
+      <div id="testDiv" [@divState]="status"></div>
+      <div id="testDiv2" [@wildState]="wildStatus"></div>
     </div>
   </div>
   <hr>
@@ -17,6 +17,7 @@
       <hr>
       <ul class="list-group">
         <li
+          [@list1]
           class="list-group-item"
           (click)="onDelete(item)"
           *ngFor="let item of list">
@@ -26,6 +27,7 @@
       <ul class="list-group">
         <li
           class="list-group-item"
+          [@list2]
           (click)="onDelete(item)"
           *ngFor="let item of list">
           {{ item }}
