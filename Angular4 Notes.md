@@ -4074,35 +4074,41 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 4. Finally, one tool for understanding the layout of the application is **Augury**, which can be added to Chrome as a browser extension.
 
 
-## XI. Unit Testing Angular4 Apps
+## XI. Unit Testing Ng4 Apps
 
 ### A. Introduction
-1.  The material in this section is meant to be reviewed in conjuction with a repository located at XXXXXXXX.  This contains a general seed project with the build-out for a functioning front end, including unit testing, and is prepopulated with the components and the accompanying testing that is discussed below.
+1. This section expands a bit from a focus on Ng4 to include an introduction to testing in general. The primary focus is on methods, tools, and considerations specific to testing Ng4 applications; however, the material is pointless if the reader doesn't have any previous knowledge of testing, so we start with a very simple and brief example of unit testing.
 
-2.  The testing package used by Angular2 is Karma as the test runner and Jasmine as the actual testing package. The focus of this section is testing in Angular2 and not testing generally, so it goes pretty light on the specifics of testing.  Hopefully, the examples and having the setup already provided will allow one not experienced with unit testing to pick up the general principles pretty quickly, along with the Angular2-specific portions.
+2. Sometimes testing can seem a bit like a meaningless chore, particularly when one is confronted with a particularly dogmatic adherent of test-driven-development or some other philosophy. However, it provides several excellent benefits. First, the creation of the tests can help focus one's attention on what exactly are the requirements of our component. For example, what are the possible edge cases that might cause an error? Or is it necessary to test the form of user input? We need to know these things in order to create effective tests.
 
-3.  To make use of the prepared app, do the following:
+3. The biggest benefit, however, is that a thorough suite of tests will ensure that our pipes, components, *etc.*, continue to work as our codebase grows. By running through the whole slate of tests periodically (such as every time a change to the code is detected), we make sure that bugs have not been accidentally introduced.
 
-    a.  Make sure your machine has Node.js and the accomponying node package manager ('npm') already installed. If not, go to https://nodejs.org to install.
-    
-    b.  One problem I came across was having an incompatible version of Karma installed globally on my machine. My suggestion is to run the following to see what packages are installed globally:
+### B. Setting Up
+1. The material in this section is meant to be reviewed in conjuction with a repository located at https://github.com/cjordanball/The-Complete-Angular. This contains a directory labeled *apps/14UnitTesting* which contains the examples discussed in this section. In addition, the repository at https://github.com/cjordanball/Ng4-Seed contains a general seed project with the build-out for a functioning front end, including unit testing.
+
+2. The testing package used by Ng4 is **Karma** as the test runner and **Jasmine** as the actual testing package. The focus of this section is testing in Ng4 and not testing generally, so it goes pretty light on the specifics of testing.  Hopefully, the examples and having the setup already provided will allow one not experienced with unit testing to pick up the general principles pretty quickly, along with the Ng4-specific portions.
+
+3. To make use of the prepared app, do the following:
+
+    a. Make sure your machine has Node.js and the accompanying node package manager ('npm') already installed. If not, go to https://nodejs.org to install.
+
+    b. **An Aside**: One problem I came across was having an incompatible version of Karma installed globally on my machine. My suggestion is to run the following to see what packages are installed globally:
     ```
     npm list -g --depth=0
     ```
-    Then, take a good look and think about removing old clutter.
+    Then, think hard about removing old clutter.
     
-    c.  Clone the repository onto your machine.
+    c. Clone the repository onto your machine.
     
-    d.  Run *npm install* to retrieve all the dependencies.
+    d. Run *npm install* (or *yarn*, if that's how you do it) to retrieve all the dependencies.
     
-    e.  To confirm the app is working, got to the command line in the project directory and type the following command:
+    e. To confirm the app is working, got to the command line in the project directory and type the following command:
     ```
     npm run serve
     ```
-    Then go to your browser and enter "localhost:3142" in the address bar.  You should see a webpage containing the text "Goodbye, Cruel World!", in navy color type with an orange subtitle "The joy of test" underneath.
+    Then go to your browser and enter "localhost:3142" in the address bar.  You should see a webpage containing the text "Goodbye, Cruel World!", in navy color type and an orange subtitle "The joy of test" underneath.
     
-    f.  From the command line (either a new tab in your terminal, or close the webpack server with Ctrl + C), enter *npm install*.  This should result in output in the terminal along the lines of (note that the number of tests might be changed from time to time):
-    
+    f. From the command line (either a new tab in your terminal, or close the webpack server with Ctrl + C), enter *npm test*. This will run tests already set up in the project! It should result in output in the terminal along the lines of the following (note that the number of tests might be changed from time to time):
     ```
     webpack: Compiled successfully.
     webpack: Compiling...
@@ -4124,11 +4130,11 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     Chrome 57.0.2987 (Mac OS X 10.12.2): Executed 10 of 10 SUCCESS (0.423 secs / 0.412 secs)
     ```
     
-### B. Testing Generally
+### C. Testing Generally
 
-1.  Note that our sample app is set up to find all files ending in **.spec.ts** that are in our *src* directory, and run the tests contained therein.  To start, we will create a folder, *startTesting*, in the *src* directory, outside our *app*. Nothing here will involve Angular2 in the least, but will allow us to start with discussion of tests generally.
+1. Note that our sample app is set up to find all files ending in **.spec.ts** that are in our *src* directory, and run the tests contained therein.  To start, we will create a folder, *startTesting*, in the *src* directory, outside our *app*. Nothing here will involve Ng4 in the least, but will allow us to start with a general discussion of tests.
 
-2.  Let's begin by creating a file in our folder, "start.spec.ts".  This will hold our first tests.  For our first test, we will affirm that true is true:
+2. Let's begin by creating a file in our folder, "start.spec.ts".  This will hold our first tests.  For our first test, we will affirm that *true* is equal to *true*:
     ```javascript
     describe('our initial tests', () => {
         it ('thinks that true is true', () => {
@@ -4139,21 +4145,27 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         });
     }
     ```
-    Okay, all we did was check to see if true is true. But let's consider the what was involved.  First, Jasmine provides a **describe()** method, which can be thought of as the large grouping of our tests (in Jasmine terminology, this is a **Suite**).  It takes two parameters: i) a string we can use to describe the tests - often this might consist of the component name that we are testing, and ii) a function containing our tests, *i.e.*, the things that begin with 'it'.
+    Okay, all we did was check to see if true is true. But let's consider what was involved.  First, Jasmine provides a **describe()** method, which can be thought of as the large grouping of our tests (in Jasmine terminology, this is a **suite**).  It takes two parameters: ==i)== a string we can use to describe the tests - often this might consist of the component name that we are testing, and ==ii)== a function containing our **tests**, *i.e.*, the things that begin with 'it'.
     
-    Inside our big *describe* heading, we have two tests. Of course, these tests don't actually test anything yet, other than our assertions.  Each test is comprised of an **it()** method (in Jasmine terminology, this is a **Spec**), which takes parameters similar to the *describe()* method, a string we can use to describe the test, and a callback function containing our assertions, or **expectations**.
+    Inside our big *describe* heading, we have two tests. Of course, these tests don't actually test anything yet, other than our assertions.  Each test is comprised of an **it()** method (in Jasmine terminology, this is a **spec**), which takes parameters similar to the *describe()* method, a string we can use to describe the test, and a callback function containing our assertions, or **expectations**.
     
-    The heart of the *expectation* is the **matcher**, which are chainable functions that return a boolean value, *i.e.*, is our assertion true or false.  In the above, the meaning of "toBe" or "not.toBe" should not be any question. There are quite a number of matchers included with Jasmine, and one should go to the Jasmine website, look at what is available, and try them out. In addition, one can also write custom matchers, if necessary.  Of special note, however, is the **not** matcher, which is included in the above example, which negates the matcher following it.
+    The heart of the *expectation* is the **matcher**, which are chainable functions that return a boolean value, *i.e.*, is our assertion true or false.  In the above, the meaning of "toBe" or "not.toBe" is not a question (sorry, I couldn't resist). There are quite a number of matchers included with Jasmine, and one should go to the Jasmine website, look at what is available, and try them out. In addition, one can also write custom matchers, if necessary.  ==Of special note==, however, is the **not** matcher, which is included in the above example, which negates the matcher following it.
     
-3.  Now, we will build out a function by adopting the "write tests first" approach.  Our function will be a simple palindrome checker - in this case we will require exact palindromes, including spaces and grammar, but with case-insensitivity.  Our first task will be to create a file to hold our function, *startMethods.ts*.  In this file we will create our method and export it so it is available to our *start.spec.ts* file:
+    Finally, if we go to the terminal, type in our command to run the tests, *npm test*, which is merely a handle for the script:
+    ```
+    "karma start ./config/karma.conf.js"
+    ```
+    we will run our tests and get a message that two of our two tests passed!
+    
+3.  Now, we will build out a function by adopting the "write tests first" approach also known as **test-driven-development**. We will build a simple palindrome checker - in this case we will require exact palindromes, including spaces and grammatical syntax, but with case-insensitivity.  Our first task will be to create a file to hold our function, *startMethods.ts*.  In this file we will create our method and export it so it is available to our *start.spec.ts* file:
     ```javascript
     //startMethods.ts
     export function isPalindrome(input:string):boolean {
         return true
     }
     ```
-    
-4.  Obviously, this will not do much at this stage, but let's write tests for what we hope it will eventually do:
+
+4. Obviously, the above will not do anything we want it to do, but let's begin by writing tests for what we require it to do. The requirements should be pretty easy to understand from the string arguments of the *suite* and *specs*.
     ```javascript
     //startMethods.ts
     describe('our palindrome tester', () => {
@@ -4173,44 +4185,45 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         });
         
         it ('requires strict observance of spaces and puntuation', () => {
-            expect (isPalindrome('A man, a plan, a canal, Panama')).toBe(false);
+            expect (isPalindrome('A man, a plan, a canal, Panama'))
+            .toBe(false);
         });
     })
     ```
 
-5.  Currently, our function actually passes a few tests, using the "a broken clock is right two times a day" strategy, as it only returns true, no matter what the input. The following will allow all tests to pass:
+5. Currently, our function actually passes a few tests, using the "a broken clock is right two times a day" strategy. In other words, our current function always returns *true*, and some of our tests require a return of *true* to pass. However, the following will allow all the tests to pass:
     ```javascript
-    export function isPalindrome(input:any):any {
+    export function isPalindrome(input:any):boolean {
         try {
             if (typeof input !== 'string') {
                 throw "Invalid Input";
             }
-            input = input.toLowerCase();
-            let len = input.length;
-            let newWord:string = '';
+            let lcInput = input.toLowerCase();
+            let len = lcInput.length;
+            let newWord = '';
             for (let i = 0; i < len; i++) {
-                newWord += input[len - i - 1]
+                newWord += lcInput[len - i - 1]
             }
-            return input === newWord;
+            return lcInput === newWord;
         }
 	    catch (err) {
 		    return err
 	    }
     }
     ```
-
+    Note that the real
 
 ### C. Specific Tests
 
-#### i. Pipe
+#### Pipe
 
-1.  A pipe in Angular2 (as in Angular Classic) is a function that takes some input and manipulates in some manner for display in the DOM. It does not affect the original input data, it merely changes how it is displayed. It is notated as follows:
+1. A **pipe** in Ng4 is a function that takes some input and manipulates it in some manner for display in the DOM. It does not affect the original input data, it merely changes how it is displayed. It is notated as follows:
     ```html
     {{myName | halfCaps}}
     ```
-    In the above example "myName" is text interpolated from the component, and "halfCaps" is the name of the pipe.  We could write this pipe so that every time it is called, converts the text to uppercase for every other letter.  Thus, although the variable *myName* continues to be "Jordan", it gets displayed as "JoRdAn".  There are a number of useful pipes built-in to Angular2 to handle dates, currency display and other common situations; even more useful is the ability to write one's own pipes.
+    In the above example *myName* is text interpolated from the component, and "halfCaps" is the name of the pipe.  We could write this pipe so that every time it is called, it converts the text to uppercase for every other letter.  Thus, although the variable *myName* continues to be "Jordan", it gets displayed as "JoRdAn".  There are a number of useful pipes built-in to Angular2 to handle dates, currency display, and other common situations; even more useful is the ability to write our own pipes.
 
-2.  Pipes are a great way to dip one's toe into unit testing in Angular2, because there is almost no Angular2 involved. Pipes have no state, they are just methods that take in an input and spit out an output. Thus, this section discusses almost nothing unique to Angular2, so if you are already experienced in running Jasmine tests generally, you may wish to skip this section.  However, it will provide a good introduction for those with little or no experience in unit testing.
+2. Pipes are a great way to dip one's toe into unit testing in Ng4, because there is almost no Ng4 involved. Pipes have no state, they are just methods that take in an input and spit out an output. Thus, this section discusses almost nothing unique to Ng4, so if you are already experienced in running Jasmine tests generally, you may wish to skip this section. However, it will provide some additional practice for those with little or no experience in unit testing.
 
 3.  In this example, we will test a pipe that transforms the case of a string to have every word begin with upper-case followed by all lower case.  So, it should convert "Now is the winter of our discontent" to "Now Is The Winter Of Our Discontent".
 
@@ -4253,7 +4266,9 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     
     export class TitleCasePipe implements PipeTransform {
         transform(input:string):string {
-            return input.length === 0 ? '' : input.replace(/\w\S*/g, (txt => txt[0].toUpperCase() + txt.slice(1).toLowerCase()));
+            return input.length === 0 ? '' : 
+                input.replace(/\w\S*/g, (txt => txt[0]
+                .toUpperCase() + txt.slice(1).toLowerCase()));
         }
     }
     ```
@@ -4282,74 +4297,112 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
             if (input === input.toUpperCase()) {
                 return input;
             }
-            return input.length === 0 ? '' : input.replace(/\w\S*/g, (txt => txt[0].toUpperCase() + txt.slice(1).toLowerCase()));
+            return input.length === 0 ? '' : 
+                input.replace(/\w\S*/g, (txt => txt[0].toUpperCase() + txt
+                .slice(1).toLowerCase()));
         }
     }
     ```
-9.  One final note - if we look at the code in the sample app for the pipe tests, we can see that the last test *it deals with single letter words* fails. Note that, in this case, it fails because the test contains a typo, not because the pipe is messing up.  Don't forget to look closely at the error message, and make sure that there actually is a mistake, it is just as easy to make a typo in the test as in the actual code.
+9.  *One final note* - if we look at the code in the sample app for the pipe tests, we can see that the last test, *it deals with single letter words*, fails. Note that, in this case, it fails because the test contains a typo, not because the pipe is messing up.  Don't forget to look closely at the error message, and make sure that there actually is a mistake, it is just as easy to make a typo in the test as in the actual code.
 
-#### ii. Component
-1.  By now, we should have a decent feel for how tests work generally. There are a number of special considerations, however, when running tests in a framework such as Angular2. In particular, special methods are required to create instances of components to test, and to give them the attributes they would have if actually created so that tests can run.  The focus will now shift from the mechanics of using Jasmine and Karma to create and run tests to the Angular2-specific strategies for making effective tests;
+#### Component
+1.  By now, we should have a decent feel for how tests work generally. There are a number of special considerations, however, when running tests in a framework such as Ng4. In particular, special methods are required to create instances of components to test, and to give them the attributes they would have if actually created so that tests can run.  The focus will now shift from the mechanics of using Jasmine and Karma to create and run tests to the Ng4-specific strategies for making effective tests;
 
-2.  We will begin by running tests on a very basic Angular2 component. We begin by setting up a basic, empty component, BannerComponent, in a 'banner' folder in our *components* directory: 
+2.  We will begin by running tests on a very basic Ng4 component. We begin by setting up a basic, empty component, *AppComponent*, in our *components* directory: 
     ```javascript
-    // banner.component.ts
-    
-    import { Component } from '@angular/core';
+    // app.component.ts
+    import { Component, OnInit } from '@angular/core';
 
-    @Component( {
-        selector: 'banner-comp',
-        templateUrl: './banner.component.html',
+    @Component({
+        selector: 'app-root',
+        templateUrl: 'app.component.html',
         styleUrls: [
-            './banner.component.css'
+            './app.component.css',
         ]
     })
 
-    export class BannerComponent {
-	    constructor() {};
-
-        title:string = 'The joy of test';
+    export class AppComponent implements OnInit{
+        constructor() {}
+        title = 'Goodbye, Cruel World!';
+        ngOnInit() {};
     }
     ```
     ```html
+    <!--app.cmoponent.html -->
     <h1>
         {{title}}
     </h1>
+    <banner-comp></banner-comp>
+    <user-comp></user-comp>
     ```
     ```css
+    /*app.component.css*/
     h1 {
-        color: orange;
+        color: navy;
     }
     ```
-    
-3.  In order to test our component, we will need to create an angular testing module containing any components necessary for our testing. In this case, we will be testing a single, simple component. To begin, import the following dependencies:
+
+3. In order to test our component, we need to create an angular testing module containing any components necessary for our testing. In this case, we will be testing a single, simple component. To begin, import the following dependencies:
     ```javascript
-    import { TestBed, ComponentFixture } from '@angular/core/testing';
-    import { DebugElement } from '@angular/core';
-    import { By } from '@angular/platform-browser/';
-    import { BannerComponent } from './banner.component';
+    import { TestBed, async } from '@angular/core/testing';
+    import { AppComponent } from './app.component';
     ```
     As we will soon see, **TestBed** is probably the most important of all Angular testing utilities.  It is used to create an Angular testing module (@NgModule), which we will configure using the **configureTestingModule** method. We will go over the imports in more detail, below.
 
-4.  First, however, we will set up our testing suite with some variable declarations and Jasmine's **beforeEach()** method. This method allows the testing framework to set up for each test from scratch. All our tests are completely independent of each other, so all the set-up that the tests have in common can be placed in the beforeEach() method and run prior to each test:
+4. First, however, we will set up our testing suite with some variable declarations and Jasmine's **beforeEach( )** method. This method allows the testing framework to set up for each test from scratch. All our tests are completely independent of each other, so all the set-up that the tests have in common can be placed in the *beforeEach( )* method and run prior to each test:
     ```javascript
-    describe('BannerComponent', () => {
-    let fixture: ComponentFixture<BannerComponent>;
-    let comp: BannerComponent;
-    let de: DebugElement;
-    let el: HTMLElement;
-
-    beforeEach(() => {
-        TestBed.configureTestingModule({
-            declarations: [ BannerComponent ],
+    describe('Home Component', () => {
+        beforeEach(() => {
+            TestBed.configureTestingModule({
+                declarations: [ AppComponent ],
+            })      
         })
-        fixture = TestBed.createComponent(BannerComponent);
-        comp = fixture.componentInstance;
-        de = fixture.debugElement.query(By.css('h1'));
-        el = de.nativeElement;
     });
     ```
-    In the above, we use a number of Angular2 specific methods and utitilities to set up our tests. First, we crete our testing module with *TestBed*'s **configureTestingModule()** method.  Then, we use *TestBed*'s createComponent method to create a BannerComponent and assign it to our variable *fixture*, and than assign to our variable *comp* an instance of the component class using the **componentInstance** method. Similarly, we create an instace of the element we wish to test by using the **debugElement()** method to create a handle on the targeted element in the component's DOM, and the **query** method to acces our tartgeted component. Finally, we assign that DOM element to our variable *el*, via the **nativeElement** property.
+    In the above, we use the *TestBed's* **configureTestingModule()** method to create our testing module and bootstrap it. This method takes an object containing the items we might see in an @NgModule decorator.
+
+5. After the initialization, we can run individual tests on our component. The first one is:
+    ```javascript
+    it('should create the app component', async(() => {
+        let fixture = TestBed.createComponent(AppComponent);
+        let comp = fixture.debugElement.componentInstance;
+        expect (comp).toBeDefined();
+	}));
+    ```
+    This first test uses *TestBed's* **createComponent( )** method, which creates the the component in our our testing environment conforming to the component passed in as an argument, and we assign this to a variable (*fixture* is standard practice).
+    
+    The component object we get back from *createComponent()* has a property called **debugElement**, which itself has methods/properties that we can access. One of these is **cmoponentInstnace**, which is, as one might guess, an instance of the component class. We assign that to the variable *comp*, and then run our test.
+    
+6. In the next test, we check to see that the title of the app is what we think it is:
+    ```javascript
+    it (`should have as its title 'Goodbye, Cruel World!'`, async(() => {
+        let fixture = TestBed.createComponent(AppComponent);
+        let comp = fixture.debugElement.componentInstance;
+        expect(comp.title).toEqual('Goodbye, Cruel World!');
+    }));
+    ```
+    Obviously, the first two lines are the same, but the test is different, checking on a property of the component.
+
+7. Finally, we will test something in our template (as opposed to something in our component instance.
+    ```javascript
+    it(`should render title in a h1 tag`, async(() => {
+        let fixture = TestBed.createComponent(AppComponent);
+        fixture.detectChanges();
+        let theTemplate = fixture.debugElement.nativeElement;
+        expect(theTemplate.querySelector('h1').textContent)
+            .toContain('Goodbye, Cruel World!');
+    }));
+    ```
+    In the above test, we create our component class as before. However, since we will be testing something in the template, we need to update the template, which will not occur automatically, because we are in the testing environment, not the Ng4 environment. So, to force an update, we must run **detectChanges()** on our *fixture* component. Then, to access the template, we get the **nativeElement** from *fixture.debugElement*. Finally, we access a desired element on the template via the standard JavaScript *querySelector()* method, and we run our test.
+    
+    **Important**: If we are not using the CLI, or some other **Webpack**-based setup, we would need to run **compileComponents( )** on our return from *configureTestingModule*. However, this is done automatically by Webpack, so it is not included in the above example.
+    
+
+:::danger
+    
+    In the above, we use a number of Ng4 specific methods and utitilities to set up our tests. First, we crete our testing module with *TestBed*'s **configureTestingModule( )** method.  Then, we use *TestBed*'s **createComponent( )** method to create a BannerComponent and assign it to our variable *fixture*, and then assign to our variable *comp* an instance of the component class using the **componentInstance** property. Similarly, we create an instance of the element we wish to test by using the **debugElement( )** method to create a handle on the targeted element in the component's DOM, and the **query** method to acces our tartgeted component. Finally, we assign that DOM element to our variable *el*, via the **nativeElement** property.
+    
+
     
 5.  Finally, our tests.  This is such a simple component there is hardly anything to test, but we can see how to proceed after our setup:
     ```javascript
@@ -4366,40 +4419,14 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         expect(el.innerText).not.toBeDefined;
     })
     ```
-    The most important thing above is the **detectChanges()** method of *fixture*.  Of course, in the second test, we should expect that we would need to do something to cause Angular2 to refresh the component ond incorporate the new assisgnment to comp.title; however, the **createComponent()** method does not trigger changes, so the *detectChanges()* method is necessary in order to set up the component in the first test.
+    The most important thing above is the **detectChanges( )** method of *fixture*.  Of course, in the second test, we should expect that we would need to do something to cause Ng4 to refresh the component and incorporate the new assisgnment to *comp.title*; however, the **createComponent( )** method does not trigger changes, so the *detectChanges()* method is necessary in order to set up the component in the first test.
     
     There is a method, **ComponentFixtureAutoDetect**, which will perform the initial update on the creation of the component, but it is better practice to use the **fixture.detectChange()** method. 
+:::
+#### Component with Service Stub
 
-#### iii. Component with Service Stub
+1.  Outside of our simple example components such as the one above, we will very often have data injected into our components by services. In our next example, we will see how to deal with such components in Ng4. In order to do so, we will add the following *UserComponent*"
 
-1.  Outside of our simple example components such as the one above, we will very often have data injected into our components by services.  In our next exaple, we will see how to deal with such components in Angular2.  In order to do so, we will add the following *UserComponent*"
-    ```javascript
-    // user.component.ts
-    
-    import { Component, OnInit } from '@angular/core';
-    import { UserService } from 'services/user.service';
-
-    @Component({
-        selector: 'user-comp',
-        templateUrl: './user.component.html',
-        styleUrls: [
-            './user.component.css'
-        ],
-    })
-
-    export class UserComponent implements OnInit {
-        constructor(
-            private userService: UserService
-        ) {}
-        user:{name: string};
-        isLoggedIn:boolean;
-
-        ngOnInit() {
-            this.user = this.userService.user;
-            this.isLoggedIn = this.userService.isLoggedIn;
-        }
-    }
-    ```
     ```html
     <!--user.component.html-->
     
@@ -4412,6 +4439,34 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         <p>Please log in first.</p>
     </div>
     ```
+    
+    ```javascript
+    // user.component.ts
+    import { Component, OnInit } from '@angular/core';
+    import { UserService } from 'services/user.service';
+
+    @Component({
+        selector: 'user-comp',
+        templateUrl: './user.component.html',
+        styleUrls: [
+            './user.component.css'
+        ],
+    })
+    export class UserComponent implements OnInit {
+        user:{name: string};
+        isLoggedIn:boolean;
+        
+        constructor(
+            private userService: UserService
+        ) {}
+
+        ngOnInit() {
+            this.user = this.userService.user;
+            this.isLoggedIn = this.userService.isLoggedIn;
+        }
+    }
+    ```
+
     ```javascript
     //our service, user.service.ts
     export class UserService {
@@ -4423,16 +4478,13 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```
     **Note**: Notice that in our service, the user's name is "Max";
 
-2.  In order to run our tests, we neet to have access to data from our service; however, it is usually much better to create a mock service with only the data necessary for the test rather than copying the entire service.  Below, in our testing module, note the use of the **overrideComponent()** method, which allows us to insert the data in **userServiceStub**.
+2.  In order to run our tests, we need to have access to data from our service; however, it is usually much better to create a mock service with only the data necessary for the test rather than copying the entire service.  Below, in our testing module, note the use of the *TestBed* **overrideComponent()** method, which allows us to insert the mock data in **userServiceStub** in place of the actual UserService.
     ```javascript
     import { TestBed, ComponentFixture, async } from '@angular/core/testing';
     import { By } from '@angular/platform-browser';
     import { UserComponent } from './user.component';
 
     describe('Component: User', () => {
-        let fixture: ComponentFixture<UserComponent>;
-        let comp: UserComponent;
-        let el: HTMLElement;
         beforeEach(() => {
             let userServiceStub = {
                 isLoggedIn: true,
@@ -4453,36 +4505,62 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
                     ]
                 }
             });
-            fixture = TestBed.createComponent(UserComponent);
-            comp = fixture.debugElement.componentInstance;
         });
-        it ('should create the app', () => {
-            expect(comp).toBeTruthy();
-        });
-        it ('should use the username from the service', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
-            fixture.detectChanges( );
-            expect(userService.user.name).toEqual('Jordan');
-        });
-        it ('shouldn\'t display the user name if user is not logged in', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
-            userService.isLoggedIn = false;
-            fixture.detectChanges();
-            el = fixture.debugElement.nativeElement;
-            expect(el.querySelector('p').textContent).not.toContain(comp.user.name);
-        });
-        it ('should display the user name if user is logged in', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
+    ```
+3. Now, we can run some of our tests; the first one introduces nothing new:
+    ```javascript
+    it ('should create the app', () => {
+        let fixture = TestBed.createComponent(UserComponent);
+        let myComponent = fixture.debugElement.componentInstance;
+        expect(myComponent).toBeTruthy();
+    });
+    ```
+    In the next test, we will need to call on our mock data:
+    ```javascript
+    it ('should use the username from the service', () => {
+        let fixture = TestBed.createComponent(UserComponent);
+        let myComponent = fixture.debugElement.componentInstance;
+        let userService = fixture.debugElement.injector.get(UserService);
+        fixture.detectChanges( );
+        expect(userService.user.name).toEqual(myComponent.user.name);
+        // the following will fail - the stub uses 'Jordan'
+        expect(userService.user.name).toEqual('Max');
+    });
+    ```
+    In the above test, we gain access to the UserService through the *get()* method of the Ng4 **injector**, which is part of the component class we assigned to *fixture*. However, because of our earlier code in the *beforeEach()* method, we substitute the *userServiceStub* for the UserService.
+    
+    **Note**: We need to run *fixture.detectChanges()* because the initial state of the app has a *user.name* of undefined. It does get set to the service-provided name right up front, in *ngOnInit*, but it still is not set *ab initio*. So, we need to update the component to compare the names.
+
+4. Now, we can run some tests on the template, to see if it is behaving as it should:
+    ```javascript
+    it ('shouldn\'t display the user name if user is not logged in', () => {
+        let fixture = TestBed.createComponent(UserComponent);
+        let myComponent = fixture.debugElement.componentInstance;
+        let userService = fixture.debugElement.injector.get(UserService);
+        userService.isLoggedIn = false;
+        fixture.detectChanges();
+        let el = fixture.debugElement.nativeElement;
+        expect(el.querySelector('p').textContent).not
+            .toContain(myComponent.user.name);
+    });
+    ```
+    The above test does not contain anything new, but combines the need for the service with the need to access the template with *nativeElement*.
+    
+5. And the following is the converse:
+    ```javascript
+    it ('should display the user name if user is logged in', () => {
+        let userService = fixture.debugElement.injector.get(UserService);
             userService.isLoggedIn = true;
             fixture.detectChanges();
             el = fixture.debugElement.nativeElement;
-            expect(el.querySelector('p').textContent).toContain(comp.user.name);
+            expect(el.querySelector('p').textContent)
+                .toContain(comp.user.name);
         });
     });
     ```
-3.  Note that in the *userServiceStub* object, the user's name is "Jordan", not "Max", and that the second test passes when the userService.user.name equals "Jordan". This is because it is using the stub data for the service in the test. 
+ 
 
-#### iv. Component with Async Action (Http Query) 
+#### Component with Async Action (Http Query)
 
 1.  In the case of the *service*, the data injection is a synchronous process.  Many times we will be testing data that is obtained from http requests or otheer asynchronous processes. In the following example, we will continue using the *UserComponent*, but will be injecting a *DataService*, which will deliver data in a mock async process, using the **setTimeout()** method.
     ```javascript
@@ -4542,6 +4620,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         <h2>Data:</h2><span>{{data}}</span>
     </div>
     ```
+3. We will also implement our tests for the new dataService. In addition, in the following file we pull out some more common test code and place it in the *beforeEach()* method.
     ```javascript
     // user.component.spec.ts
     import { TestBed, ComponentFixture, async } from '@angular/core/testing';
@@ -4578,9 +4657,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
             fixture = TestBed.createComponent(UserComponent);
             comp = fixture.debugElement.componentInstance;
         });
-        it ('should create the app', () => {
-            expect(comp).toBeTruthy();
-        });
+        
         it ('should use the username from the service', () => {
             let userService = fixture.debugElement.injector.get(UserService);
             fixture.detectChanges( );
