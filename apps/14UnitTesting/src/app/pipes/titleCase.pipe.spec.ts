@@ -18,6 +18,6 @@ describe('TitleCasePipe', () => {
 	});
 
 	it(`deals with single letter words`, () => {
-		expect(pipe.transform('a day in a life')).toBe('A Day in A Life');
+		expect(pipe.transform('a day in a life')).toBe('A Day In A Life');
 	})
 })

@@ -10,7 +10,13 @@ describe('Our home component', () => {
 		TestBed.configureTestingModule({
 			declarations: [
 				AppComponent,
+				UserComponent,
+				BannerComponent
 			],
+			providers: [
+				UserService,
+				DataService
+			]
 		});
 	});
 

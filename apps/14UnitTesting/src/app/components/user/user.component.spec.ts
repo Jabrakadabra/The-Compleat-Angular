@@ -69,16 +69,18 @@ describe('Component: User', () => {
 		let spy = spyOn(dataService, 'getDetails')
 			.and.returnValue(Promise.resolve('Data'));
 		fixture.detectChanges();
-		expect(comp.data).toBe(undefined);
+		expect(myComponent.data).toBe(undefined);
 	});
-	//
-	// it (`shouldn fetch data if called asynchronously`, async(() => {
-	// 	let dataService = fixture.debugElement.injector.get(DataService);
-	// 	let spy = spyOn(dataService, 'getDetails')
-	// 		.and.returnValue(Promise.resolve('Chiken'));
-	// 	fixture.detectChanges();
-	// 	fixture.whenStable().then(() => {
-	// 		expect(comp.data).toBe('Chiken');
-	// 	});
-	// }));
+
+	it (`should fetch data if called asynchronously`, async(() => {
+		let fixture = TestBed.createComponent(UserComponent);
+		let myComponent = fixture.debugElement.componentInstance;
+		let dataService = fixture.debugElement.injector.get(DataService);
+		let spy = spyOn(dataService, 'getDetails')
+			.and.returnValue(Promise.resolve('Chiken'));
+		fixture.detectChanges();
+		fixture.whenStable().then(() => {
+			expect(myComponent.data).toBe('Chiken');
+		});
+	}));
 });
