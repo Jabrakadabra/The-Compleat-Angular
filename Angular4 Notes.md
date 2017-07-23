@@ -4213,7 +4213,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```
     Note that the real
 
-### C. Specific Tests
+### D. Specific Tests
 
 #### Pipe
 
@@ -4561,8 +4561,11 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
  
 
 #### Component with Async Action (Http Query)
+1. In the case of the *userService* above, the data injection was a completely synchronous process. We did have to keep in mind that the initial state was not the same as the state after *ngOnInit* (requiring the detectChanges() method); however, we did not have to deal with file i/o, or AJAX calls.
 
-1.  In the case of the *service*, the data injection is a synchronous process.  Many times we will be testing data that is obtained from http requests or otheer asynchronous processes. In the following example, we will continue using the *UserComponent*, but will be injecting a *DataService*, which will deliver data in a mock async process, using the **setTimeout()** method.
+2. In testing, we will probably not want to reach out to the actual server, which could result in usage fees, *etc.* So, we will want to come up with ways to fake it.
+
+3. In the case of the *service*, the data injection is a synchronous process.  Many times we will be testing data that is obtained from http requests or other asynchronous processes. In the following example, we will continue using the *UserComponent*, but will be injecting a *DataService*, which will deliver data in a mock async process, using the **setTimeout()** method.
     ```javascript
     // data.service.ts
     export class DataService {
@@ -4620,7 +4623,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         <h2>Data:</h2><span>{{data}}</span>
     </div>
     ```
-3. We will also implement our tests for the new dataService. In addition, in the following file we pull out some more common test code and place it in the *beforeEach()* method.
+3. We will also implement our tests for the new dataService. In addition, in the following file we pull out some of the common test code and place it in the *beforeEach()* method.
     ```javascript
     // user.component.spec.ts
     import { TestBed, ComponentFixture, async } from '@angular/core/testing';
@@ -4657,51 +4660,60 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
             fixture = TestBed.createComponent(UserComponent);
             comp = fixture.debugElement.componentInstance;
         });
-        
-        it ('should use the username from the service', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
-            fixture.detectChanges( );
-            expect(userService.user.name).toEqual('Jordan');
-        });
-        it ('shouldn\'t display the user name if user is not logged in', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
-            userService.isLoggedIn = false;
-            fixture.detectChanges();
-            el = fixture.debugElement.nativeElement;
-            expect(el.querySelector('p').textContent).not.toContain(comp.user.name);
-        });
-        it ('should display the user name if user is logged in', () => {
-            let userService = fixture.debugElement.injector.get(UserService);
-            userService.isLoggedIn = true;
-            fixture.detectChanges();
-            el = fixture.debugElement.nativeElement;
-            expect(el.querySelector('p').textContent).toContain(comp.user.name);
-        });
-        it (`shouldn't fetch data if not called asynchronously`, () => {
-            let dataService = fixture.debugElement.injector.get(DataService);
-            let spy = spyOn(dataService, 'getDetails')
-                .and.returnValue(Promise.resolve('Data'));
-            fixture.detectChanges();
-            expect(comp.data).toBe(undefined);
-        });
-        it (`should fetch data if called asynchronously`, async(() => {
-            let dataService = fixture.debugElement.injector.get(DataService);
-            let spy = spyOn(dataService, 'getDetails')
-                .and.returnValue(Promise.resolve('Chiken'));
-            fixture.detectChanges();
-            fixture.whenStable().then(() => {
-                expect(comp.data).toBe('Chiken');
-            });
-        }));
-    });
     ```
-3.  Our strategy for dealing with the asynchronous data is similar to that for data provided directly by a service, but with some difference in the details. Looking at the **configureTestingModule**, we note that we are using the *DataService*, without substituting in a mock service.  However, if we examine the last two tests, we note the following:
+6. Our first test will use a new method provided by the testing environment, **spyOn()**. This method takes the name of what it is keeping an eye on, in this case the dataService, followed by the method (in quotes):
+
+8. Our strategy for dealing with the asynchronous data is similar to that for data provided directly by a service, but with some difference in the details. Looking at the *TestBed*.**configureTestingModule**, we note that we are using the *DataService*, without substituting in a mock service.  However, if we examine the last two tests, we note the following:
 
     a.  We get the dataService from the **fixture.debugElement.injector.get()** method.
     
-    b.  we use the **spyOn()** method to track any calls to the function.  It takes the service and the method names as parameters. When combined with the **.and.returnValue()**, all calls to the function return a specific value.
+    b.  We use the **spyOn()** method to track any calls to the function. As noted above, it takes the service and the method names as parameters. When combined with the **.and.returnValue()**, all calls to the method are essentially hijacked and forced to return a specific value, the string "Data" in the case below. This is done in an asynchronous manner, if the spied-upon method is async.
+    ```javascript
+    it (`shouldn't fetch data if not called asynchronously`, () => {
+        let dataService = fixture.debugElement.injector.get(DataService);
+        let spy = spyOn(dataService, 'getDetails')
+            .and.returnValue(Promise.resolve('Data'));
+        fixture.detectChanges();
+        expect(comp.data).toBe(undefined);
+    });        
+    ```
+    This test passes because our data is undefined. Remember, we make an async request to get the data, the data is changing. Our *fixture.detectChanges()* happens too quickly, before the data arrives back from the request.
     
-3.  if we look at the second-to-last test, we see that the value of *comp.data* is undefined. This is because of the async nature of the *getDetails()* method; when *fixture.detectChanges()* is called, the promise has not yet resolved.  In order to make this work, we must wrap the entire thing with the **async()** method, which is imported from '@angular/core/testing'. 
+7. To be able to test an asynchronous operation, we first need to wrap the entire testing function in Ng4's **async()** method, which must be imported from *@angular/core/testing*. In addition, we must run the **whenStable()** method of the the component class, which takes a *then()* method, which takes a callback containing our test.
+    ```javascript
+    it (`should fetch data if called asynchronously`, async(() => {
+        let dataService = fixture.debugElement.injector.get(DataService);
+        let spy = spyOn(dataService, 'getDetails')
+            .and.returnValue(Promise.resolve('Chiken'));
+        fixture.detectChanges();
+        fixture.whenStable().then(() => {
+            expect(comp.data).toBe('Chiken');
+        });
+    }));
+    ```
+9. Another approach is to use the **fakeAsync()** wrapper in place of the *async()*, together with use of the **tick()** method instead of *whenStable()*. Both must be imported from *@angular/core/testing*. What this does is sets things up as if all async tasks have been completed, then runs the test.
+    ```javascript
+    it (`should fetch data if called asynchronously`, fakeAsync(() => {
+        let dataService = fixture.debugElement.injector.get(DataService);
+        let spy = spyOn(dataService, 'getDetails')
+            .and.returnValue(Promise.resolve('Chiken'));
+        fixture.detectChanges();
+        tick();
+        expect(comp.data).toBe('Chiken');
+        });
+    }));
+    ```
+
+### E. Postword
+1. Hopefully, the above has served as a good introduction to testing and the tools available through Ng4. However, there is a lot more to be learned about testing. The following are some resources:
+
+    a. https:/angular.io/docs/ts/latest/guide/testing.html
+    
+    b. https://semaphoreci.com/community/tutorials/testing-components-in-angular-2-with-jasmine
+
+
+    
+
   
 ## XII. Observables 
 
