@@ -1,0 +1,46 @@
+{
+  "name": "seedapp",
+  "version": "0.0.1",
+  "description": "Ng4 seed app from Udemy course",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "dev-serve": "webpack-dev-server --inline --progress --port 3142 --config webpack.config.dev.js",
+    "build:prod": "rimraf dist && ngc -p tsconfig.aot.json && ngc -p tsconfig.aot.json && webpack --config webpack.config.prod.js --progress --profile --bail && rimraf 'src/app/**/*.js' 'src/app/**/*.ngfactory.ts' 'src/app/**/*.js.map' 'src/app/**/*.shim.ts' 'src/app/**/*.ngsummary.json' 'src/app/**/*.ngstyle.ts' 'dist/app'",
+    "build-serve": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "CJB3",
+  "license": "MIT",
+  "dependencies": {
+    "@angular/animations": "^4.3.1",
+    "@angular/common": "^4.3.1",
+    "@angular/compiler": "^4.3.1",
+    "@angular/compiler-cli": "^4.3.1",
+    "@angular/core": "^4.3.1",
+    "@angular/forms": "^4.3.1",
+    "@angular/http": "^4.3.1",
+    "@angular/platform-browser": "^4.3.1",
+    "@angular/platform-browser-dynamic": "^4.3.1",
+    "@angular/platform-server": "^4.3.1",
+    "@angular/router": "^4.3.1",
+    "@angular/upgrade": "^4.3.1",
+    "core-js": "^2.4.1",
+    "rxjs": "^5.4.2",
+    "zone.js": "^0.8.14"
+  },
+  "devDependencies": {
+    "@types/core-js": "^0.9.42",
+    "@types/node": "^8.0.15",
+    "angular-router-loader": "^0.6.0",
+    "angular2-template-loader": "^0.6.2",
+    "awesome-typescript-loader": "^3.2.1",
+    "html-loader": "^0.4.5",
+    "lite-server": "^2.3.0",
+    "ngtemplate-loader": "^2.0.1",
+    "raw-loader": "^0.5.1",
+    "typescript": "^2.4.2",
+    "webpack": "^3.3.0",
+    "webpack-dev-server": "^2.6.1"
+  }
+}

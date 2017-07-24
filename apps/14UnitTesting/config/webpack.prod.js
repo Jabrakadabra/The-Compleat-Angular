@@ -9,13 +9,26 @@ const commonConfig = require('./webpack.common.js');
 const ENV = process.env.NODE_ENV = process.env.ENV = 'production';
 
 module.exports = webpackMerge(commonConfig, {
-	devtool: 'source-map',
+	// devtool: 'source-map',
+	entry: './src/app/main.aot.ts'
 	output: {
 		path: path.resolve(rootDir, 'dist'),
 		publicPath: '/',
 		filename: '[name].[hash].js',
 		chunkFilename: '[id].[hash].chunk.js'
 	},
+	module: {
+		rules: [
+			{
+				test: /\.ts$/,
+				use: [
+					{ loader: 'awesome-typescript-loader' },
+					{ loader: 'angular2-template-loader' },
+					{ loader: 'angular-router-loader?aot=true' }
+				]
+			}
+		]
+	}
 	plugins: [
 		new webpack.NoEmitOnErrorsPlugin(),
 		new webpack.optimize.UglifyJsPlugin({ // https://github.com/angular/angular/issues/10618

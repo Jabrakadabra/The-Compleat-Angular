@@ -15,10 +15,13 @@
 
 4.  Setup of an Ng4 project can be a major task, given the need to configure TypeScript and Webpack. We will assume setup has been taken care of throughout this outline, until [Section X](#webpack), where we discuss setup, as well as use of the Angular CLI.
 
-5. Ng4 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XI](#typescript), is an introduction to TypeScript.
+5. Ng4 was designed to be used with TypeScript, a Microsoft-designed version of Javascript. The final section of this outline, [Section XVI](#typescript), is an introduction to TypeScript.
 
 ### B. One Interesting Thing
+
 1. The **safe-navigation operator** (sometimes referred to as the "Elvis" operator) prevents an error from being thrown if a we try to obtain a property of a null/undefined object. It takes the form of a question mark immediately after the object name. For example:
+
+
     ```html
     <!-- if client is not defined when evaluated, big error -->
     <h1>His name is {{client.name}}.</h1>
@@ -27,6 +30,7 @@
     <!-- simply leaves a blank space -->
     <h1>His name is {{client?.name}}.</h1>
     ```
+
 ### C. Basic Structure of the Application
 1.  When we create the application, we will normally have, in addition to a variety of configuration files, a folder named something along the lines of **src**. This folder will typically contain two folders, with names such as **app** and **assets**. The *app* folder will contain the application (components, services, pipes, *etc.*, whereas the *assets* folder will typically contain fonts, css styling, and images.
 
@@ -164,7 +168,7 @@
     ```html
     <button
         class="btn btn-primary"
-        (click)="onInput((inputField.value)"
+        (click)="onInput(inputField.value)"
     >
         Add Name
     </button>
@@ -185,7 +189,7 @@
 
 3. Through the variable, we now have access to the template element.  Of course, the variable is the *ElementRef* reference. To get direct access, we can get the **nativeElement** property of the reference. From that, we can get the value.
 
-4. Before is some sample code. Note that one input field will be using an event emitter to pass the reference, the second input field will not use an event emitter, but will be accessed throught the *@ViewChild* decorator.
+4. Below is some sample code. Note that one input field will be using an event emitter to pass the reference, the second input field will not use an event emitter, but will be accessed throught the *@ViewChild* decorator.
     ```html
     <div>
     <!--component.html-->
@@ -913,7 +917,7 @@ For directive and component properties, we can add custom binding with the *@Out
 ::: danger
 The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng4
 :::
-2. **Adding an *else* Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. Alternatively, we can  s The following is an alternative to that approach:
+2. **Adding an *else* Condition**: One common scenario is that we have two alternative components and we want to show one or the other, depending on some condition. We can have the two, each with its own \*ngif statement. The following is an alternative to that approach:
 
     a. place the \*ngIf directive on the first component, with a semi-colon at the end of the condition, followed by the keyword **else** and the name of the alternative component.
     
@@ -956,8 +960,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     <!-- shortcut syntax for one property -->
     <div [style.color]="'navy'">Hello!</div>
     ```
-    Notice that the attribute, 'navy', is in quotes within the outer quotes.
-
+    Notice that the attribute, 'navy', is in quotes within the outer quotes. If without the inner single quotes, it would be interpreted as a variable name.
 
 
 #### ngClass
@@ -970,9 +973,9 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
     <div [class.border]="2 + 2 === 4"></div>
     ```
-    Note that directives and properties use brackets [ ] and affect the tag. Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Angular2 property binding to get the same result.
+    Note that directives and properties use brackets [ ] and affect the tag. Directives are preceded by the "ng". The second example, above, is not actually a directive, but just a use of Ng4 property binding to get the same result.
 
-3. In addition, there are other ways of adding classes besides the objece. Examine the following:
+3. In addition, there are other ways of adding classes besides the object. Examine the following:
     ```html
     <div [ngClass]="[classname]"></div>
     <div [ngClass]="[class1, class2]"></div>
@@ -1483,20 +1486,6 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	
 7. One final thing for basic routing: we must designate the place where our selected templates are to be inserted.  This is done with the **\<router-outlet>\</router-outlet>** directive tag in our main component.
 
-8. One post-script for basic routing. Without the following, we will not be able to type the URL into the browser, or refresh the browser from anywhere but the '/' root, without getting a 404 error:
-
-    a.	We can implement the "#" strategy, using *HashLocationStrategy*
-		
-    b.	We can use the default *PathLocationStrategy* which will require:
-    
-      i. make sure we have inserted the "\<base href='/'>" as the first line of the head of the *index.html* page,
-      
-      ii. in Webpack, make the following setting:
-    ```json
-    historyApiFallback: {
-    index: path.resolve(rootDir, '/')
-    },
-    ```
 ### C. Setting Up Routes - Modules
 1. **Alternate Architecture**: We can also put our routes in a separate **module** and import it into the *app.module.ts* file. For more information regarding the use of modules generally, see the section on **modules** in Ng4. Here, however, we will quickly look at a setup for routing.
 
@@ -1576,7 +1565,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 ### D. Adding Links
 1. Because we have set it up, we can access our routes by typing them directly into the browser. The next step is to be able to select a route by clicking on it, as discussed below:
 
-2. **Something that works, but don't do it:** It is possible to use the traditional \<a href=""> links; however, this will cause a full page refresh and defeat the purpose of using Ng4.
+2. **Something that works, but don't do it:** It is possible to use the traditional \<a href=""> links; however, this will cause a full page refresh and defeats the purpose of using Ng4. Also, they will cause a refresh if present, even if they are not assigned any value, so it is best to get rid of them.
 
 3. To have Ng4 handle the routing, use the following *routerLink* directive syntax:
     ```html
@@ -1632,9 +1621,9 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
     b. in our component class definition, import the **Router** from *@angular/router*.
     
-    c. inject the Routeer into our class through the constructor method.
+    c. inject the Router into our class through the constructor method.
     
-    d. in our called method, use the **navigate( )** method of the router to change our view component,by including our go-to route as the argument, in an array. For example:
+    d. in our called method, use the **navigate( )** method of the router to change our view component, by including our go-to route as the argument, in an array. For example:
     ```javascript
     import { Component } from '@angular/core';
     import { Router } from '@angular/router';
@@ -1728,7 +1717,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 	b.	on the params object, use the **subscribe** method to listen for changes. This method takes three parameters, each a callback function.  The first is a callback for changed data, the second is if we have an error, and the third is when all is complete (the last two are used for *http* requests). So, run the first callback to update the value, when there is a change, as follows:
     ```javascript
     import { Component, OnInit } from '@angular/core';
-    import { ActivatedRoute } from '@angular/router';
+    import { ActivatedRoute, Params } from '@angular/router';
 
     @Component({
         . . .
@@ -1745,7 +1734,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         };
 	
         ngOnInit() {
-            this.route.params.subscribe((val: any) => {
+            this.route.params.subscribe((val: Params) => {
                 this.user.id = val.id;
                 this.user.name = val.name;
             });
@@ -1929,18 +1918,17 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 2.  Note that when we use *[routerLink]* to link to a child route, we only need to include the child part of the route if we are on the parent. However, if we are clicking on a link to use the *router.navigate* method, we should refer to the entire path.  
 	
 ### K. Redirection
-
-1.	Sometimes, we may wish to handle a path that does not actually exist. For example, if all our paths are of the form *user/:id*, we may wish to provide for someone entering *user/* as the path. We can set up a real path, or can use a **redirect** to send such a bad path to a different location, using the following syntax:
+1. Sometimes, we may wish to handle a path that does not actually exist. For example, if all our paths are of the form *user/:id*, we may wish to provide for someone entering *user/* as the path. We can set up a real path, or can use a **redirect** to send such a bad path to a different location, using the following syntax:
     ```javascript
     const APP_ROUTES = [
         {
             path: 'user',
-            redirectTo: '/user/1'
+            redirectTo: 'user/1'
         }
     ]
     ```
 
-2.	We must also take into account the path matching behaviour. By default, Angular2 uses prefix matching behaviour, which means it looks to see if the portion given in the "path" property matches, and doesn't look past that. Thus, the following would all get redirected to */user/1*, under the path provided above:
+2. We must also take into account the path matching behaviour. By default, Ng4 uses prefix matching behaviour, which means it looks to see if the portion given in the "path" property matches, and doesn't look past that. Thus, the following would all get redirected to */user/1*, under the path provided above:
     ```
     'user',
     'user/1',
@@ -1952,7 +1940,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     { path: 'user', redirectTo: 'elsewhere', pathMatch: 'full' }
     ```
 	
-3.  **Note**: There is some funny behaviour on the *redirectTo* property. It works as expected when used in the brawser address bar, but does not work reliably when links are going to the detected path.
+3.  **Note**: There is some funny behaviour on the *redirectTo* property. It works as expected when used in the browser address bar, but does not work reliably when links are going to the detected path.
 
 4.  Finally, the *redirectTo* property can be used to set up a default route, by setting a final path of **\*\***, wich sets up a wildcard path, which we can redirect to an error page. ==Make sure this is the last route listed!==
 
@@ -2013,7 +2001,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         canActivate(
             route: ActivatedRouteSnapshot,
             state: RouterStateSnapshot
-        ): Oservable<boolean> | Promise<boolean> | boolean {
+        ): Observable<boolean> | Promise<boolean> | boolean {
             
             return this.authService.isAuthenticated()
             .then(
@@ -2150,7 +2138,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     In the above code snippet, we are exporting a class (which we can name as we want), and this class, through its implementation of Ng4's CanDeactivate object, to which we assign a type of ComponentCanDeactivate, will require that there be available a method, *canDeactivate*, which returns a function that takes no parameters and returns a boolean, a Promise\<boolean>, or an *Observable\<boolean>*.
 
 ### M. Passing Data into Routes
-1. Our routes can also take a **data** property, the value of which can be an object of key-value pairs. To access the data, we can assign it to values in the component, throuth the *this.route.snapshot.data* property. For example:
+1. Our routes can also take a **data** property, the value of which can be an object of key-value pairs. To access the data, we can assign it to values in the component, through the *this.route.snapshot.data* property. For example:
     ```javascript
     // app-routing-module/index.ts
     import { NgModule } from '@angular/core';
@@ -2199,7 +2187,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 
 #### Passing in Dynamic Data
-1. Above, we address how to pass in **static data** along with our route. In addition, we can pass it data dynamically, including data that might have to be fetched from eleswhere.
+1. Above, we address how to pass in **static data** along with our route. In addition, we can pass it data dynamically, including data that might have to be fetched from elsewhere.
 
 2. To do this, we need to use a hook called the **resolve guard**. This is somewhat similar to *canActivate*, or *canDeactivate*, except it does not guard whether to go to, or leave, a route; rather, it postpones a route until data is obtained.
 
@@ -2223,19 +2211,17 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
             }
         }
     ];
-
     . . .
-    
     export default serverRouting;
     ```
-    Note that the resolver must be imported. In addition, don't forget that it must be imported into the *app.modulet.ts* file and made available in the *providers* array, just like any other service.
+    Note that the resolver must be imported. In addition, don't forget that it must be imported into the *app.module.ts* file and made available in the *providers* array, just like any other service.
 
 6. Now, moving forward to the end stage before going backwards, we will need to access our data provided to the route by this *resolve* property. Going to the *ServerComponent* (see above), we will need to import in *ActivatedRoute* again to have access to the route info. Once it is incorporated through the constructor, we can access the data as:
     ```javascript
     // where route was paired to ActivatedRoute in the constructor
     this.route.snapshot.data['objectName']
     ```
-    **Note**: Not exactly sure why, but we are unable to use dot notation to access the various properties that are in the data object. **Use of bracket notation is required.**
+    **Note**: We are unable to use dot notation to access the various properties that are in the data object, because the properties were not explicitly defined to TypeScript in advance, so we must use bracket notation here.
     
     **Note**: Alternatively, and required if it is possible the info might be updated elsewhere, we can forgoe use of *snapshot* and subscribe to the event in the *ngOnInit* hook:
     ```javascript
@@ -2318,7 +2304,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     **Note**: We can get back from our call to the serversService either an Observable, a Promise, or a Server object directly. We then define what the return value of our resolve method will be.
 
 ### N. Hash Routing
-1. Finally, we can go back to a very basic concept of routing, dealing with the way the route will be parsed on our server. In our development mode, we are using routes analyzed by our dev server. In production, we will have our app on a real server, and it will parse the route first, **before** Ng4 parses the route locaally.
+1. Finally, we can go back to a very basic concept of routing, dealing with the way the route will be parsed on our server. In our development mode, we are using routes analyzed by our dev server. In production, we will have our app on a real server, and it will parse the route first, **before** Ng4 parses the route locally.
 
 2. It is critically important that our server knows that when it looks for the route on its server and cannot find it (a 404 event) that it goes to the *index.html* page of our Ng4 application. This is what we set up in the *index.html* file as the **base href**:
     ```html
@@ -2328,7 +2314,17 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     </head>
     ```
     With the above base, any time the server cannot match the route (always), it will go to *hostname/Ng4*. If the href were "/", it would go to *hostname*.  From there, Ng4 will take a crack at parsing the route, and will go to where it is supposed to, as directed by its routes.
-    
+
+3. As a default, we can use the default *PathLocationStrategy* which will require:
+
+    a. make sure we have inserted the "\<base href='/'>" as the first line of the head of the *index.html* page,
+      
+    b. in the webpack.config file, make the following setting:
+    ```javascript
+    historyApiFallback: {
+    index: path.resolve(rootDir, '/')
+    }
+    ```
 3. This is already set up to work in the webpack devServer, and will need to be set on the production server as well (covered later in notes on deployment). Sometimes, with older browsers or servers, it may be difficult to make this implementation work, and the unknown route to the server will just return a 404 error page, rather than rolling over to our Ng4 base route. If that is the case, we can address it by configuration in the **forRoot** method in our *app-routing-module* (or wherever we are keeping it). This takes a configuration object as a second parameter, and there we can set the **useHash** property to true (the default is false), as follows:
 
     ```javascript
@@ -2635,6 +2631,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 #### patchValue()
 1. Most of the time, we will probably want to access just a single field, or a small numbeer of them. To update the values of some fields, while leaving the remaining fields as-is, we can use the *form.patchValue()* method. This method takes as a parameter an object of the fields to be changed, and the remaining fields stay as they are. Note that the *patchValue()* method is called on the **form** property of the form instance, not on the form instance directly.
+
     ```javascript
     // app.component.ts
     . . .
@@ -2684,7 +2681,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     The above code will give us access to submiteed data through the *user* object, and will clear out the form, with a default value of "myName" sitting in the username field.  
   
-### Reactive Approach to Forms
+### F. Reactive Approach to Forms
 
 1. This approach comes at forms from the other end; instead of inferring a form object from the presence of a \<form> \</form> in the DOM, we create the form programstically and then place it in the DOM. Note, however, that this does not mean we have to create the form from scratch; Ng4 provides a large number of tools to assist in the process.
 
@@ -2703,7 +2700,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 3. Also, in our *app.module.ts* file, we do not make the import of **FormsModule**, but instead we need to import, and then include in the imports array of the @NgModule object, **ReactiveFormsModule**.
 
-### Hello World - Creating a Basic Form
+### G. Hello World - Creating a Basic Form
 1. First, let's place the code for form creation in a method, and place that method in the *OnInit* lifecycle hook.
 
 2. Creating the form is super easy, just call the *FormGroup* constructor with the *new* keyword and pass in a configuration object as a parameter:
@@ -2739,7 +2736,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```html
     <div class="col-xs-12 col-sm-10 col-sm-offset-1 col-md-offset-2">
         <form [formGroup]="signupForm">
-            <div class="form-grooup">
+            <div class="form-group">
                 <label for="userName">Username</label>
                 <input
                     type="text"
@@ -2776,7 +2773,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
         . . .
     
     ```
-### Form Validation
+### H. Form Validation
 1. Validation does **not** work in the same manner for the reactive approach as for the template approach. Remember, we are hooking up the form object to the HTML form, but we are not adopting the HTML5 attributes as in the template approach.
 
 2. As noted above, the **second argument** of the **FormControl** constructor takes a *validator*, or an *array of validators*.
@@ -3401,7 +3398,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 3. Ng4 uses a concept known as **observables**.  An *observable* is an object created upon the http request to which we can listen through a *subscribe()* method. The observable sends the request, gets a response, and emits an event that we listen for when it has gotten the response. The subscribe method will normally have a callback method to execute upon the event.
 
-### Setting Up
+### B. Setting Up
 1. As a best practice, we do not reach out to the internet in the component itself, but make a call upon a service, which we need to build, as follows:
 
     a. Create a file *http.service.ts*:
@@ -3505,7 +3502,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
  3. *Headers* has an *append( )* method for adding headers to the ones we already have. ***Object.assign( )* will not work, so use append( )**, if you do not want to pass in an entire, new Headers object.
  
-### Handling Data
+### C. Handling Data
 1. Of course, we hope to get back *Response* object with a status of 200 and a *\_body* that contains a JSON string of our data. However, we will probably want to do something with our returned data to make it useful.
 
 2. The first thing we will want to do is convert the string to a JavaScript object. We can do this using the *Response* object's **json( )** property. We should import the *Response* type from *@angular/http*.
@@ -3671,7 +3668,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     }
     ```
 
-## IX. Modules
+## X. Modules
 1. So far, with one exception (for our routes), we have kept all our application's pieces, including components, pipes, services, *etc.*, in a single **module**, our **AppModule** class, which we define in *app.module.ts*.
 
 2. As we have seen, all our different pieces must be *registered* to our module, *i.e.*, imported and then placed in the *@NgModule* decorator object. This explicit designation is required because Ng4 does not scan the app directory to see what is available.
@@ -3749,7 +3746,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
 10. **Selectors vs. Routes**: When we place a *selector* into a component template, the component represented by that selector must be declared in the module in which the selector is placed. In contrast, a route names a component, but that component only needs to be declared somewhere, prior to when we are calling on that route.
 
-### Lazy Loading
+### A. Lazy Loading
 1. The use of modules discussed above is great for keeping our code organized, but it really is doing nothing for us from a performance perspective. In this section we look at the use of modules to enhance the performance of our apps. One way to achieve this is through **lazy loading**.
 
 2. **Lazy loading** has to do with the loading of parts of our application on an *as needed*  basis. For example, we may have portions of our code that are never visited by our user; if we load everything together in one big *dist* bundle, then we may be wasting a lot of time loading unnecessary files.
@@ -3780,7 +3777,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
     }
     ```
-### Protecting Lazy-Loaded Routes
+### B. Protecting Lazy-Loaded Routes
 1. We can protect lazy-loading routes in a manner very similar to placing the *canActivate* guard on our "regular" routes. However, *canActivate* would not be the best solution, because it would allow the loading of code that might turn out to be blocked.
 
 2. Instead, we need to use the *canLoad* guard, such as:
@@ -3791,7 +3788,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
     ```
     In the above example, *AuthGuard* should implement the **CanLoad interface**.
 
-### Service Injection in Lazy Loaded Modules
+### C. Service Injection in Lazy Loaded Modules
 1. It is often very important to know how many instances of a service are created and which particular instance we are using at any given time, especially if we are using our service to hold information regarding our application state. If we include a service in the providers array of our application root, and in the providers array of another module that is eargerly loaded, *i.e.*, loaded at launch because it is listed in the other module, then it is provided on the **root level** as if it were included only in the root module.
 
 2. If another module is lazy loaded at a later time, it will have access to that service on the root module injected into components by the **Root Injector**.
@@ -3804,7 +3801,7 @@ The following feature (else clause for \*ngIf and \<ng-template>) is new with Ng
 
 6. From the above, we can make a general rule: **Don't provide Services in Shared Modules, *especially* if you plan to use them in lazy-loaded modules.**
 
-### Preloading Lazy-Loaded Routes
+### D. Preloading Lazy-Loaded Routes
 1. If we think about the text above, we might see a problem deferred. A module and its supporting parts may not need to be loaded immediately with the entire app, but then when the user clicks on that route, everything will have to be downloaded, potentially causing a delay in the middle of the user's experience. This might be worse than just waiting a little bit longer at the start.
 
 2. An approach to mitigate this problem is to allow **preloading** of lazy-loaded code. So, the user goes to the home page and looks around. While he is there, the lazy-loaded modules are being downloaded. When the user clicks on a button to go to the lazy-loaded module, the downloading has already been taken care of, and the module is ready to go!
@@ -3825,7 +3822,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 
     
 
-### Ahead-of-Time Compilation
+### E. Ahead-of-Time Compilation
 1. In this section, **compilation** refers to the process of parsing the component template HTML files and turning them into JavaScript. Ng4 does this because accessing the JavaScript ocde is much faster than working with the DOM in the browser.
 
 2. By default, Ng4 uses **Just-in-Time** compilation, where Ng4 parses and compiles the templates into JavaScript at the time the app is downloaded to the client browser.
@@ -3850,11 +3847,11 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```
 6. In the section below on setting up an Ng4 webpack project manually, we will discuss production mode and ahead-of-time compilation without the CLI.
 
-## X. Animations
+## XI. Animations
 ### A. Introduction
 1. Ng4 comes with its own animations module, which provide a much easier way to handle events such as components being added to the DOM than use of CSS transitions. 
 
-### Setup
+### B. Setup
 1. To use Ng4 animations, we will need to install a separate package, **@angular/animations**.
 
 2. Then, in our *app.module* file, we need to have the following import:
@@ -3867,7 +3864,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 
 4. Finally, note that *trigger*, *state*, *style*, and other animation related items will be imported from *@angular/animations*, and **not** from *@angular/core.*
 
-### Creating a Basic Animation
+### C. Creating a Basic Animation
 1. To begin, we will create a \<div> element that we will transition in color and size.
 
 2. What we are going to do is create two alternative **states**, one of which will be associated with a red *background-color*, the other a blue. When we click on the button, our event-listener will change from one state to another, resulting in the change of the div color from red to blue. We will also prescribe a **transition**, describing how it will get from one state to the next (*e.g.*, how fast).  
@@ -3993,7 +3990,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         ])
     ]),
     ```
-### Keyframes
+### D. Keyframes
 1. **Keyframes** are a mechanism for dividing up a transition into pieces and controlling the progress of each attribute during the time of the transition. The following is an example of a transition using keyframes:
     ```javascript
     transition('void => *', [
@@ -4021,7 +4018,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     
 2. In addition, we can control the length of time of each piece by adding to the style object an **offset** property, setting it to the fraction of the complete time that the style point should be. For example, to keep even in the above example, we would set the offset values at 0, 0.33, 0.67, and 1.
 
-### Grouping Animations
+### E. Grouping Animations
 1. As seen above, we can have serial animations in our transition, *i.e.*, one animation occurs, then the next animation begins upon completion of the prior animation. We can also, of course, include multiple properties in a single animation, which will all modify on the same timeline. In this section, we shall address how to have multiple, simultaneous animations, which may be of different lengths of time.
 
 2. This is done by using the **group** property of our transition. This must be imported from *@angular/animations*, and will take an array of animations, all of which begin concurrently.
@@ -4052,7 +4049,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         ])
     ])
     ```
-### Animation Trigger Callbacks
+### F. Animation Trigger Callbacks
 1. We can attach callback functions to be executed when an animation begins, or is completed. To do this, we access the **start** and **done** properties of our animation trigger. For example, in our HTML code we might have:
     ```html
     <div style="width: 100px; height: 100px"
@@ -4064,7 +4061,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     
     **Note**: Notice the *$event* we included as the argument in our event handler. This is the *AnimationTransitionEvent*, which will provide the *fromState*, *toState*, and *totalTime* values.
 
-## X. Debugging Angular Apps
+## XII. Debugging Angular Apps
 1. Obviously, the first step in debugging an Angular4 application is to open up the dev tools in the browser, particularly the **console**.
 
 2. In addition, when things stop working and the console message is not clear, always remember to take a look at the terminal where the server is running. Often, the message generated by Webpack is very easy to figure out.
@@ -4074,7 +4071,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 4. Finally, one tool for understanding the layout of the application is **Augury**, which can be added to Chrome as a browser extension.
 
 
-## XI. Unit Testing Ng4 Apps
+## XIII. Unit Testing Ng4 Apps
 
 ### A. Introduction
 1. This section expands a bit from a focus on Ng4 to include an introduction to testing in general. The primary focus is on methods, tools, and considerations specific to testing Ng4 applications; however, the material is pointless if the reader doesn't have any previous knowledge of testing, so we start with a very simple and brief example of unit testing.
@@ -4715,7 +4712,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     
 
   
-## XII. Observables 
+## XIV. Observables 
 
 ### A. Introduction
 
@@ -4962,7 +4959,7 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
 
 
 <span id='webpack'></span>
-## XIII. Webpack Setup
+## XV. Webpack Setup
 1. Setup of Ng4 projects can become extremely complex, due to the large number of component imports, the use of Typescript, and the use of Webpack and compilers to be able to safely use ES6 and more modern features. The easiest way, by far, to get started is to use the Ng4 command line interface (CLI) to get projects up and running.
 
 ### A. Using the Angular4 CLI
@@ -5025,10 +5022,15 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
         "../node_modules/bootstrap/dist/css/bootstrap.min.css",
     ```
     
-### B. Customization of Angular2 Setup
+### B. Custom (not CLI) Setup of Ng4 Application
+
+1. This section has been moved to a separate repository, Ng4-Seed, which will consist of a sample seed project, together with a markdown file containing annotations.
+
+	 
+
 
 <span id='typescript'></span>
-## XIII. Typescript
+## XVI. Typescript
 ### A. Introduction
 
 1. TypeScript is a Microsoft take on JavaScript that transpiles down to regular JavaScript. Thus, any JavaScript can be written as-is in TypeScript, in which case it will merely be converted to itself. However, TypeScript provides a number of extra features, such as *types*, *classes*, *interfaces*, *etc.*.
@@ -5232,206 +5234,3 @@ https://coryrylan.com/blog/custom-preloading-and-lazy-loading-strategies-with-an
     ```javascript
     let numberArray = Array<number>;
     ```
----
-:::danger
-####Anything below here is still in preliminary draft form and may contain outdated information
-:::
----
-
-## The End
-
-## Setting Up a Project Manually with Webpack
-
-1.	In order to document the workings of the setup, this section will begin with the setup of a project that is about as basic as one can devise.  This will be followed up with additional materials such as:
-
-	a.	setting up for testing,
-	b.	setting up for multiple environments (dev, test, production),
-	c.	setting up linting with es-lint.
-	
-2.	Note, however, that even the "Hello World" app may have a few more steps than one might expect, given the use of Typescript in Angular2 and the need to transpile such code.
-
-####Building the Super-Basic App
-
-1.	Set up the repository in GitHub.
-
-2.	Clone the repository into your machine.
-
-3.	Run npm init and answer the questions.  You can always go back and change the answers in the *package.json* file.
-
-4.	In the *package.json* file, add the following dependencies (current versions in parens):
-
-	a.	@angular/common (2.1.2),
-	
-	b.	@angular/compiler (2.1.2)
-	
-	c.	@angular/core (2.1.2)
-	
-	d.	@angular/forms (2.1.2)
-	
-	e.	@angular/http (2.1.2)
-	
-	f.	@angular/platform-browser (2.1.2)
-	
-	g.	@angular/platform-browser-dynamic (2.1.2)
-	
-	h.	@angular/router (3.1.2)
-	
-	i.	rxjs (5.0.0-beta.12)
-	
-	j.	zone.js (0.6.26)
-	
-	k.	core-js (2.4.1)
-	
-5.	In the *package.json* file, add the following dev-dependencies:
-
-	a.	typescript (2.0.6)
-	
-	b.	typings (1.5.0)
-	
-	c.	webpack (1.13.2)
-	
-	d.	webpack-dev-server (1.16.2)
-	
-	e.	raw-loader (0.5.1)
-	
-	f.	awesome-typescript-loader (2.2.4)
-	
-	g.	html-webpacke-plugin (2.24.1)
-
-6.	run *npm install*
-
-7.	Create the following directories under the project directory:
-
-	a.	src - this is where the source code will be written
-	
-	b.	webpack - this is where webpack configuration files will be kept.  We could have a single webpack.config.js file at this stage, but lets make the folder and keep our dev config file there, to be joined later by test config.
-	
-8.	Create the typings.json file in our project root:
-
-		./node_modules/.bin/typings init
-		
-9.	Install typing for node:
-
-		./node_modules/.bin/typings install env~node --save --global
-		
-	This will set up the typings folder in the project.
-	
-10.	Create a *tsconfig.json* file to configure the Typescript transpilation. Below is a sample:
-
-		{
-    		"compilerOptions": {
-        		"emitDecoratorMetadata": true,
-        		"experimentalDecorators": true,
-        		"module": "commonjs",
-        		"moduleResolution": "node",
-        		"noImplicitAny": true,
-        		"suppressImplicitAnyIndexErrors": true,
-        		"removeComments": false,
-        		"sourceMap": true,
-        		"target": "es5"
-    		},
-    	"exclude": [
-        	"node_modules",
-        	"typings/main",
-        	"typings/main.d.ts"
-    	]
-	}
-
-:::danger
-Be sure to include information regarding the relative path issue
-:::
-
-
-11.	In the webpack folder, create a file, *webpack.dev.js*. There will also be a file for *test* and *production*, eventually. In order to access the file, we place the following in the *npm start* command in the *package.json* file:
-
-		 "start": "webpack-dev-server --config ./webpack/webpack.dev.js",
-
-12.	The following is a sample *webpack.dev.js* file:
-
-		'use strict';
-
-		const path = require('path');
-		const HtmlWebpack = require('html-webpack-plugin');
-		const webpack = require('webpack');
-		const ChunkWebpack = webpack.optimize.CommonsChunkPlugin;
-		const rootDir = path.resolve(__dirname, '..');
-
-		module.exports = {
-			debug: true,
-			devtool: 'source-map',
-			devServer: {
-				contentBase: path.resolve(rootDir, 'dist'),
-				port: 3142
-			},
-			entry: {
-				app: [ path.resolve(rootDir, 'src', 'bootstrap') ],
-				vendor: [ path.resolve(rootDir, 'src', 'vendor') ]
-			},
-			module: {
-				loaders: [
-					{
-						test: /\.ts$/,
-						loader: 'awesome-typescript-loader',
-						exclude: /node_modules/
-					},
-					{
-						test: /\.(css|html)$/,
-						loader: 'raw',
-						exclude: /node_modules/
-					}
-				]
-			},
-			output: {
-				filename: '[name].bundle.js',
-				path: path.resolve(rootDir, 'dist')
-			},
-			plugins: [
-				new ChunkWebpack({
-					filename: 'vendor.bundle.js',
-					miniChunks: Infinity,
-					name: 'vendor'
-				}),
-				new HtmlWebpack({
-					filename: 'index.html',
-					inject: 'body',
-					template: path.resolve(rootDir, 'src', 'app', 'index.html')
-				})
-			],
-			resolve: {
-				extensions: ['', '.js', '.ts']
-			}
-		};
-
-13.	In the *src* folder, create a directory *components*, which will hold our Angular2 components.
-
-14.	Create an *index.html* file, with a basic html skeleton.
-
-15.	Create the basic initial component:
-
-	a.	
-
-### Deployment
-1. **Steps here for building for production - enableProdMode(), webpack build, etc. How to do ahead-of-time with webpack?**
-
-2. Another thing to keep in mind is the **base element** that is set in the *index.html* file. That is discussed previously, but be sure in production that it is set correctly. If the app is running directly on the root domain, then it should be set to "/"; however, if the app is running in a nested path, such as "https://www.cjordanball.info/ng4app", the the *base element* should be set to "/ng4app".
-
-3. Also, we must double-check to make sure that the server **always** returns the *index.html* file in case of 404 errors. This is discussed previously, regarding the *path location strategy*.  
-
-#### Exaample - Deployment to AWS S3 Server
- 	
-1. Set up an account with Amazon Web Services. Create an S3 bucket. Enable static website hosting.
-
-2. Important: Set the "error document" to be *index.html*.
-
-3. Set the bucket policy to allow anonymous users to read. To get the code for the policy, click on the "Documentation" link under the code editing window.
-
-4. 
-
-
-	
-
-	 
-
-	
-
-
