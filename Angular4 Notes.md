@@ -515,11 +515,11 @@
 
 ### E. Databinding
 #### Introduction
-1. Databinding is a key element of both Angular Classic and Ng4, which allows **communication** between the template being viewed and the component's logic. Altough the terminology surrounding it is sometimes opaque, the concept is very simple. For example, imagine a page with a button and text input. We want the user to enter the name of a city, then have our application get from a weather service the temperature in the city, which will display on the screen.
+1. Databinding is a key element of both Angular Classic and Ng4, which allows **communication** between the template being viewed and the component's logic. Note the difference with what we were examining above, which dealt with communicating data **among components**. Altough the terminology surrounding it is sometimes opaque, the concept is very simple. For example, imagine a page with a button and text input. We want the user to enter the name of a city, then have our application get from a weather service the temperature in the city, which will display on the screen.
 
-    a. First, we will need a way to communicate the name of the city, as well as the button-click to the component, so it can fire off the AJAX request to get the weather. This will be done by *event-binding*.
+    a. First, we will need a way to communicate the name of the city, as well as the button-click, to the component, so it can fire off the AJAX request to get the weather. This will be done by *event-binding*.
     
-    b. Then, when the data has been returned and is available, we want the number to appear on the page. We would want to use *string inteerpolation* to communicate this info to the DOM. We can also use *property binding* to communicate out to the DOM.
+    b. Then, when the data has been returned and is available, we want the number to appear on the page. We would want to use *string interpolation* to communicate this info to the DOM. We can also use *property binding* to communicate out to the DOM.
     
     c. Finally, we may sometimes wish to have two-way communication between the DOM and the component instance. This is accomplished with *two-way data binding.* This was the big thing in Angular Classic, but really is overkill most of the time, and has been abandoned as the default data-binding in Ng4.
 
