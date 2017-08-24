@@ -50,6 +50,7 @@
         </body>
     </html>
     ```
+    **Note:** The above may seem a bit too "magical"; what happens is that webpack automatically places the bundled JavaScript file into the *index.html* file for us. They can be seen in the browser source code.
     
 3.  In addition to the *index.html* file, there will also be a typescript file with a name such as **main.ts** or **bootstrap.ts**. This file is what is given to the *webpack.config* (or *angular-cli.json*) file as the starting point. It imports the AppModule and runs a setup method on the *platformBrowserDynamic()* method to get everything going, and the instruction to look for this file first will be contained in the configuration file for webpack. The **app.module.ts** file creates our application module. A few of the most important things it does are:
   
@@ -93,7 +94,7 @@
 
 ### A. Components Generally
 
-1. A **component** is a special type of directive (along with attribute directives and structural directives). A component is a directive thqt is associated with a view. They are the **key feature** of Angular, as all of the app is built out of components.
+1. A **component** is a special type of directive (along with attribute directives and structural directives). A component is a directive that is associated with a view. They are the **key feature** of Angular, as all of the app is built out of components.
 
 
 #### Creating a Component
@@ -112,8 +113,8 @@
         name = 'Jordan';
     }
     ```
-    a. In the above example, the *@Component* is a **decorator**. Basically, it takes the given object and wraps it with some functionality to create (in this case) a Component. Notice that it must be imported from *@angular/core*.
-    
+    a. In the above example, the *@Component* is a **decorator**. Basically, it takes the given object and wraps it with some functionality to create (in this case) a Component. Notice that it must be imported from *@angular/core*. As we can see, the decorator takes an object with several properties that provides information necessary to convert our plain-old *class* into a *component*.
+
     b. In the above component, **selector** is what will go into the tag in the HTML to indicate where the component (*i.e.*, a directive) is to be inserted, **template** is the html string that is placed there, and **styleUrls** (or **styles**) allows us to incorporate css into our particular component. Note that the template could contain interpolated values string by using ES6 template literal syntax.
 	
 2. The *selector* can be a \<tag>, or it can be an *attribute* or *class*.  In such case, our code might look like:
@@ -181,57 +182,41 @@
 
     a. add a reference to the element, as discussed in the previous section.
     
-    b. in the *.component.ts* file, create a variable, which will take a type of **ElementRef**.
+    b. import in *ViewChild* and *ElementRef* from *@angular/core*.
     
-    c. import in *ViewChild* and *ElementRef* from *@angular/core*.
+    c. in the *.component.ts* file, create a variable, which will take a type of **ElementRef**.
     
     d. place the *@ViewChild* decorator on the variable created in step b, and pass into the decorator the reference name of the element. 
 
 3. Through the variable, we now have access to the template element.  Of course, the variable is the *ElementRef* reference. To get direct access, we can get the **nativeElement** property of the reference. From that, we can get the value.
 
-4. Below is some sample code. Note that one input field will be using an event emitter to pass the reference, the second input field will not use an event emitter, but will be accessed throught the *@ViewChild* decorator.
+4. Below is some sample code. Note that one input field will be using an event emitter to pass the reference, the second input field will not use an event emitter, but will be accessed through the *@ViewChild* decorator.
     ```html
-    <div>
-    <!--component.html-->
-        <p>Add new Servers!</p>
-            <label>Server Name</label>
-            <input type="text" #serverNameInput>
+    <input type="text" #inputEl />
 
-            <label>Server Content</label>
-            <input type="text" #SCInput>
-            <br>
-            <button (click)="onAddServer(serverNameInput)">
-                Add Server
-            </button>
-    </div>
+    <button (click)="onInput()">Add Name</button>
+
+    <p>{{name}}</p>
     ```
     ```javascript
     // component.ts
-    import { Component, EventEmitter,
-        Output, ViewChild, ElementRef } from '@angular/core';
+    import { Component, ElementRef, ViewChild } from '@angular/core';
 
     @Component({
-        selector: 'app-cockpit',
-        templateUrl: './cockpit.component.html',
-        styleUrls: ['./cockpit.component.css']
+        selector: 'app-root',
+        templateUrl: './app.component.html',
+        styleUrls: ['./app.component.css']
     })
-    
-    export class CockpitComponent implements OnInit {
-        @Output('sC') serverCreated = new EventEmitter<{
-            serverName: string, 
-            serverContent: string
-        }>();
-
-        @ViewChild('SCInput') SCInput: ElementRef;
-
-        onAddServer(nameInput: HTMLInputElement) {
-            this.serverCreated.emit({
-                serverName: nameInput.value,
-                serverContent: this.SCInput.nativeElement.value
-            });
+    export class AppComponent {
+        title = 'Starter App!';
+        name: string;
+        @ViewChild('inputEl') xquise: ElementRef;
+        onInput(inputText) {
+            this.name = this.xquise.nativeElement.value;
         }
     }
     ```
+    **Note:** *@ViewChild* is not only for input elements. Any element that has been assigned a reference can be accessed. For example, a \<p></p\> element can be accessed (of course, it would have a *textContent* rather than a *value*.
 
 ### B. Creating a Model Type
 1. TypeScript allows us to apply strict typing to our JavaScript. While that does, of course, apply to numbers, strings, and other "built-in" types, we can also define our own types.
