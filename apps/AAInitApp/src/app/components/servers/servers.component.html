@@ -1,2 +1,7 @@
+<button
+	(click)="onCreateServer(serverCreationStatus)"
+	class="btn btn-primary"
+	[disabled]="!allowNewServer">Press</button>
+<p>{{ serverCreationStatus }}</p>
 <app-server></app-server>
 <app-server></app-server>
